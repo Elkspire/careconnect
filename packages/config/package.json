@@ -1,0 +1,11 @@
+{
+  "name": "@careconnect/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./tailwind-preset.css": "./tailwind-preset.css"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      // Also depends on this package's OWN build (not just ^build, its
+      // dependencies' builds): apps/web's `tsc --noEmit` needs .next/types
+      // (the PageProps/LayoutProps ambient types Next.js generates during
+      // `next build`) to exist — confirmed by a real race where a clean
+      // `.next` wipe + parallel `turbo build typecheck` had typecheck start
+      // before next build had regenerated those types, since typecheck
+      // only waited on shared-types/validation, not on web's own build.
+      "dependsOn": ["^build", "build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    }
+  }
+}

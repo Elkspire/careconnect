@@ -1,0 +1,48 @@
+/* Shared Tailwind v4 design tokens for CareConnect.
+   Import from an app's globals.css AFTER `@import "tailwindcss";`:
+
+   @import "tailwindcss";
+   @import "@careconnect/config/tailwind-preset.css";
+
+   Tailwind's logical-property utilities (ms, me, ps, pe) are core
+   utilities already and need no preset config. Use them instead of
+   ml/mr/pl/pr everywhere so components flip automatically under
+   dir="rtl" per the Urdu/RTL design principle.
+
+   Palette and type system mirror resources/careconnect-journeys.html —
+   the "vintage stamped document" visual language: a deep bottle-green
+   page chrome with cream/paper card surfaces, Bricolage Grotesque for
+   display type, Newsreader for body serif, IBM Plex Mono for
+   uppercase labels/mono detail. */
+
+@theme {
+  --color-bottle: #0e2620;
+  --color-bottle-2: #153429;
+  --color-bottle-3: #1d4235;
+  --color-line: #2c5748;
+  --color-paper: #f4f0e4;
+  --color-paper-2: #fbf9f1;
+  --color-ink: #12201b;
+  --color-ink-soft: #4a5c54;
+  --color-stamp: #2b4c9b;
+  --color-seal: #b93b26;
+  --color-brass: #b8912f;
+  --color-mint: #79d2a6;
+  --color-cream-dim: #c3d4cb;
+  --color-verified: #1c7a55;
+
+  --font-display: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-serif: var(--font-serif), "Newsreader", Georgia, serif;
+  --font-mono: var(--font-mono), "IBM Plex Mono", monospace;
+  --font-urdu: "Noto Nastaliq Urdu", "Noto Naskh Arabic", serif;
+
+  --radius-doc: 3px;
+}
+
+/* Low-literacy design principle: icon-led nav and large tap targets are
+   component defaults, not per-page discretion. 44px is the WCAG 2.5.5
+   AA minimum target size. */
+@utility tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}

@@ -1,0 +1,76 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { DRIZZLE, type Database } from '../../common/database/database.module';
+import { notificationLog } from '../../common/database/schema';
+import { InAppAdapter } from './channels/in-app.adapter';
+import type {
+  ChannelAdapter,
+  NotificationRecipient,
+} from './channels/channel-adapter.interface';
+import { PushAdapter } from './channels/push.adapter';
+import { SmsAdapter } from './channels/sms.adapter';
+import { WhatsAppAdapter } from './channels/whatsapp.adapter';
+import { renderTemplate, type TemplateKey } from './templates';
+
+export interface DispatchParams {
+  eventType: string;
+  templateKey: TemplateKey;
+  recipient: NotificationRecipient;
+  payload: Record<string, string>;
+  locale: 'en' | 'ur';
+  relatedAppointmentId?: string;
+}
+
+/**
+ * Fans out to every channel — WhatsApp/SMS/in-app are all primary channels
+ * per the product doc, not a try-then-fallback chain, so every enabled
+ * adapter is dispatched in parallel regardless of the others' outcomes.
+ * Every attempt writes a notification_log row (see 0001_init.sql), giving
+ * one place to debug delivery failures per channel.
+ */
+@Injectable()
+export class NotificationDispatcher {
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly smsAdapter: SmsAdapter,
+    private readonly whatsAppAdapter: WhatsAppAdapter,
+    private readonly pushAdapter: PushAdapter,
+    private readonly inAppAdapter: InAppAdapter,
+  ) {}
+
+  private get adapters(): ChannelAdapter[] {
+    return [
+      this.smsAdapter,
+      this.whatsAppAdapter,
+      this.pushAdapter,
+      this.inAppAdapter,
+    ];
+  }
+
+  async dispatch(params: DispatchParams): Promise<void> {
+    const message = renderTemplate(
+      params.templateKey,
+      params.locale,
+      params.payload,
+    );
+
+    await Promise.all(
+      this.adapters.map(async (adapter) => {
+        const result = await adapter.send(
+          params.recipient,
+          params.templateKey,
+          params.payload,
+          params.locale,
+        );
+        await this.db.insert(notificationLog).values({
+          eventType: params.eventType,
+          channel: adapter.channel,
+          recipientUserId: params.recipient.userId,
+          relatedAppointmentId: params.relatedAppointmentId,
+          status: result.status,
+          providerMessageId: result.providerMessageId,
+          message,
+        });
+      }),
+    );
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "title": "CareConnect",
+    "description": "Find a doctor and book an appointment near you."
+  },
+  "site": {
+    "kicker": "Verified doctors · in-clinic booking",
+    "login": "Log in",
+    "myAccount": "My account",
+    "logout": "Log out",
+    "enableNotifications": "Push notifications",
+    "notificationsBlocked": "Blocked in your browser's site settings"
+  },
+  "directory": {
+    "heading": "Find a doctor",
+    "cityLabel": "City",
+    "searchLabel": "Search by name",
+    "searchPlaceholder": "e.g. Dr. Ayesha Khan",
+    "verifiedBadge": "Verified",
+    "unverifiedBadge": "Unverified",
+    "feeLabel": "Fee",
+    "viewProfile": "View profile",
+    "empty": "No practitioners found for this search.",
+    "resultCount": "{count, plural, =0 {No results} one {# result} other {# results}}"
+  },
+  "practitionerProfile": {
+    "notFound": "This practitioner could not be found.",
+    "specialtiesLabel": "Specialties",
+    "clinicsLabel": "Clinics",
+    "backToDirectory": "Back to directory",
+    "bookAt": "Book at this clinic",
+    "ratingLabel": "Rating",
+    "noReviewsYet": "No reviews yet.",
+    "reviewCount": "{count, plural, one {# review} other {# reviews}}",
+    "reviewsLabel": "Patient reviews",
+    "leaveReviewLabel": "Leave a review",
+    "commentLabel": "Comment (optional)",
+    "submitReview": "Submit review",
+    "reviewEligibilityNote": "You can review a practitioner after checking in for an appointment with them.",
+    "loginToReview": "Log in to leave a review"
+  },
+  "auth": {
+    "heading": "Log in or sign up",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "+923001234567",
+    "sendCode": "Send code",
+    "codeLabel": "Verification code",
+    "codePlaceholder": "123456",
+    "verify": "Verify",
+    "changeNumber": "Use a different number",
+    "sentCodeTo": "We sent a code to {phone}",
+    "error": "Something went wrong. Please try again.",
+    "invalidCode": "That code is not valid."
+  },
+  "patient": {
+    "dashboardHeading": "My account",
+    "createProfilePrompt": "Finish setting up your account.",
+    "fullNameLabel": "Full name",
+    "preferredLanguageLabel": "Preferred language",
+    "saveProfile": "Save",
+    "preferencesHeading": "Preferences",
+    "familyMembersHeading": "Family members",
+    "addFamilyMember": "Add family member",
+    "relationshipLabel": "Relationship",
+    "relationshipGroups": {
+      "spouse": "Spouse",
+      "child": "Child",
+      "parent": "Parent"
+    },
+    "relationship": {
+      "husband": "Husband",
+      "wife": "Wife",
+      "son": "Son",
+      "daughter": "Daughter",
+      "mother": "Mother",
+      "father": "Father",
+      "spouse": "Spouse",
+      "child": "Child",
+      "parent": "Parent",
+      "sibling": "Sibling",
+      "other": "Other"
+    },
+    "noFamilyMembers": "You haven't added any family members yet.",
+    "appointmentsHeading": "My appointments",
+    "vaultHeading": "My records",
+    "notificationsHeading": "Notifications",
+    "noAppointments": "You have no appointments yet.",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "leaveReview": "Leave a review",
+    "bookingHeading": "Book an appointment",
+    "forSelf": "Myself",
+    "forFamilyMember": "A family member",
+    "pickDate": "Pick a date",
+    "availableSlots": "Available slots (Pakistan time)",
+    "newTimeLabelPkt": "New time (Pakistan time)",
+    "noSlots": "No available slots for this date.",
+    "confirmBooking": "Confirm booking",
+    "bookingConfirmed": "Appointment booked.",
+    "status": {
+      "booked": "Booked",
+      "checked_in": "Checked in",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No-show"
+    }
+  },
+  "clinic": {
+    "todayHeading": "Today",
+    "noAppointmentsToday": "No appointments today.",
+    "checkIn": "Check in",
+    "checkedIn": "Checked in",
+    "patientsHeading": "Patients",
+    "lastVisitLabel": "Last visit",
+    "staffHeading": "Staff",
+    "invitePrompt": "Invite a receptionist by phone number. They must have signed in to CareConnect at least once.",
+    "phoneLabel": "Phone number",
+    "invite": "Invite",
+    "revoke": "Revoke access",
+    "notesHeading": "Clinical notes",
+    "notesLabel": "Notes",
+    "diagnosisLabel": "Diagnosis",
+    "saveNote": "Save note",
+    "accessDenied": "You don't have access to this page.",
+    "nav": { "today": "Today", "patients": "Patients", "staff": "Staff", "notifications": "Notifications" }
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "empty": "No notifications yet."
+  },
+  "vault": {
+    "heading": "My records",
+    "empty": "You haven't added any records yet.",
+    "recordTypeLabel": "Record type",
+    "fileLabel": "File",
+    "upload": "Upload",
+    "view": "View",
+    "types": {
+      "prescription_photo": "Prescription",
+      "lab_report": "Lab report",
+      "other_document": "Other document"
+    }
+  }
+}

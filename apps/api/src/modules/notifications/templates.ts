@@ -1,0 +1,73 @@
+/**
+ * Plain functions, not a heavy i18n dependency — kept separate from
+ * delivery/adapter logic so wording changes never touch channel code (see
+ * the Phase 1 plan's NotificationsModule notes).
+ */
+export type TemplateKey =
+  | 'appointment_booked'
+  | 'appointment_rescheduled'
+  | 'appointment_cancelled_by_patient'
+  | 'appointment_cancelled_by_clinic'
+  | 'appointment_reminder_24h'
+  | 'appointment_reminder_2h'
+  | 'patient_checked_in'
+  | 'appointment_no_show';
+
+type TemplateFn = (payload: Record<string, string>) => string;
+
+const templates: Record<TemplateKey, Record<'en' | 'ur', TemplateFn>> = {
+  appointment_booked: {
+    en: (p) =>
+      `Your appointment with ${p.practitionerName} at ${p.clinicName} is confirmed for ${p.when}.`,
+    ur: (p) =>
+      `${p.practitionerName} کے ساتھ ${p.clinicName} میں آپ کی اپائنٹمنٹ ${p.when} کے لیے کنفرم ہو گئی ہے۔`,
+  },
+  appointment_rescheduled: {
+    en: (p) =>
+      `Your appointment with ${p.practitionerName} has been moved to ${p.when}.`,
+    ur: (p) =>
+      `${p.practitionerName} کے ساتھ آپ کی اپائنٹمنٹ ${p.when} پر منتقل کر دی گئی ہے۔`,
+  },
+  appointment_cancelled_by_patient: {
+    en: (p) =>
+      `Your appointment with ${p.practitionerName} on ${p.when} has been cancelled.`,
+    ur: (p) =>
+      `${p.practitionerName} کے ساتھ ${p.when} کی آپ کی اپائنٹمنٹ منسوخ کر دی گئی ہے۔`,
+  },
+  appointment_cancelled_by_clinic: {
+    en: (p) =>
+      `${p.clinicName} has cancelled your appointment on ${p.when}. Please rebook at your convenience.`,
+    ur: (p) =>
+      `${p.clinicName} نے ${p.when} کی آپ کی اپائنٹمنٹ منسوخ کر دی ہے۔ براہ کرم دوبارہ بک کریں۔`,
+  },
+  appointment_reminder_24h: {
+    en: (p) =>
+      `Reminder: you have an appointment with ${p.practitionerName} tomorrow at ${p.when}.`,
+    ur: (p) =>
+      `یاد دہانی: کل ${p.when} پر ${p.practitionerName} کے ساتھ آپ کی اپائنٹمنٹ ہے۔`,
+  },
+  appointment_reminder_2h: {
+    en: (p) =>
+      `Reminder: your appointment with ${p.practitionerName} is at ${p.when}, coming up soon.`,
+    ur: (p) =>
+      `یاد دہانی: ${p.practitionerName} کے ساتھ آپ کی اپائنٹمنٹ ${p.when} پر ہے، جلد شروع ہونے والی ہے۔`,
+  },
+  patient_checked_in: {
+    en: (p) => `${p.patientName} has checked in and is waiting.`,
+    ur: (p) => `${p.patientName} چیک ان کر چکے ہیں اور انتظار میں ہیں۔`,
+  },
+  appointment_no_show: {
+    en: (p) =>
+      `You missed your ${p.when} appointment with ${p.practitionerName} at ${p.clinicName}. Please rebook if you still need it.`,
+    ur: (p) =>
+      `آپ ${p.practitionerName} کے ساتھ ${p.clinicName} میں ${p.when} کی اپائنٹمنٹ سے محروم رہے۔ اگر اب بھی ضرورت ہو تو براہ کرم دوبارہ بک کریں۔`,
+  },
+};
+
+export function renderTemplate(
+  key: TemplateKey,
+  locale: 'en' | 'ur',
+  payload: Record<string, string>,
+): string {
+  return templates[key][locale](payload);
+}

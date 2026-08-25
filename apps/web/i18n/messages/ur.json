@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "title": "کیئر کنیکٹ",
+    "description": "اپنے قریب ڈاکٹر تلاش کریں اور اپائنٹمنٹ بک کریں۔"
+  },
+  "site": {
+    "kicker": "تصدیق شدہ ڈاکٹرز · کلینک میں بکنگ",
+    "login": "لاگ ان",
+    "myAccount": "میرا اکاؤنٹ",
+    "logout": "لاگ آؤٹ",
+    "enableNotifications": "پش اطلاعات",
+    "notificationsBlocked": "آپ کے براؤزر کی سائٹ ترتیبات میں مسدود ہے"
+  },
+  "directory": {
+    "heading": "ڈاکٹر تلاش کریں",
+    "cityLabel": "شہر",
+    "searchLabel": "نام سے تلاش کریں",
+    "searchPlaceholder": "مثلاً ڈاکٹر عائشہ خان",
+    "verifiedBadge": "تصدیق شدہ",
+    "unverifiedBadge": "غیر تصدیق شدہ",
+    "feeLabel": "فیس",
+    "viewProfile": "پروفائل دیکھیں",
+    "empty": "اس تلاش کے لیے کوئی معالج نہیں ملا۔",
+    "resultCount": "{count, plural, =0 {کوئی نتیجہ نہیں} other {# نتائج}}"
+  },
+  "practitionerProfile": {
+    "notFound": "یہ معالج نہیں ملا۔",
+    "specialtiesLabel": "شعبہ جات",
+    "clinicsLabel": "کلینکس",
+    "backToDirectory": "ڈائریکٹری پر واپس جائیں",
+    "bookAt": "اس کلینک میں بک کریں",
+    "ratingLabel": "درجہ بندی",
+    "noReviewsYet": "ابھی تک کوئی جائزہ نہیں۔",
+    "reviewCount": "{count, plural, one {# جائزہ} other {# جائزے}}",
+    "reviewsLabel": "مریضوں کے جائزے",
+    "leaveReviewLabel": "جائزہ دیں",
+    "commentLabel": "تبصرہ (اختیاری)",
+    "submitReview": "جائزہ جمع کریں",
+    "reviewEligibilityNote": "آپ کسی معالج کا جائزہ اپائنٹمنٹ کے لیے چیک ان کرنے کے بعد دے سکتے ہیں۔",
+    "loginToReview": "جائزہ دینے کے لیے لاگ ان کریں"
+  },
+  "auth": {
+    "heading": "لاگ ان یا اکاؤنٹ بنائیں",
+    "phoneLabel": "فون نمبر",
+    "phonePlaceholder": "+923001234567",
+    "sendCode": "کوڈ بھیجیں",
+    "codeLabel": "تصدیقی کوڈ",
+    "codePlaceholder": "123456",
+    "verify": "تصدیق کریں",
+    "changeNumber": "دوسرا نمبر استعمال کریں",
+    "sentCodeTo": "ہم نے {phone} پر کوڈ بھیج دیا ہے",
+    "error": "کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔",
+    "invalidCode": "یہ کوڈ درست نہیں ہے۔"
+  },
+  "patient": {
+    "dashboardHeading": "میرا اکاؤنٹ",
+    "createProfilePrompt": "اپنا اکاؤنٹ مکمل کریں۔",
+    "fullNameLabel": "پورا نام",
+    "preferredLanguageLabel": "پسندیدہ زبان",
+    "saveProfile": "محفوظ کریں",
+    "preferencesHeading": "ترجیحات",
+    "familyMembersHeading": "خاندان کے افراد",
+    "addFamilyMember": "خاندان کا فرد شامل کریں",
+    "relationshipLabel": "رشتہ",
+    "relationshipGroups": {
+      "spouse": "شریک حیات",
+      "child": "بچہ",
+      "parent": "والدین"
+    },
+    "relationship": {
+      "husband": "شوہر",
+      "wife": "بیوی",
+      "son": "بیٹا",
+      "daughter": "بیٹی",
+      "mother": "والدہ",
+      "father": "والد",
+      "spouse": "شریک حیات",
+      "child": "بچہ",
+      "parent": "والدین",
+      "sibling": "بہن بھائی",
+      "other": "دیگر"
+    },
+    "noFamilyMembers": "آپ نے ابھی تک کوئی فرد شامل نہیں کیا۔",
+    "appointmentsHeading": "میری اپائنٹمنٹس",
+    "vaultHeading": "میرے ریکارڈز",
+    "notificationsHeading": "اطلاعات",
+    "noAppointments": "آپ کی کوئی اپائنٹمنٹ نہیں ہے۔",
+    "reschedule": "دوبارہ شیڈول کریں",
+    "cancel": "منسوخ کریں",
+    "leaveReview": "جائزہ دیں",
+    "bookingHeading": "اپائنٹمنٹ بک کریں",
+    "forSelf": "میں خود",
+    "forFamilyMember": "خاندان کا فرد",
+    "pickDate": "تاریخ منتخب کریں",
+    "availableSlots": "دستیاب اوقات (پاکستان کا وقت)",
+    "newTimeLabelPkt": "نیا وقت (پاکستان کا وقت)",
+    "noSlots": "اس تاریخ کے لیے کوئی وقت دستیاب نہیں۔",
+    "confirmBooking": "بکنگ کی تصدیق کریں",
+    "bookingConfirmed": "اپائنٹمنٹ بک ہو گئی۔",
+    "status": {
+      "booked": "بک شدہ",
+      "checked_in": "چیک ان ہو گیا",
+      "completed": "مکمل",
+      "cancelled": "منسوخ شدہ",
+      "no_show": "حاضر نہیں ہوا"
+    }
+  },
+  "clinic": {
+    "todayHeading": "آج",
+    "noAppointmentsToday": "آج کوئی اپائنٹمنٹ نہیں۔",
+    "checkIn": "چیک ان کریں",
+    "checkedIn": "چیک ان ہو گیا",
+    "patientsHeading": "مریض",
+    "lastVisitLabel": "آخری وزٹ",
+    "staffHeading": "عملہ",
+    "invitePrompt": "فون نمبر سے ریسیپشنسٹ کو مدعو کریں۔ انہیں کم از کم ایک بار کیئر کنیکٹ میں لاگ ان کرنا ضروری ہے۔",
+    "phoneLabel": "فون نمبر",
+    "invite": "مدعو کریں",
+    "revoke": "رسائی منسوخ کریں",
+    "notesHeading": "طبی نوٹس",
+    "notesLabel": "نوٹس",
+    "diagnosisLabel": "تشخیص",
+    "saveNote": "نوٹ محفوظ کریں",
+    "accessDenied": "آپ کو اس صفحہ تک رسائی نہیں ہے۔",
+    "nav": { "today": "آج", "patients": "مریض", "staff": "عملہ", "notifications": "اطلاعات" }
+  },
+  "notifications": {
+    "heading": "اطلاعات",
+    "empty": "ابھی تک کوئی اطلاع نہیں۔"
+  },
+  "vault": {
+    "heading": "میرے ریکارڈز",
+    "empty": "آپ نے ابھی تک کوئی ریکارڈ شامل نہیں کیا۔",
+    "recordTypeLabel": "ریکارڈ کی قسم",
+    "fileLabel": "فائل",
+    "upload": "اپ لوڈ کریں",
+    "view": "دیکھیں",
+    "types": {
+      "prescription_photo": "نسخہ",
+      "lab_report": "لیب رپورٹ",
+      "other_document": "دیگر دستاویز"
+    }
+  }
+}

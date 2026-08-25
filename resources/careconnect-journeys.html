@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CareConnect — User Journeys</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bottle:#0E2620;
+  --bottle-2:#153429;
+  --bottle-3:#1D4235;
+  --line:#2C5748;
+  --paper:#F4F0E4;
+  --paper-2:#FBF9F1;
+  --ink:#12201B;
+  --ink-soft:#4A5C54;
+  --stamp:#2B4C9B;
+  --seal:#B93B26;
+  --brass:#B8912F;
+  --mint:#79D2A6;
+  --cream-dim:#C3D4CB;
+  --r:3px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bottle);
+  color:var(--paper);
+  font-family:'Newsreader',Georgia,serif;
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(121,210,166,.10), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 4px);
+}
+.mono{font-family:'IBM Plex Mono',monospace}
+.disp{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+/* ---------- masthead ---------- */
+.mast{padding:52px 0 34px;border-bottom:1px solid var(--line)}
+.mast-top{display:flex;align-items:flex-start;justify-content:space-between;gap:26px;flex-wrap:wrap}
+.wordmark{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(38px,7vw,64px);letter-spacing:-.035em;line-height:.94}
+.wordmark span{color:var(--mint)}
+.mast .kicker{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mint);margin-bottom:14px}
+.mast .lede{font-size:20px;line-height:1.45;color:var(--cream-dim);max-width:46ch;margin-top:18px;font-weight:300}
+.mast .lede b{color:var(--paper);font-weight:400}
+.seal-mast{
+  flex:0 0 auto;width:112px;height:112px;border-radius:50%;
+  border:1.5px solid var(--brass);color:var(--brass);
+  display:grid;place-items:center;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.12em;
+  line-height:1.5;transform:rotate(-7deg);position:relative;
+}
+.seal-mast::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1px dashed rgba(184,145,47,.5)}
+.seal-mast em{display:block;font-style:normal;font-size:15px;letter-spacing:.02em;margin:3px 0}
+
+/* ---------- track tabs ---------- */
+.tracks{position:sticky;top:0;z-index:40;background:rgba(14,38,32,.93);backdrop-filter:blur(9px);border-bottom:1px solid var(--line)}
+.tracks-in{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.tracks-in::-webkit-scrollbar{display:none}
+.tab{
+  flex:1 1 0;min-width:158px;background:none;border:0;border-right:1px solid var(--line);
+  color:var(--cream-dim);padding:15px 16px;text-align:left;cursor:pointer;
+  font-family:'Bricolage Grotesque',sans-serif;transition:background .18s,color .18s;
+}
+.tab:last-child{border-right:0}
+.tab b{display:block;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.tab i{font-family:'IBM Plex Mono',monospace;font-style:normal;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.62}
+.tab:hover{background:var(--bottle-2);color:var(--paper)}
+.tab.on{background:var(--paper);color:var(--ink)}
+.tab.on i{opacity:.72}
+.tab:focus-visible{outline:2px solid var(--mint);outline-offset:-3px}
+
+/* ---------- stage ---------- */
+.stage{padding:38px 0 90px}
+.track-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.track-head h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(26px,4.4vw,40px);letter-spacing:-.03em}
+.track-head p{color:var(--cream-dim);font-weight:300;max-width:52ch}
+
+/* rail */
+.rail{display:flex;align-items:center;gap:0;margin:26px 0 30px;flex-wrap:wrap}
+.rail button{
+  background:none;border:0;cursor:pointer;color:var(--cream-dim);
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;
+  padding:7px 12px 7px 0;display:flex;align-items:center;gap:8px;transition:color .16s;
+}
+.rail button:hover{color:var(--paper)}
+.rail button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.rail .pip{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--line);background:transparent;transition:all .2s}
+.rail button.done .pip{background:var(--line);border-color:var(--line)}
+.rail button.on{color:var(--mint)}
+.rail button.on .pip{background:var(--mint);border-color:var(--mint);box-shadow:0 0 0 4px rgba(121,210,166,.16)}
+
+/* step layout */
+.step{display:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:44px;align-items:start}
+.step.on{display:grid;animation:fade .34s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.col-device{display:flex;justify-content:center}
+
+/* ---------- slip (the parchi) ---------- */
+.slip{
+  background:var(--paper);color:var(--ink);border-radius:var(--r);
+  padding:30px 30px 32px;position:relative;
+  box-shadow:0 20px 44px -20px rgba(0,0,0,.6);
+  background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(18,32,27,.055) 27px 28px);
+}
+.slip::before{
+  content:"";position:absolute;left:0;right:0;top:-9px;height:9px;
+  background:radial-gradient(circle at 5px 9px, transparent 4.2px, var(--paper) 4.6px) 0 0/10px 9px repeat-x;
+}
+.slip-no{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--seal)}
+.slip h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:25px;letter-spacing:-.02em;line-height:1.16;margin:7px 0 14px}
+.slip p{font-size:16.5px;line-height:1.62;color:#293831;margin-bottom:13px}
+.slip p:last-child{margin-bottom:0}
+.slip .rule{height:1px;background:rgba(18,32,27,.16);margin:20px 0 18px}
+.slip h4{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:11px}
+.slip ul{list-style:none;display:grid;gap:9px}
+.slip li{font-size:15px;line-height:1.5;color:#293831;padding-left:19px;position:relative}
+.slip li::before{content:"→";position:absolute;left:0;color:var(--stamp);font-family:'IBM Plex Mono',monospace;font-size:12px;top:2px}
+.note{margin-top:20px;padding:14px 16px;background:rgba(43,76,155,.075);border-left:2px solid var(--stamp);font-size:14.5px;line-height:1.55;color:#243}
+.note b{font-family:'Bricolage Grotesque',sans-serif;font-weight:600}
+
+/* ---------- stamp signature ---------- */
+.stamp{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--stamp);border:2px solid var(--stamp);padding:7px 12px;border-radius:2px;
+  transform:rotate(-3.2deg);opacity:.9;
+}
+.stamp.red{color:var(--seal);border-color:var(--seal)}
+.stamp.brass{color:var(--brass);border-color:var(--brass)}
+.stamp.hidden{visibility:hidden}
+.stamp.hit{animation:stampin .42s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes stampin{
+  0%{transform:rotate(-14deg) scale(2.1);opacity:0}
+  60%{opacity:.95}
+  100%{transform:rotate(-3.2deg) scale(1);opacity:.9}
+}
+.slip-stamp{position:absolute;right:22px;bottom:20px}
+
+/* ---------- phone ---------- */
+.phone{
+  width:322px;max-width:100%;background:#050D0A;border-radius:32px;padding:9px;
+  box-shadow:0 30px 60px -22px rgba(0,0,0,.75), 0 0 0 1px rgba(121,210,166,.14);
+}
+.screen{background:var(--paper-2);border-radius:25px;overflow:hidden;color:var(--ink);position:relative;min-height:530px;display:flex;flex-direction:column}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:9px 17px 5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#5B6B63;letter-spacing:.04em}
+.appbar{padding:9px 17px 13px;border-bottom:1px solid rgba(18,32,27,.1);display:flex;align-items:center;gap:10px}
+.appbar .mk{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.02em}
+.appbar .mk span{color:#1C7A55}
+.appbar .who{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B7B73}
+.body{padding:16px 17px 20px;flex:1;overflow:hidden}
+.h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;margin-bottom:5px}
+.sub{font-size:13.5px;color:#5B6B63;line-height:1.45;margin-bottom:15px}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#7A8A82;margin:15px 0 8px}
+.lbl:first-child{margin-top:0}
+.field{border:1px solid rgba(18,32,27,.2);border-radius:var(--r);padding:11px 12px;font-size:14px;background:#fff;display:flex;align-items:center;gap:9px;color:#12201B}
+.field.mut{color:#8A9A92}
+.otp{display:flex;gap:7px}
+.otp i{flex:1;aspect-ratio:1/1.15;border:1px solid rgba(18,32,27,.22);border-radius:var(--r);background:#fff;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:17px;font-style:normal}
+.otp i.f{border-color:#1C7A55;color:#1C7A55}
+.btn{
+  width:100%;background:var(--ink);color:var(--paper);border:0;border-radius:var(--r);
+  padding:13px;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;
+  cursor:pointer;margin-top:16px;transition:opacity .18s,transform .12s;
+}
+.btn:hover{opacity:.88}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.gh{background:transparent;color:var(--ink);border:1px solid rgba(18,32,27,.28)}
+.btn.sm{padding:9px;font-size:13px;margin-top:10px}
+.btn:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  border:1px solid rgba(18,32,27,.22);background:#fff;border-radius:20px;padding:6px 12px;
+  font-size:12.5px;cursor:pointer;font-family:'Newsreader',serif;color:#3A4A43;transition:all .16s;
+}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:#1C7A55;border-color:#1C7A55;color:#fff}
+.chip:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+
+/* doctor cards */
+.dcard{border:1px solid rgba(18,32,27,.14);border-radius:var(--r);padding:12px;background:#fff;display:flex;gap:11px;margin-bottom:9px;cursor:pointer;transition:border-color .16s,box-shadow .16s}
+.dcard:hover{border-color:#1C7A55;box-shadow:0 4px 14px -8px rgba(0,0,0,.3)}
+.av{flex:0 0 42px;height:42px;border-radius:50%;background:#DCE7E0;display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;color:#1C7A55}
+.dcard b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14px;letter-spacing:-.01em}
+.dcard small{display:block;font-size:12px;color:#6B7B73;line-height:1.4}
+.vtick{display:inline-flex;align-items:center;gap:3px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--brass);text-transform:uppercase;margin-top:4px}
+.vtick::before{content:"◉"}
+.fee{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#3A4A43}
+.fee em{display:block;font-style:normal;font-size:8.5px;color:#7A8A82;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+
+/* slots */
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.slot{border:1px solid rgba(18,32,27,.2);background:#fff;border-radius:var(--r);padding:9px 4px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;cursor:pointer;transition:all .15s;color:#3A4A43}
+.slot:hover:not(:disabled){border-color:#1C7A55}
+.slot.on{background:#1C7A55;border-color:#1C7A55;color:#fff}
+.slot:disabled{opacity:.32;cursor:not-allowed;text-decoration:line-through}
+.slot:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+
+/* notification card */
+.notif{background:#fff;border-radius:11px;padding:12px 13px;box-shadow:0 8px 22px -10px rgba(0,0,0,.4);border-left:3px solid #25D366;margin-bottom:9px;animation:drop .4s cubic-bezier(.2,1.3,.4,1) both}
+.notif:nth-child(2){animation-delay:.13s}
+.notif:nth-child(3){animation-delay:.26s}
+@keyframes drop{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.notif b{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:6px}
+.notif b em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:#25D366;text-transform:uppercase;margin-left:auto}
+.notif p{font-size:12.5px;color:#5B6B63;line-height:1.42;margin-top:4px}
+
+/* vault slips */
+.vslip{background:#fff;border:1px solid rgba(18,32,27,.14);border-radius:var(--r);padding:11px 12px;margin-bottom:7px;cursor:pointer;position:relative;transition:transform .16s,box-shadow .16s}
+.vslip:hover{transform:translateX(3px);box-shadow:-3px 0 0 var(--brass)}
+.vslip .vhead{display:flex;align-items:baseline;gap:8px}
+.vslip b{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:13px}
+.vslip .vd{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#8A9A92}
+.vslip small{display:block;font-size:11.5px;color:#6B7B73;margin-top:3px}
+.vslip .vmore{display:none;margin-top:9px;padding-top:9px;border-top:1px dashed rgba(18,32,27,.18);font-size:12px;color:#3A4A43;line-height:1.5}
+.vslip.open .vmore{display:block}
+.vtag{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:2px;background:#EDE8D8;color:#6B5B23}
+.vtag.dr{background:#E4EEE8;color:#1C7A55}
+
+/* alert row */
+.alert{display:flex;gap:9px;align-items:flex-start;background:#FDEEEA;border-left:3px solid var(--seal);border-radius:var(--r);padding:11px 12px;margin-bottom:12px}
+.alert b{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:12.5px;color:#8E2C1B}
+.alert p{font-size:12px;color:#7A4034;line-height:1.42;margin-top:2px}
+
+/* toggle rows */
+.trow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(18,32,27,.09)}
+.trow:last-child{border-bottom:0}
+.trow span{font-size:13.5px;flex:1}
+.trow small{display:block;font-size:11px;color:#7A8A82;margin-top:2px}
+.tg{flex:0 0 40px;height:22px;border-radius:20px;background:#D4DCD7;border:0;cursor:pointer;position:relative;transition:background .2s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tg.on{background:#1C7A55}
+.tg.on::after{transform:translateX(18px)}
+.tg:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+.tg.lock{background:#E8E3D6;cursor:not-allowed}
+.tg.lock::after{background:#C0BBAE}
+
+/* desktop console */
+.console{
+  width:100%;max-width:560px;background:#08150F;border-radius:9px;padding:8px;
+  box-shadow:0 30px 60px -22px rgba(0,0,0,.75), 0 0 0 1px rgba(121,210,166,.14);
+}
+.cbar{display:flex;align-items:center;gap:6px;padding:4px 6px 9px}
+.cbar i{width:8px;height:8px;border-radius:50%;background:#2C3D36;font-style:normal}
+.cbar span{margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#6B7B73;letter-spacing:.08em}
+.cwin{background:var(--paper-2);border-radius:5px;overflow:hidden;color:var(--ink);display:flex;min-height:432px}
+.cnav{flex:0 0 132px;background:#EFEBDE;border-right:1px solid rgba(18,32,27,.1);padding:14px 0}
+.cnav .cmk{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:13px;padding:0 14px 14px;letter-spacing:-.02em}
+.cnav .cmk span{color:#1C7A55}
+.cnav a{display:block;padding:8px 14px;font-size:12.5px;color:#4A5A53;text-decoration:none;border-left:2px solid transparent}
+.cnav a.on{background:#fff;border-left-color:#1C7A55;color:var(--ink);font-weight:400}
+.cnav .cwho{margin-top:14px;padding:11px 14px 0;border-top:1px solid rgba(18,32,27,.1);font-size:11.5px;color:#4A5A53}
+.cnav .cwho em{display:block;font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#7A8A82;margin-top:3px}
+.cmain{flex:1;padding:17px 19px;min-width:0}
+.cmain .ch{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-bottom:3px}
+.cmain .csub{font-size:12.5px;color:#6B7B73;margin-bottom:14px}
+
+/* queue table */
+.qrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(18,32,27,.09);font-size:13px}
+.qrow .qn{flex:0 0 22px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A9A92}
+.qrow b{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:13px}
+.qrow small{display:block;font-size:11px;color:#7A8A82}
+.qrow .qs{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:2px;background:#EDE8D8;color:#6B5B23;white-space:nowrap}
+.qrow .qs.in{background:#E4EEE8;color:#1C7A55}
+.qrow .qs.now{background:#1C7A55;color:#fff}
+.qrow.dim{opacity:.42}
+.qrow .qb{margin-left:auto;background:none;border:1px solid rgba(18,32,27,.24);border-radius:2px;padding:4px 9px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.qrow .qb:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* permission matrix */
+.pmx{display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap}
+.pmx button{border:1px solid rgba(18,32,27,.22);background:#fff;border-radius:2px;padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:#4A5A53}
+.pmx button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pmx button:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+.pgrid{display:grid;gap:0}
+.prow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(18,32,27,.08);font-size:13px}
+.prow em{margin-left:auto;font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.prow.yes em{color:#1C7A55}
+.prow.no em{color:#B93B26}
+.prow.no span{color:#8A9A92;text-decoration:line-through;text-decoration-color:rgba(185,59,38,.4)}
+
+/* patient chart */
+.chart{background:#fff;border:1px solid rgba(18,32,27,.14);border-radius:var(--r);padding:13px;margin-bottom:11px}
+.chart .cn{display:flex;align-items:center;gap:10px;padding-bottom:11px;border-bottom:1px solid rgba(18,32,27,.1);margin-bottom:11px}
+.chart .cn b{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px}
+.chart .cn small{display:block;font-size:11px;color:#7A8A82}
+.flagrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
+.flag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:2px;background:#FDEEEA;color:#8E2C1B;border:1px solid rgba(185,59,38,.3)}
+.flag.n{background:#F1EEE2;color:#6B5B23;border-color:rgba(107,91,35,.25)}
+.tl{display:grid;gap:0}
+.tli{display:flex;gap:11px;padding:8px 0;border-bottom:1px solid rgba(18,32,27,.07);font-size:12.5px}
+.tli .td{flex:0 0 52px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8A9A92}
+.tli small{display:block;color:#7A8A82;font-size:11.5px}
+.blur{filter:blur(4.5px);user-select:none;pointer-events:none}
+.locked{position:relative;border:1px dashed rgba(185,59,38,.4);border-radius:var(--r);padding:13px;background:#FDF7F5}
+.locked .lockmsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:14px}
+.locked .lockmsg span{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8E2C1B;line-height:1.7;background:rgba(253,247,245,.92);padding:8px 11px;border-radius:2px}
+
+/* rx pad */
+.rx{background:#fff;border:1px solid rgba(18,32,27,.18);border-radius:var(--r);padding:14px;background-image:repeating-linear-gradient(0deg,transparent 0 21px,rgba(18,32,27,.05) 21px 22px)}
+.rx .rxh{display:flex;align-items:baseline;gap:8px;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:11px}
+.rx .rxh b{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.02em}
+.rx .rxh span{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7A8A82;letter-spacing:.08em}
+.rx .rxsym{font-family:'Newsreader',serif;font-size:22px;font-style:italic;color:var(--stamp);line-height:1}
+.rxline{display:flex;gap:9px;font-size:13px;padding:5px 0}
+.rxline span{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5B6B63}
+.rxfoot{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(18,32,27,.2);display:flex;align-items:flex-end;gap:12px;min-height:52px}
+.rxfoot .sig{flex:1;font-family:'Newsreader',serif;font-style:italic;font-size:15px;color:#2C3D36;border-bottom:1px solid rgba(18,32,27,.3);padding-bottom:3px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}
+.stat{background:#fff;border:1px solid rgba(18,32,27,.13);border-radius:var(--r);padding:11px}
+.stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-.03em}
+.stat em{display:block;font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#7A8A82;margin-top:3px;line-height:1.4}
+.bars{display:flex;align-items:flex-end;gap:5px;height:62px;padding-top:6px}
+.bars i{flex:1;background:#1C7A55;border-radius:1px 1px 0 0;font-style:normal;opacity:.8}
+.bars i:nth-child(6),.bars i:nth-child(7){background:#C0BBAE}
+
+/* share sheet */
+.sheet{background:#fff;border-radius:11px 11px 0 0;padding:16px 17px 20px;box-shadow:0 -10px 30px -12px rgba(0,0,0,.35);border-top:1px solid rgba(18,32,27,.12)}
+.sheet .sh{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16px;margin-bottom:3px}
+.linkbox{background:#F1EEE2;border:1px dashed rgba(18,32,27,.28);border-radius:var(--r);padding:11px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;word-break:break-all;color:#3A4A43;margin-top:12px;line-height:1.6}
+.audit{display:flex;gap:9px;font-size:12px;padding:7px 0;border-bottom:1px solid rgba(18,32,27,.08);color:#3A4A43}
+.audit .ad{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#8A9A92;white-space:nowrap}
+
+/* step nav */
+.stepnav{display:flex;gap:10px;margin-top:28px;padding-top:22px;border-top:1px solid var(--line);align-items:center;flex-wrap:wrap}
+.snb{
+  background:transparent;border:1px solid var(--line);color:var(--paper);border-radius:2px;
+  padding:10px 18px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;cursor:pointer;transition:all .18s;
+}
+.snb:hover:not(:disabled){background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.snb:disabled{opacity:.3;cursor:not-allowed}
+.snb.pri{background:var(--mint);color:var(--ink);border-color:var(--mint)}
+.snb.pri:hover{background:var(--paper);border-color:var(--paper)}
+.snb:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.stepnav .count{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--cream-dim)}
+
+/* footer */
+.foot{border-top:1px solid var(--line);padding:44px 0 60px}
+.foot h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(22px,3.4vw,30px);letter-spacing:-.03em;margin-bottom:14px}
+.foot p{color:var(--cream-dim);font-weight:300;max-width:62ch;margin-bottom:13px}
+.foot .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:22px;margin-top:30px}
+.foot .fc h5{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mint);margin-bottom:9px}
+.foot .fc p{font-size:15px;margin:0}
+
+@media (max-width:900px){
+  .step,.step.on{grid-template-columns:1fr;gap:30px}
+  .col-slip{order:2}
+  .col-device{order:1}
+  .seal-mast{width:88px;height:88px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="mast-top">
+      <div>
+        <div class="kicker">Product walkthrough · v1 · Pakistan</div>
+        <h1 class="wordmark">Care<span>Connect</span></h1>
+        <p class="lede">Find any doctor in Pakistan, book them without a phone call, and keep <b>one medical record that follows you for life.</b> Four roles, twenty-two screens — every journey, end to end.</p>
+      </div>
+      <div class="seal-mast mono">
+        VERIFIED<em>PMDC</em>REGISTER
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="tracks">
+  <div class="wrap tracks-in">
+    <button class="tab on" data-track="patient"><i>Track 01 · 7 steps</i><b>Patient</b></button>
+    <button class="tab" data-track="doctor"><i>Track 02 · 6 steps</i><b>Doctor</b></button>
+    <button class="tab" data-track="desk"><i>Track 03 · 5 steps</i><b>Front desk</b></button>
+    <button class="tab" data-track="staff"><i>Track 04 · 4 steps</i><b>Assistant &amp; junior</b></button>
+  </div>
+</nav>
+
+<main class="stage">
+  <div class="wrap">
+
+    <div class="track-head">
+      <h2 id="thTitle">The patient</h2>
+      <p id="thSub">Ayesha, 34, in Lahore. Her mother needs a cardiologist and the family has no idea who to trust.</p>
+    </div>
+
+    <div class="rail" id="rail"></div>
+
+    <!-- ============ PATIENT ============ -->
+    <section class="step on" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:41</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Sign up</span></div>
+          <div class="body">
+            <div class="h1">Enter your mobile number</div>
+            <p class="sub">We'll text you a code. No password to remember.</p>
+            <div class="lbl">Mobile number</div>
+            <div class="field mono">+92 &nbsp;300 4412 907</div>
+            <div class="lbl">Code sent by SMS</div>
+            <div class="otp"><i class="f">4</i><i class="f">7</i><i class="f">1</i><i>_</i><i></i><i></i></div>
+            <div class="lbl">Who else will you book for?</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Myself</button>
+              <button class="chip on" data-chip>Ammi (62)</button>
+              <button class="chip" data-chip>Abbu (67)</button>
+              <button class="chip" data-chip>Add child</button>
+            </div>
+            <button class="btn">Create my account</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 01</div>
+        <h3>One login, the whole family</h3>
+        <p>Signup is a phone number and an SMS code — nothing else. No email, no password, no forms. In a market where one literate family member usually manages everyone's healthcare, the account has to hold more than one person from the very first screen.</p>
+        <div class="rule"></div>
+        <h4>What this step establishes</h4>
+        <ul>
+          <li>Each family member gets a separate, permanent medical file</li>
+          <li>Ayesha books for her mother without pretending to be her</li>
+          <li>The phone number becomes the identity across SMS, WhatsApp and app</li>
+        </ul>
+        <div class="note"><b>Why it matters:</b> if signup demanded an email address and a password, a large share of the people who most need this product would stop here.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:44</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Ayesha</span></div>
+          <div class="body">
+            <div class="h1">Find a doctor</div>
+            <p class="sub">Booking for <b>Ammi</b> · Lahore</p>
+            <div class="field mut">Search name, specialty or hospital</div>
+            <div class="lbl">Area</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Gulberg</button>
+              <button class="chip" data-chip>Johar Town</button>
+              <button class="chip" data-chip>DHA</button>
+              <button class="chip" data-chip>Model Town</button>
+            </div>
+            <div class="lbl">Specialty</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Cardiologist</button>
+              <button class="chip" data-chip>Physician</button>
+              <button class="chip" data-chip>Dentist</button>
+            </div>
+            <div class="lbl">Narrow it down</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Under Rs 3,000</button>
+              <button class="chip on" data-chip>Female doctor</button>
+              <button class="chip" data-chip>Free this week</button>
+              <button class="chip" data-chip>Speaks Punjabi</button>
+            </div>
+            <button class="btn">Show 14 doctors</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 02</div>
+        <h3>Search the way people actually ask</h3>
+        <p>Nobody searches for "cardiology, Lahore." They ask for a good heart doctor in Gulberg, female, under three thousand rupees, who can see Ammi this week. The filters mirror that sentence.</p>
+        <div class="rule"></div>
+        <h4>Filters that carry real weight here</h4>
+        <ul>
+          <li><b>Area, not just city</b> — crossing Lahore for a follow-up is a half-day</li>
+          <li><b>Fee ceiling</b> — most consultations are paid out of pocket</li>
+          <li><b>Doctor's gender</b> — decisive for many patients, not a nice-to-have</li>
+          <li><b>Language</b> — a Punjabi-speaking doctor changes what an elderly patient can explain</li>
+        </ul>
+        <div class="note"><b>Try it:</b> tap the chips. The result count is what a founder should watch — if a filter combination returns two doctors, the directory isn't deep enough in that city yet.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:46</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">14 results</span></div>
+          <div class="body">
+            <div class="dcard">
+              <div class="av">AS</div>
+              <div>
+                <b>Dr. Ayesha Siddiqui</b>
+                <small>FCPS Cardiology · 14 yrs</small>
+                <small>Hameed Latif, Gulberg III</small>
+                <span class="vtick mono">Registration verified</span>
+              </div>
+              <div class="fee mono">2,500<em>Fee</em></div>
+            </div>
+            <div class="dcard">
+              <div class="av">RN</div>
+              <div>
+                <b>Dr. Rabia Nawaz</b>
+                <small>MBBS, MRCP · 9 yrs</small>
+                <small>Doctors Hospital, Johar Town</small>
+                <span class="vtick mono">Registration verified</span>
+              </div>
+              <div class="fee mono">3,000<em>Fee</em></div>
+            </div>
+            <div class="dcard" style="border-style:dashed;border-color:rgba(185,59,38,.4)">
+              <div class="av" style="background:#FDEEEA;color:#8E2C1B">?</div>
+              <div>
+                <b>S. Mahmood Clinic</b>
+                <small>"Heart specialist" · listing claimed</small>
+                <small style="color:#8E2C1B">Registration not verified</small>
+              </div>
+              <div class="fee mono">1,200<em>Fee</em></div>
+            </div>
+            <div class="lbl">Profile · Dr. Ayesha Siddiqui</div>
+            <div style="display:flex;align-items:center;gap:12px;padding:11px;background:#fff;border:1px solid rgba(18,32,27,.14);border-radius:3px">
+              <span class="stamp brass hidden" id="pStamp">◉ Verified</span>
+              <button class="btn sm gh" style="margin:0;width:auto;padding:8px 12px" data-stamp="pStamp">Check her registration</button>
+            </div>
+            <button class="btn">See available times</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 03</div>
+        <h3>The verified seal is the whole product</h3>
+        <p>An unverified directory is worse than no directory, because it lends credibility to people who haven't earned it. So verification isn't a badge bolted on later — it's the thing patients are actually buying, and unverified listings must look visibly, uncomfortably different.</p>
+        <div class="rule"></div>
+        <h4>What the seal claims</h4>
+        <ul>
+          <li>The registration number was checked against the national register</li>
+          <li>The qualification shown matches that registration</li>
+          <li>It is re-checked on a schedule, not once at signup</li>
+        </ul>
+        <div class="note"><b>Tap "Check her registration"</b> to see the stamp land. Note the third listing: cheapest fee, vague specialty, no verification. That contrast is the directory's moral argument.</div>
+        <span class="slip-stamp stamp brass">Trust anchor</span>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>9:48</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Booking</span></div>
+          <div class="body">
+            <div class="h1">Dr. Ayesha Siddiqui</div>
+            <p class="sub">Hameed Latif, Gulberg III · Rs 2,500</p>
+            <div class="lbl">Patient</div>
+            <div class="field">Ammi · Farhat Bibi, 62</div>
+            <div class="lbl">Thursday 21 August</div>
+            <div class="slots">
+              <button class="slot" disabled>11:00</button>
+              <button class="slot" disabled>11:20</button>
+              <button class="slot" data-slot="p">11:40</button>
+              <button class="slot" data-slot="p">12:00</button>
+              <button class="slot" disabled>12:20</button>
+              <button class="slot" data-slot="p">4:30</button>
+            </div>
+            <div class="lbl">Visit type</div>
+            <div class="chips">
+              <button class="chip on" data-chip>At the clinic</button>
+              <button class="chip" data-chip>Video call</button>
+            </div>
+            <div style="margin-top:15px;text-align:center;min-height:34px">
+              <span class="stamp hidden" id="bStamp">Confirmed · #LHR-4471</span>
+            </div>
+            <button class="btn" id="bBtn" disabled data-stamp="bStamp">Pick a time to continue</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 04</div>
+        <h3>Booked at 9:48pm, without calling anyone</h3>
+        <p>This is the moment the product replaces: a clinic landline that rings out, a receptionist who says call back tomorrow, and a family member who has to ask a favour. Grey slots are already taken — real availability, not a request form.</p>
+        <div class="rule"></div>
+        <h4>Built into the booking</h4>
+        <ul>
+          <li>The appointment is attached to <b>Ammi's</b> file, not Ayesha's</li>
+          <li>Fully booked doctors offer a waitlist instead of a dead end</li>
+          <li>Reschedule and cancel windows are set by the clinic, shown up front</li>
+        </ul>
+        <div class="note"><b>Try it:</b> pick a free slot, then confirm. The same stamp that verified the doctor now marks the appointment — one visual language for "this is real."</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen" style="background:#0E2620">
+          <div class="sbar" style="color:#7A8A82"><span>Wed 20 Aug · 11:40</span><span>▮▮▮</span></div>
+          <div class="body" style="padding-top:22px">
+            <div class="notif">
+              <b>CareConnect <em>WhatsApp</em></b>
+              <p>Reminder: Farhat Bibi has an appointment with Dr. Ayesha Siddiqui <b>tomorrow at 11:40am</b>, Hameed Latif Gulberg. Reply 1 to confirm, 2 to reschedule.</p>
+            </div>
+            <div class="notif" style="border-left-color:#2B4C9B">
+              <b>CareConnect <em style="color:#2B4C9B">SMS</em></b>
+              <p>Bring Ammi's previous ECG if you have it. You can also upload it in the app before the visit.</p>
+            </div>
+            <div class="notif" style="border-left-color:#B93B26">
+              <b>CareConnect <em style="color:#B93B26">Push</em></b>
+              <p>Dr. Siddiqui is running 25 minutes late today. Your slot is now approximately 12:05pm.</p>
+            </div>
+            <div class="lbl" style="color:#7A8A82;margin-top:20px">Reminder schedule</div>
+            <div style="background:#153429;border-radius:3px;padding:13px;font-size:13px;color:#C3D4CB;line-height:1.9">
+              <div>24 hours before · WhatsApp</div>
+              <div>2 hours before · SMS</div>
+              <div>On the day · push if late or moved</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 05</div>
+        <h3>Reach the patient where they already are</h3>
+        <p>Push notifications assume the app is installed and notifications are allowed. For a large share of patients here — particularly older ones — neither is true. WhatsApp and SMS aren't fallbacks in this product; they're the primary channel, and push is the bonus.</p>
+        <div class="rule"></div>
+        <h4>What each channel is for</h4>
+        <ul>
+          <li><b>WhatsApp</b> — the 24-hour reminder, with reply-to-confirm</li>
+          <li><b>SMS</b> — guaranteed delivery for the day-of details</li>
+          <li><b>Push</b> — live changes: doctor running late, slot moved</li>
+        </ul>
+        <div class="note"><b>The commercial argument:</b> reminders are the cheapest no-show reduction available, and no-shows are the number every clinic owner feels. This screen is how you sell the platform to doctors.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>11:52</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Today</span></div>
+          <div class="body">
+            <div class="h1">You're 3rd in line</div>
+            <p class="sub">Dr. Siddiqui is with a patient now · about 22 min</p>
+            <div style="background:#fff;border:1px solid rgba(18,32,27,.14);border-radius:3px;padding:12px;margin-bottom:14px">
+              <div class="qrow" style="padding-top:0"><span class="qn mono">1</span><div><b>In the room</b><small>Started 11:48</small></div><span class="qs now mono">Now</span></div>
+              <div class="qrow"><span class="qn mono">2</span><div><b>Waiting</b><small>Checked in 11:31</small></div><span class="qs in mono">Next</span></div>
+              <div class="qrow" style="border-bottom:0"><span class="qn mono">3</span><div><b>Farhat Bibi</b><small>Checked in 11:44</small></div><span class="qs mono">You</span></div>
+            </div>
+            <div class="lbl">After the visit</div>
+            <div class="rx">
+              <div class="rxh"><span class="rxsym">Rx</span><b>Dr. Ayesha Siddiqui</b><span class="mono">21.08.26</span></div>
+              <div class="rxline">Tab. Concor 2.5mg <span>1×0×0 · 30d</span></div>
+              <div class="rxline">Tab. Ecosprin 75mg <span>0×0×1 · 30d</span></div>
+              <div class="rxline">Echo + Lipid profile <span>before follow-up</span></div>
+              <div class="rxfoot">
+                <span class="sig">A. Siddiqui</span>
+                <span class="stamp hidden" id="rxStamp">Saved to vault</span>
+              </div>
+            </div>
+            <button class="btn sm" data-stamp="rxStamp">Doctor issues the prescription</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 06</div>
+        <h3>The visit, and the slip that survives it</h3>
+        <p>Two things happen on the day. Before the consultation, the patient can see their queue position instead of guessing — no more three hours in a crowded waiting room. After it, the prescription goes straight into their file.</p>
+        <div class="rule"></div>
+        <h4>Where the paper used to go</h4>
+        <ul>
+          <li>Into a plastic bag, then lost before the follow-up</li>
+          <li>Handwritten, then misread at the pharmacy</li>
+          <li>Never seen again by any other doctor</li>
+        </ul>
+        <p>A digital prescription fixes all three at once — and quietly builds the record that makes the next section possible.</p>
+        <div class="note"><b>Tap the button</b> to watch the prescription get stamped into the vault. That single action is the platform's real flywheel: every consultation makes the patient's file more valuable, which makes leaving harder.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="patient">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>10:12</span><span>PTCL 4G ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Farhat Bibi</span></div>
+          <div class="body" style="padding-bottom:0">
+            <div class="flagrow">
+              <span class="flag">Penicillin allergy</span>
+              <span class="flag">Hypertension</span>
+              <span class="flag n">B+</span>
+            </div>
+            <div class="vslip" data-vslip>
+              <div class="vhead"><b>Dr. Ayesha Siddiqui</b><span class="vd mono">21 Aug</span></div>
+              <small>Cardiology · prescription + 2 tests</small>
+              <div class="vmore">Concor 2.5mg, Ecosprin 75mg · Echo and lipid profile ordered · follow-up 18 Sep. <span class="vtag dr mono">Added by doctor</span></div>
+            </div>
+            <div class="vslip" data-vslip>
+              <div class="vhead"><b>Chughtai Lab</b><span class="vd mono">24 Aug</span></div>
+              <small>Lipid profile · photographed by you</small>
+              <div class="vmore">LDL 168 mg/dL, HDL 39, Triglycerides 210. <span class="vtag mono">Uploaded by patient</span></div>
+            </div>
+            <div class="vslip" data-vslip>
+              <div class="vhead"><b>Dr. Kamran Aziz</b><span class="vd mono">4 Mar</span></div>
+              <small>Physician · old paper parchi</small>
+              <div class="vmore">Photographed from the family file. Blood pressure 150/95, started on amlodipine. <span class="vtag mono">Uploaded by patient</span></div>
+            </div>
+            <div class="sheet">
+              <div class="sh">Share for a second opinion</div>
+              <p class="sub" style="margin-bottom:11px">Dr. Faisal Qureshi, Karachi</p>
+              <div class="trow"><span>Cardiology history only<small>Hides everything unrelated</small></span><button class="tg on" data-tg></button></div>
+              <div class="trow"><span>Lab reports<small>Echo, lipid profile</small></span><button class="tg on" data-tg></button></div>
+              <div class="trow"><span>Everything else<small>Dental, gynae, old records</small></span><button class="tg" data-tg></button></div>
+              <div class="lbl">Access expires</div>
+              <div class="chips">
+                <button class="chip" data-chip>24 hours</button>
+                <button class="chip on" data-chip>7 days</button>
+                <button class="chip" data-chip>Until I revoke</button>
+              </div>
+              <div class="linkbox" id="shareLink" style="display:none">careconnect.pk/s/7f2a-91bc<br>Expires 28 Aug · read only · revocable</div>
+              <button class="btn" data-share>Create the share link</button>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Patient · Step 07</div>
+        <h3>The record is hers, and she decides who reads it</h3>
+        <p>This is the feature that makes CareConnect more than a booking app. A patient walking into a second opinion with a complete, structured history is a fundamentally different patient — she isn't repeating tests, guessing at drug names, or being told to start again.</p>
+        <div class="rule"></div>
+        <h4>Three controls, all in her hands</h4>
+        <ul>
+          <li><b>Scope</b> — one condition, or everything</li>
+          <li><b>Duration</b> — a fixed window, or until she revokes it</li>
+          <li><b>Audit</b> — who opened the file, and when</li>
+        </ul>
+        <p>Note the mix of sources: doctor-written records sit alongside a photographed paper <i>parchi</i> from March. Patient upload is what makes the vault useful before a single clinic has signed up.</p>
+        <div class="note"><b>Try it:</b> toggle the scope, pick an expiry, create the link. Nothing here is shared by default, and nothing is permanent. <b>No clinic can lock a patient's history inside its own system.</b></div>
+        <span class="slip-stamp stamp">Patient owned</span>
+      </div></div>
+    </section>
+
+    <!-- ============ DOCTOR ============ -->
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/onboarding</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#" class="on">Get verified</a>
+            <a href="#">Clinics</a>
+            <a href="#">Schedule</a>
+            <a href="#">Staff</a>
+            <a href="#">Patients</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Verify your registration</div>
+            <div class="csub">Your profile stays hidden from patients until this clears.</div>
+            <div class="lbl">Registration number</div>
+            <div class="field mono">PMDC 41-9982-C</div>
+            <div class="lbl">Qualification on record</div>
+            <div class="field">FCPS Cardiology · 2012</div>
+            <div class="lbl">Uploads</div>
+            <div class="field mut">CNIC · degree · registration certificate</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:16px;min-height:44px">
+              <span class="stamp brass hidden" id="dStamp">◉ Verified · re-check Aug 2027</span>
+            </div>
+            <button class="btn" style="max-width:220px" data-stamp="dStamp">Submit for verification</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 01</div>
+        <h3>Nobody lists until they're checked</h3>
+        <p>The doctor's first experience of the platform is a gate, deliberately. A profile that isn't verified isn't visible — which means the directory's quality doesn't depend on anyone's good behaviour after the fact.</p>
+        <div class="rule"></div>
+        <h4>Decisions to settle before build</h4>
+        <ul>
+          <li>Who checks the register, how often it's re-checked</li>
+          <li>Who is liable if a badged practitioner turns out unregistered</li>
+          <li>What happens to a doctor's patient data if verification lapses</li>
+        </ul>
+        <div class="note"><b>Flag:</b> the re-check date on the stamp isn't decoration. A one-time check at signup means a suspended licence stays badged for years.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/schedule</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Get verified</a>
+            <a href="#">Clinics</a>
+            <a href="#" class="on">Schedule</a>
+            <a href="#">Staff</a>
+            <a href="#">Patients</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Where you practise</div>
+            <div class="csub">Different place, different hours, different fee.</div>
+            <div class="pmx">
+              <button class="on" data-pmx="c1">Hameed Latif</button>
+              <button data-pmx="c2">Own clinic, DHA</button>
+              <button data-pmx="c3">+ Add location</button>
+            </div>
+            <div class="chart" style="margin-bottom:11px">
+              <div class="cn"><div class="av">HL</div><div><b>Hameed Latif, Gulberg III</b><small>Mon–Thu · 11:00–2:00, 4:00–6:00</small></div></div>
+              <div class="trow"><span>Consultation fee<small>Shown on your public profile</small></span><b class="mono">Rs 2,500</b></div>
+              <div class="trow"><span>Slot length<small>How long you actually spend</small></span><b class="mono">20 min</b></div>
+              <div class="trow"><span>Daily cap<small>Bookings stop at this number</small></span><b class="mono">24 patients</b></div>
+              <div class="trow"><span>Accept video consultations<small>Rs 1,800 · 15 min</small></span><button class="tg" data-tg></button></div>
+              <div class="trow"><span>Let patients join a waitlist<small>Notified when a slot frees up</small></span><button class="tg on" data-tg></button></div>
+            </div>
+            <div class="lbl">Blocked out</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Fri — OT day</button>
+              <button class="chip on" data-chip>2–9 Sep — leave</button>
+              <button class="chip" data-chip>+ Block dates</button>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 02</div>
+        <h3>One doctor, several clinics, different rules</h3>
+        <p>Most established consultants here practise in more than one place — a hospital OPD in the morning, their own clinic in the evening, sometimes a third across town. Fees differ. Hours differ. Staff differ.</p>
+        <div class="rule"></div>
+        <h4>Consequences of getting this wrong</h4>
+        <ul>
+          <li>One shared calendar means double bookings across town</li>
+          <li>One shared fee means the wrong amount collected at the desk</li>
+          <li>One shared staff list means a hospital receptionist sees private-clinic patients</li>
+        </ul>
+        <div class="note"><b>Design rule:</b> the clinic — not the doctor — is the unit that owns a schedule, a fee, and a staff list. Permissions are scoped per location.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/staff</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Get verified</a>
+            <a href="#">Clinics</a>
+            <a href="#">Schedule</a>
+            <a href="#" class="on">Staff</a>
+            <a href="#">Patients</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Who works with you</div>
+            <div class="csub">Pick a role to see exactly what it can reach.</div>
+            <div class="pmx">
+              <button class="on" data-role="recep">Receptionist</button>
+              <button data-role="asst">Assistant</button>
+              <button data-role="jr">Junior doctor</button>
+            </div>
+            <div class="pgrid" id="permGrid"></div>
+            <div class="lbl">Invited to Hameed Latif</div>
+            <div class="qrow"><span class="qn mono">1</span><div><b>Saima Iqbal</b><small>saima@ · joined 4 Aug</small></div><span class="qs in mono">Receptionist</span></div>
+            <div class="qrow"><span class="qn mono">2</span><div><b>Nasreen Bibi</b><small>nasreen@ · joined 4 Aug</small></div><span class="qs in mono">Assistant</span></div>
+            <div class="qrow" style="border-bottom:0"><span class="qn mono">3</span><div><b>Dr. Hamza Tariq</b><small>hamza@ · joined 11 Aug</small></div><span class="qs in mono">Junior doctor</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 03</div>
+        <h3>Least privilege, decided by the doctor</h3>
+        <p>The doctor's account is the parent account — it owns the practice's patient data. Everyone else gets a role, and every role sees the minimum it needs to do its job.</p>
+        <div class="rule"></div>
+        <h4>The line that matters most</h4>
+        <ul>
+          <li>The receptionist needs the calendar, the name and the phone number</li>
+          <li>The receptionist does <b>not</b> need the diagnosis</li>
+        </ul>
+        <p>That single boundary is both an ethical requirement and one of the strongest things you can show a doctor in a sales demo. It's also close to impossible to retrofit — so it goes in at v1.</p>
+        <div class="note"><b>Try it:</b> switch between the three roles and watch the permission list change. Every view, edit and export is attributed to a named staff account in an audit log — and access dies the day someone leaves.</div>
+        <span class="slip-stamp stamp red">Non-negotiable</span>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/today</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#" class="on">Today</a>
+            <a href="#">Patients</a>
+            <a href="#">Schedule</a>
+            <a href="#">Staff</a>
+            <a href="#">Billing</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Thursday 21 August</div>
+            <div class="csub">18 booked · 14 checked in · 2 walk-ins added by Saima</div>
+            <div class="stats">
+              <div class="stat"><b>22</b><em>Min avg wait</em></div>
+              <div class="stat"><b>4</b><em>Follow-ups due</em></div>
+              <div class="stat"><b>7%</b><em>No-show rate</em></div>
+            </div>
+            <div class="qrow"><span class="qn mono">1</span><div><b>Farhat Bibi</b><small>62 · new patient · 11:40</small></div><span class="qs now mono">In room</span></div>
+            <div class="qrow"><span class="qn mono">2</span><div><b>Imran Sheikh</b><small>48 · follow-up · 12:00</small></div><span class="qs in mono">Waiting</span></div>
+            <div class="qrow"><span class="qn mono">3</span><div><b>Zubaida Khan</b><small>71 · follow-up · 12:20</small></div><span class="qs in mono">Waiting</span></div>
+            <div class="qrow"><span class="qn mono">4</span><div><b>Ali Raza</b><small>34 · walk-in · added 11:52</small></div><span class="qs mono">Booked</span></div>
+            <div class="qrow dim" style="border-bottom:0"><span class="qn mono">5</span><div><b>Sana Mirza</b><small>29 · did not arrive · 11:00</small></div><span class="qs mono">No-show</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 04</div>
+        <h3>The day, on one screen</h3>
+        <p>This is the doctor's home screen, and it should answer one question in under two seconds: who's next. Everything else — history, records, billing — is one click from here.</p>
+        <div class="rule"></div>
+        <h4>Numbers a doctor actually cares about</h4>
+        <ul>
+          <li><b>Average wait</b> — the thing patients complain about publicly</li>
+          <li><b>Follow-ups due</b> — revenue already earned but not yet collected</li>
+          <li><b>No-show rate</b> — the number reminders are sold against</li>
+        </ul>
+        <div class="note"><b>Note the attribution:</b> "2 walk-ins added by Saima." Every action carries the name of the staff member who took it, which is what makes delegation safe.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/patient/farhat-bibi</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Today</a>
+            <a href="#" class="on">Patients</a>
+            <a href="#">Schedule</a>
+            <a href="#">Staff</a>
+            <a href="#">Billing</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="chart" style="margin-bottom:11px">
+              <div class="cn"><div class="av">FB</div><div><b>Farhat Bibi</b><small>62 · F · B+ · first visit here</small></div></div>
+              <div class="flagrow">
+                <span class="flag">Penicillin allergy</span>
+                <span class="flag">Hypertension since 2019</span>
+                <span class="flag n">BP 152/94 · by Nasreen</span>
+              </div>
+              <div class="lbl">History shared by the patient</div>
+              <div class="tl">
+                <div class="tli"><span class="td mono">4 Mar</span><div>Dr. Kamran Aziz · physician<small>Started amlodipine 5mg · BP 150/95</small></div></div>
+                <div class="tli"><span class="td mono">2 Jan</span><div>Chughtai Lab<small>HbA1c 5.9 · creatinine normal</small></div></div>
+                <div class="tli" style="border-bottom:0"><span class="td mono">2019</span><div>Diagnosed hypertension<small>Patient reported</small></div></div>
+              </div>
+            </div>
+            <div class="rx">
+              <div class="rxh"><span class="rxsym">Rx</span><b>Write prescription</b><span class="mono">21.08.26</span></div>
+              <div class="rxline">Tab. Concor 2.5mg <span>1×0×0 · 30d</span></div>
+              <div class="rxline">Tab. Ecosprin 75mg <span>0×0×1 · 30d</span></div>
+              <div class="rxline" style="color:#8E2C1B">⚠ Tab. Augmentin <span>blocked · penicillin</span></div>
+              <div class="rxfoot"><span class="sig">A. Siddiqui</span><span class="stamp hidden" id="dRxStamp">Issued</span></div>
+            </div>
+            <button class="btn sm" style="max-width:240px" data-stamp="dRxStamp">Issue and send to patient</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 05</div>
+        <h3>She has never met this patient before</h3>
+        <p>And yet she opens the consultation knowing the allergy, the four-year hypertension history, the drug already tried, the recent labs, and today's blood pressure — taken minutes ago by her assistant.</p>
+        <div class="rule"></div>
+        <h4>What the screen prevents</h4>
+        <ul>
+          <li>Prescribing a penicillin to a penicillin-allergic patient</li>
+          <li>Re-ordering a lipid profile done last week</li>
+          <li>Re-starting a drug that already failed</li>
+        </ul>
+        <p>The allergy flag isn't advisory — the interface refuses the contraindicated drug and says why.</p>
+        <div class="note"><b>The clinical case for the product:</b> everything above the prescription pad came from other doctors, other labs, and the patient's own phone. No single clinic could have assembled it.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="doctor">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/practice</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Today</a>
+            <a href="#">Patients</a>
+            <a href="#">Schedule</a>
+            <a href="#">Staff</a>
+            <a href="#" class="on">Practice</a>
+            <div class="cwho">Dr. Ayesha Siddiqui<em>Account owner</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Book the follow-up now</div>
+            <div class="csub">Before Farhat Bibi leaves the room.</div>
+            <div class="lbl">Review in 4 weeks · Thursday 18 September</div>
+            <div class="slots">
+              <button class="slot on" data-slot="d">11:40</button>
+              <button class="slot" data-slot="d">12:00</button>
+              <button class="slot" data-slot="d">4:30</button>
+            </div>
+            <div class="trow" style="margin-top:12px"><span>Remind her to bring the echo report<small>Sent with the reminder on 17 Sep</small></span><button class="tg on" data-tg></button></div>
+            <div class="lbl">This month</div>
+            <div class="stats">
+              <div class="stat"><b>318</b><em>Consultations</em></div>
+              <div class="stat"><b>61%</b><em>Return within 90d</em></div>
+              <div class="stat"><b>7%</b><em>No-show · was 19%</em></div>
+            </div>
+            <div class="bars" title="Consultations by week">
+              <i style="height:52%"></i><i style="height:71%"></i><i style="height:64%"></i><i style="height:88%"></i><i style="height:79%"></i><i style="height:31%"></i><i style="height:22%"></i>
+            </div>
+            <div class="csub" style="margin-top:8px">Weeks 1–5 booked · weeks 6–7 still open</div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Doctor · Step 06</div>
+        <h3>Retention, booked in the room</h3>
+        <p>A follow-up scheduled while the patient is still sitting there converts far better than one suggested verbally and left to chance. This is the single highest-value habit the software can create.</p>
+        <div class="rule"></div>
+        <h4>The pitch to the doctor, in three numbers</h4>
+        <ul>
+          <li>No-shows down from 19% to 7% — reminders alone</li>
+          <li>61% of patients return within 90 days — follow-ups booked in-room</li>
+          <li>Two open weeks visible ahead — so she can act before they empty</li>
+        </ul>
+        <div class="note"><b>Open question:</b> the revenue model changes what this screen optimises for. Per-booking commission pushes volume; a flat clinic subscription pushes retention. Decide before you build the dashboard.</div>
+      </div></div>
+    </section>
+
+    <!-- ============ FRONT DESK ============ -->
+    <section class="step" data-track="desk">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/desk</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#" class="on">Today's board</a>
+            <a href="#">Bookings</a>
+            <a href="#">Receipts</a>
+            <div class="cwho">Saima Iqbal<em>Receptionist · Hameed Latif</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">You're on the front desk</div>
+            <div class="csub">Invited by Dr. Ayesha Siddiqui · Gulberg III only</div>
+            <div class="lbl">You can</div>
+            <div class="pgrid">
+              <div class="prow yes"><span>Book, move and cancel appointments</span><em>Yes</em></div>
+              <div class="prow yes"><span>Check patients in, set the queue order</span><em>Yes</em></div>
+              <div class="prow yes"><span>See names, numbers and visit dates</span><em>Yes</em></div>
+              <div class="prow yes"><span>Take payment and print receipts</span><em>Yes</em></div>
+            </div>
+            <div class="lbl">You cannot</div>
+            <div class="locked">
+              <div class="blur">
+                <div class="tli"><span class="td mono">21 Aug</span><div>Diagnosis: hypertensive heart disease<small>Concor 2.5mg, Ecosprin 75mg · echo ordered</small></div></div>
+                <div class="tli" style="border-bottom:0"><span class="td mono">4 Mar</span><div>Lipid profile · LDL 168<small>Amlodipine 5mg started</small></div></div>
+              </div>
+              <div class="lockmsg"><span class="mono">Clinical records are not part of<br>your role · nothing to open here</span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Front desk · Step 01</div>
+        <h3>The most important screen in the product</h3>
+        <p>Not because it does much, but because of what it refuses to do. Saima runs the desk with everything she needs and nothing she doesn't. The clinical column simply isn't there for her.</p>
+        <div class="rule"></div>
+        <h4>Why this is stated out loud, not hidden</h4>
+        <ul>
+          <li>Staff should know the boundary, so they never feel blamed for a leak</li>
+          <li>Doctors need to see the boundary before they'll delegate at all</li>
+          <li>Patients deserve to know who at a clinic can read their file</li>
+        </ul>
+        <div class="note"><b>Design detail:</b> the locked panel is visibly present rather than silently absent. A blank space invites people to ask for access. A stated boundary settles it.</div>
+        <span class="slip-stamp stamp red">Least privilege</span>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="desk">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/desk/today</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#" class="on">Today's board</a>
+            <a href="#">Bookings</a>
+            <a href="#">Receipts</a>
+            <div class="cwho">Saima Iqbal<em>Receptionist · Hameed Latif</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Thursday 21 August</div>
+            <div class="csub">Dr. Siddiqui · 11:00–2:00 · 18 booked</div>
+            <div class="qrow"><span class="qn mono">11:00</span><div><b>Sana Mirza</b><small>0300 442 1187</small></div><span class="qs mono">Not arrived</span></div>
+            <div class="qrow"><span class="qn mono">11:20</span><div><b>Tariq Mehmood</b><small>0321 908 7741</small></div><span class="qs in mono">Checked in</span></div>
+            <div class="qrow"><span class="qn mono">11:40</span><div><b>Farhat Bibi</b><small>0300 441 2907 · booked by daughter</small></div><span class="qs in mono">Checked in</span></div>
+            <div class="qrow"><span class="qn mono">12:00</span><div><b>Imran Sheikh</b><small>0333 771 2288</small></div><span class="qs mono">Not arrived</span></div>
+            <div class="lbl">Someone just walked in</div>
+            <div class="field" style="gap:12px">
+              <span style="flex:1">Ali Raza · 0345 118 2290 · chest pain</span>
+              <button class="btn sm" style="margin:0;width:auto;padding:7px 12px" id="walkBtn">Add to today</button>
+            </div>
+            <div id="walkOut" style="display:none;margin-top:11px">
+              <div class="qrow" style="border-bottom:0"><span class="qn mono">12:40</span><div><b>Ali Raza</b><small>Walk-in · added by Saima 11:52</small></div><span class="qs in mono">Added</span></div>
+              <span class="stamp" style="margin-top:9px">Attributed · Saima Iqbal</span>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Front desk · Step 02</div>
+        <h3>Walk-ins are not an edge case</h3>
+        <p>A booking system designed only for appointments made in advance will be abandoned by lunchtime on day one. Plenty of patients simply arrive — and if the desk can't add them, the desk goes back to a paper register and the schedule stops reflecting reality.</p>
+        <div class="rule"></div>
+        <h4>What has to be true for adoption</h4>
+        <ul>
+          <li>Adding a walk-in takes one field and one click</li>
+          <li>Phone bookings can be entered by the receptionist, not just the patient</li>
+          <li>Every insertion is attributed and visible to the doctor</li>
+        </ul>
+        <div class="note"><b>Try it:</b> add Ali Raza. He slots in after the booked patients and carries Saima's name — the doctor sees who moved the day around.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="desk">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/desk/queue</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#" class="on">Today's board</a>
+            <a href="#">Bookings</a>
+            <a href="#">Receipts</a>
+            <div class="cwho">Saima Iqbal<em>Receptionist · Hameed Latif</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Queue</div>
+            <div class="csub">Running 25 minutes behind · 6 people waiting</div>
+            <div id="queueList">
+              <div class="qrow"><span class="qn mono">1</span><div><b>Tariq Mehmood</b><small>Waiting 21 min</small></div><button class="qb mono" data-callin>Call in</button></div>
+              <div class="qrow"><span class="qn mono">2</span><div><b>Farhat Bibi</b><small>Waiting 8 min</small></div><span class="qs mono">Next</span></div>
+              <div class="qrow"><span class="qn mono">3</span><div><b>Zubaida Khan</b><small>71 · waiting 4 min</small></div><span class="qs mono">Waiting</span></div>
+              <div class="qrow" style="border-bottom:0"><span class="qn mono">4</span><div><b>Ali Raza</b><small>Walk-in</small></div><span class="qs mono">Waiting</span></div>
+            </div>
+            <div class="lbl">Tell everyone waiting</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Running 25 min late</button>
+              <button class="chip" data-chip>Running 45 min late</button>
+              <button class="chip" data-chip>Doctor called to emergency</button>
+            </div>
+            <button class="btn" id="lateBtn">Notify 6 waiting patients</button>
+            <div id="lateOut" style="display:none;margin-top:12px">
+              <span class="stamp">Sent · WhatsApp + SMS · 6 patients</span>
+              <div class="csub" style="margin-top:9px">2 replied to reschedule · Zubaida Khan moved to 4:30</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Front desk · Step 03</div>
+        <h3>Managing the room, not just the list</h3>
+        <p>Every clinic in Pakistan runs late. The difference a platform can make isn't preventing that — it's making sure the person who finds out isn't the patient standing at the desk after two hours.</p>
+        <div class="rule"></div>
+        <h4>What one broadcast changes</h4>
+        <ul>
+          <li>Patients waiting at home stop leaving early</li>
+          <li>Some voluntarily reschedule, which drains the room</li>
+          <li>The receptionist stops absorbing anger she didn't cause</li>
+        </ul>
+        <div class="note"><b>Try it:</b> call Tariq in, then send the delay notice. Two patients reschedule themselves — the queue fixes itself without a single argument at the desk.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="desk">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/desk/receipt</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Today's board</a>
+            <a href="#">Bookings</a>
+            <a href="#" class="on">Receipts</a>
+            <div class="cwho">Saima Iqbal<em>Receptionist · Hameed Latif</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Close out the visit</div>
+            <div class="csub">Farhat Bibi · 11:40 · consultation</div>
+            <div class="rx" style="max-width:330px">
+              <div class="rxh"><b>Receipt</b><span class="mono">#HL-21082-44</span></div>
+              <div class="rxline">Consultation · Dr. A. Siddiqui <span>2,500</span></div>
+              <div class="rxline">ECG at clinic <span>900</span></div>
+              <div class="rxline" style="border-top:1px solid rgba(18,32,27,.2);margin-top:6px;padding-top:8px"><b>Total</b><span><b>Rs 3,400</b></span></div>
+              <div class="rxfoot">
+                <span class="sig mono" style="font-style:normal;font-size:11px">Received by Saima Iqbal</span>
+                <span class="stamp hidden" id="payStamp">Paid · cash</span>
+              </div>
+            </div>
+            <div class="lbl">How they paid</div>
+            <div class="chips">
+              <button class="chip on" data-chip>Cash</button>
+              <button class="chip" data-chip>Card</button>
+              <button class="chip" data-chip>JazzCash</button>
+              <button class="chip" data-chip>Easypaisa</button>
+            </div>
+            <button class="btn" style="max-width:260px" data-stamp="payStamp">Record payment and send receipt</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Front desk · Step 04</div>
+        <h3>The receipt goes into her file too</h3>
+        <p>Cash is still how most consultations are paid, so the flow has to treat it as first class rather than an exception. What changes is that the receipt is no longer only a piece of paper the patient loses.</p>
+        <div class="rule"></div>
+        <h4>Two people get something from this</h4>
+        <ul>
+          <li><b>The patient</b> — a permanent record of what she spent, useful for insurance and employer reimbursement</li>
+          <li><b>The doctor</b> — daily collections, attributed to the staff member who took the money</li>
+        </ul>
+        <div class="note"><b>Worth noting:</b> this is the only screen where the receptionist writes to the patient's file. She adds a financial record, never a clinical one.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="desk">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/desk/bookings</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">Today's board</a>
+            <a href="#" class="on">Bookings</a>
+            <a href="#">Receipts</a>
+            <div class="cwho">Saima Iqbal<em>Receptionist · Hameed Latif</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Someone is calling</div>
+            <div class="csub">"Doctor sahiba se appointment chahiye, is hafte."</div>
+            <div class="lbl">Patient</div>
+            <div class="field mono">0333 771 2288 — Imran Sheikh (existing)</div>
+            <div class="lbl">Next open slots</div>
+            <div class="slots">
+              <button class="slot" data-slot="k">Thu 12:00</button>
+              <button class="slot" data-slot="k">Thu 4:30</button>
+              <button class="slot" data-slot="k">Mon 11:20</button>
+            </div>
+            <div class="lbl">Waitlist · if nothing suits</div>
+            <div class="trow" style="border-bottom:0"><span>Notify him when a slot frees up<small>WhatsApp, first to reply gets it</small></span><button class="tg on" data-tg></button></div>
+            <div style="min-height:36px;margin-top:12px"><span class="stamp hidden" id="kStamp">Booked by Saima · SMS sent</span></div>
+            <button class="btn" style="max-width:220px" data-stamp="kStamp">Book it and text him</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Front desk · Step 05</div>
+        <h3>The phone doesn't stop ringing, and that's fine</h3>
+        <p>A platform that only accepts app bookings will show the doctor a half-empty calendar while the waiting room is full. Phone bookings must land in the same schedule, or the schedule is fiction.</p>
+        <div class="rule"></div>
+        <h4>Why this screen protects the whole system</h4>
+        <ul>
+          <li>One calendar, whatever channel the booking arrived through</li>
+          <li>The patient gets the same SMS confirmation and reminders</li>
+          <li>A patient with no smartphone is still fully served</li>
+        </ul>
+        <div class="note"><b>Adoption insight:</b> the receptionist is the person who can quietly kill this product by keeping a parallel paper register. Make her job easier than the register, and she becomes the reason it succeeds.</div>
+      </div></div>
+    </section>
+
+    <!-- ============ ASSISTANT & JUNIOR ============ -->
+    <section class="step" data-track="staff">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>11:44</span><span>Clinic wifi ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Nasreen · Assistant</span></div>
+          <div class="body">
+            <div class="h1">Before the doctor sees her</div>
+            <p class="sub">Farhat Bibi · 62 · checked in 11:44</p>
+            <div class="lbl">Vitals</div>
+            <div class="trow"><span>Blood pressure</span><b class="mono">152 / 94</b></div>
+            <div class="trow"><span>Pulse</span><b class="mono">88</b></div>
+            <div class="trow"><span>Weight</span><b class="mono">74 kg</b></div>
+            <div class="trow"><span>Temperature</span><b class="mono">98.4 °F</b></div>
+            <div class="alert" style="margin-top:13px">
+              <div><b>BP is high</b><p>Flagged to Dr. Siddiqui before the consultation.</p></div>
+            </div>
+            <div class="lbl">Not part of your role</div>
+            <div class="locked">
+              <div class="blur"><div class="tli" style="border-bottom:0"><span class="td mono">21 Aug</span><div>Prescription pad<small>Write and issue medicines</small></div></div></div>
+              <div class="lockmsg"><span class="mono">Only a doctor can prescribe</span></div>
+            </div>
+            <div style="min-height:34px;margin-top:12px;text-align:center"><span class="stamp hidden" id="vStamp">Saved · by Nasreen</span></div>
+            <button class="btn" data-stamp="vStamp">Save vitals to her file</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Assistant · Step 01</div>
+        <h3>Vitals arrive before the patient does</h3>
+        <p>The assistant's four measurements save two minutes of every consultation and catch things the doctor would otherwise take on trust. A high reading is flagged before the patient sits down, not discovered mid-conversation.</p>
+        <div class="rule"></div>
+        <h4>The assistant's boundary</h4>
+        <ul>
+          <li><b>Can</b> record vitals and attach reports</li>
+          <li><b>Can</b> see the current visit's summary</li>
+          <li><b>Cannot</b> write or issue a prescription — ever</li>
+        </ul>
+        <div class="note"><b>Everything is attributed.</b> The doctor sees "BP 152/94 · by Nasreen," so a disputed reading has a name attached to it.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="staff">
+      <div class="col-device">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>3:20</span><span>Clinic wifi ▮▮▮</span></div>
+          <div class="appbar"><span class="mk">Care<span>Connect</span></span><span class="who">Nasreen · Assistant</span></div>
+          <div class="body">
+            <div class="h1">A lab report came in</div>
+            <p class="sub">Chughtai Lab · emailed to the clinic</p>
+            <div class="field mut">Echo_report_FB_21Aug.pdf</div>
+            <div class="lbl">Attach to which patient?</div>
+            <div class="dcard"><div class="av">FB</div><div><b>Farhat Bibi</b><small>62 · seen today 11:40 · echo ordered</small><span class="vtick mono">Echo pending</span></div></div>
+            <div class="dcard" style="opacity:.55"><div class="av">FB</div><div><b>Fatima Baig</b><small>44 · seen 12 Aug · no tests ordered</small></div></div>
+            <div class="alert" style="margin-top:12px">
+              <div><b>Two similar names</b><p>Matched by the pending echo order, not the name. Confirm before saving.</p></div>
+            </div>
+            <div style="min-height:34px;text-align:center"><span class="stamp hidden" id="labStamp">Attached · Farhat Bibi</span></div>
+            <button class="btn" data-stamp="labStamp">Attach to Farhat Bibi</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Assistant · Step 02</div>
+        <h3>The most dangerous routine task in a clinic</h3>
+        <p>Filing a report against the wrong patient is how a healthy person gets treated for someone else's condition. In a country where a dozen patients in one day may share a first name, name-matching alone is not safe.</p>
+        <div class="rule"></div>
+        <h4>How the interface reduces the risk</h4>
+        <ul>
+          <li>Match on the <b>pending order</b>, not the name — the doctor ordered this echo</li>
+          <li>Surface similar names deliberately instead of hiding them</li>
+          <li>Require an explicit confirmation, and log who confirmed</li>
+        </ul>
+        <div class="note"><b>Design principle at work:</b> where an error is irreversible and clinical, the interface should slow the user down on purpose.</div>
+        <span class="slip-stamp stamp red">Safety critical</span>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="staff">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/patient/imran-sheikh</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">My patients</a>
+            <a href="#" class="on">Imran Sheikh</a>
+            <a href="#">Drafts</a>
+            <div class="cwho">Dr. Hamza Tariq<em>Junior doctor · assigned</em></div>
+          </div>
+          <div class="cmain">
+            <div class="chart">
+              <div class="cn"><div class="av">IS</div><div><b>Imran Sheikh</b><small>48 · M · O+ · assigned to you by Dr. Siddiqui</small></div></div>
+              <div class="flagrow"><span class="flag">Statin intolerance</span><span class="flag">Post-MI 2023</span><span class="flag n">BP 138/86</span></div>
+              <div class="lbl">Full history at this practice</div>
+              <div class="tl">
+                <div class="tli"><span class="td mono">14 Jun</span><div>Dr. Siddiqui<small>Atorvastatin stopped — myalgia · switched to rosuvastatin 5mg</small></div></div>
+                <div class="tli"><span class="td mono">2 Apr</span><div>Dr. Siddiqui<small>LDL 141 · dose increased</small></div></div>
+                <div class="tli" style="border-bottom:0"><span class="td mono">Nov 23</span><div>Anterior MI · stented<small>Punjab Institute of Cardiology</small></div></div>
+              </div>
+            </div>
+            <div class="lbl">Patients not assigned to you</div>
+            <div class="locked">
+              <div class="blur"><div class="tli" style="border-bottom:0"><span class="td mono">·</span><div>412 other patients at this clinic<small>Full histories, prescriptions, labs</small></div></div></div>
+              <div class="lockmsg"><span class="mono">You see the patients Dr. Siddiqui assigns you</span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Junior doctor · Step 03</div>
+        <h3>Clinical depth, narrow scope</h3>
+        <p>The junior doctor needs everything about the patient in front of him — the failed statin, the stent, the trend in LDL. What he doesn't get is the whole practice. Assignment, not seniority, is what opens a file.</p>
+        <div class="rule"></div>
+        <h4>Why assignment beats a blanket role</h4>
+        <ul>
+          <li>A trainee rotating out doesn't take 400 histories with him</li>
+          <li>The audit log answers "why did you open this file?" with "you were assigned it"</li>
+          <li>The senior doctor stays accountable for who sees what</li>
+        </ul>
+        <div class="note"><b>Contrast with the front desk:</b> Saima sees every patient's name and no clinical detail. Hamza sees a few patients in full depth. Two roles, two opposite shapes of access.</div>
+      </div></div>
+    </section>
+
+    <section class="step" data-track="staff">
+      <div class="col-device">
+        <div class="console"><div class="cbar"><i></i><i></i><i></i><span>careconnect.pk/clinic/rx/draft</span></div><div class="cwin">
+          <div class="cnav">
+            <div class="cmk">Care<span>Connect</span></div>
+            <a href="#">My patients</a>
+            <a href="#">Imran Sheikh</a>
+            <a href="#" class="on">Drafts</a>
+            <div class="cwho">Dr. Hamza Tariq<em>Junior doctor · assigned</em></div>
+          </div>
+          <div class="cmain">
+            <div class="ch">Draft for approval</div>
+            <div class="csub">Goes to Dr. Siddiqui · nothing reaches the patient yet</div>
+            <div class="rx" style="max-width:340px">
+              <div class="rxh"><span class="rxsym">Rx</span><b>Imran Sheikh · 48</b><span class="mono">Draft</span></div>
+              <div class="rxline">Tab. Rosuvastatin 10mg <span>0×0×1 · 30d</span></div>
+              <div class="rxline">Tab. Bisoprolol 5mg <span>1×0×0 · 30d</span></div>
+              <div class="rxline">Lipid profile <span>in 6 weeks</span></div>
+              <div class="rxfoot">
+                <span class="sig mono" style="font-style:normal;font-size:11px">Drafted · H. Tariq</span>
+                <span class="stamp hidden" id="coStamp">Co-signed · A. Siddiqui</span>
+              </div>
+            </div>
+            <div class="lbl">What Dr. Siddiqui sees</div>
+            <div class="pgrid">
+              <div class="prow yes"><span>Dose increase from 5mg to 10mg</span><em>Changed</em></div>
+              <div class="prow yes"><span>Bisoprolol — new medicine</span><em>Added</em></div>
+              <div class="prow no"><span>Statin intolerance — checked against history</span><em>No conflict</em></div>
+            </div>
+            <button class="btn" style="max-width:250px" data-stamp="coStamp">Dr. Siddiqui approves and issues</button>
+          </div>
+        </div></div>
+      </div>
+      <div class="col-slip"><div class="slip">
+        <div class="slip-no mono">Junior doctor · Step 04</div>
+        <h3>Delegation with a signature on it</h3>
+        <p>A junior doctor drafts; the account owner issues. The patient only ever receives a prescription that a named, verified, registered doctor has signed — which is the whole reason the owner can safely let anyone else near the pad.</p>
+        <div class="rule"></div>
+        <h4>What the approval screen shows the senior</h4>
+        <ul>
+          <li>What changed from the last prescription, not just the new one</li>
+          <li>Which medicines are new to this patient</li>
+          <li>Whether anything conflicts with the recorded history</li>
+        </ul>
+        <p>A co-sign that shows only a finished prescription isn't review — it's a rubber stamp in the bad sense.</p>
+        <div class="note"><b>Open question:</b> whether co-sign is mandatory or a per-clinic setting. Some consultants will want it always on; some will trust senior registrars to issue directly. Make it the clinic's choice, and log which mode was active.</div>
+        <span class="slip-stamp stamp">Owner issues</span>
+      </div></div>
+    </section>
+
+    <div class="stepnav">
+      <button class="snb" id="prevBtn">← Previous</button>
+      <button class="snb pri" id="nextBtn">Next step →</button>
+      <span class="count mono" id="counter">01 / 07</span>
+    </div>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <h3>What this prototype is arguing</h3>
+    <p>Twenty-two screens, four roles, one claim: the patient owns the record, the doctor owns the practice, and every other role gets the narrowest access that lets it do real work. Every design decision above follows from that split.</p>
+    <div class="fg">
+      <div class="fc"><h5>Ship in v1</h5><p>Verified directory in one city, in-clinic booking, family profiles, patient-side upload, doctor account with the receptionist role, WhatsApp and SMS reminders, Urdu and English.</p></div>
+      <div class="fc"><h5>Hold for v2</h5><p>Video consultations, home visits, record sharing, junior and assistant roles, lab integrations, billing, and the practice dashboard.</p></div>
+      <div class="fc"><h5>Answer before building</h5><p>Verification liability, data-protection compliance, prescription legality, review moderation, revenue model, and which single city you saturate first.</p></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const TRACKS = {
+  patient:{title:"The patient", sub:"Ayesha, 34, in Lahore. Her mother needs a cardiologist and the family has no idea who to trust."},
+  doctor:{title:"The doctor", sub:"Dr. Ayesha Siddiqui, cardiologist. Two clinics, three staff, and a waiting room that always runs late."},
+  desk:{title:"The front desk", sub:"Saima Iqbal, receptionist at Hameed Latif. She runs the day and sees no clinical records at all."},
+  staff:{title:"Assistant & junior doctor", sub:"Nasreen takes the vitals. Dr. Hamza Tariq consults, but never issues a prescription alone."}
+};
+const PERMS = {
+  recep:[["Book, move and cancel appointments",1],["Check patients in and order the queue",1],["See patient name, number, visit dates",1],["Take payment and issue receipts",1],["Read clinical notes and diagnoses",0],["See prescriptions and lab results",0],["Write or issue a prescription",0]],
+  asst:[["Record vitals against a patient file",1],["Attach lab reports to the right patient",1],["See the current visit's summary",1],["Read full histories of other patients",0],["Write or issue a prescription",0],["Manage staff or change fees",0]],
+  jr:[["See full histories of assigned patients",1],["Write clinical notes",1],["Draft a prescription for co-signing",1],["Issue a prescription without approval",0],["See patients not assigned to them",0],["Manage staff, fees or delete records",0]]
+};
+let track = "patient", idx = 0;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const stepsIn = t => $$('.step[data-track="'+t+'"]');
+
+function renderPerms(role){
+  const g = $("#permGrid"); if(!g) return;
+  g.innerHTML = PERMS[role].map(([t,ok]) =>
+    '<div class="prow '+(ok?'yes':'no')+'"><span>'+t+'</span><em>'+(ok?'Allowed':'Blocked')+'</em></div>').join("");
+}
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function buildRail(){
+  const total = stepsIn(track).length;
+  $("#rail").innerHTML = Array.from({length:total},(_,i)=>
+    '<button data-go="'+i+'" aria-label="Step '+(i+1)+'"><span class="pip"></span>'+pad(i+1)+'</button>').join("");
+  $$("#rail button").forEach(b => b.addEventListener("click", () => go(+b.dataset.go)));
+}
+function go(n){
+  const steps = stepsIn(track);
+  idx = Math.max(0, Math.min(n, steps.length-1));
+  $$(".step").forEach(s => s.classList.remove("on"));
+  steps[idx].classList.add("on");
+  $$("#rail button").forEach((b,i) => {
+    b.classList.toggle("on", i===idx);
+    b.classList.toggle("done", i<idx);
+  });
+  $("#counter").textContent = pad(idx+1)+" / "+pad(steps.length);
+  $("#prevBtn").disabled = idx===0;
+  $("#nextBtn").disabled = idx===steps.length-1;
+  $("#nextBtn").textContent = idx===steps.length-1 ? "End of track" : "Next step →";
+}
+function setTrack(t){
+  track = t; idx = 0;
+  $$(".tab").forEach(b => b.classList.toggle("on", b.dataset.track===t));
+  $("#thTitle").textContent = TRACKS[t].title;
+  $("#thSub").textContent = TRACKS[t].sub;
+  buildRail(); go(0);
+}
+$$(".tab").forEach(b => b.addEventListener("click", () => {
+  setTrack(b.dataset.track);
+  $(".stage").scrollIntoView({block:"start"});
+}));
+$("#prevBtn").addEventListener("click", () => go(idx-1));
+$("#nextBtn").addEventListener("click", () => go(idx+1));
+
+document.addEventListener("keydown", e => {
+  if(e.target.matches("input,textarea")) return;
+  if(e.key==="ArrowRight") go(idx+1);
+  if(e.key==="ArrowLeft") go(idx-1);
+});
+
+// --- in-screen interactions ---
+document.addEventListener("click", e => {
+  const t = e.target.closest("button, [data-vslip]");
+  if(!t) return;
+
+  if(t.matches("[data-chip]")){
+    const sibs = Array.from(t.parentElement.children);
+    const exclusive = sibs.length===3 && t.textContent.match(/hours|days|revoke|late|emergency/i);
+    if(exclusive) sibs.forEach(s => s.classList.remove("on"));
+    t.classList.toggle("on", exclusive ? true : !t.classList.contains("on"));
+  }
+
+  if(t.matches("[data-slot]") && !t.disabled){
+    $$('[data-slot="'+t.dataset.slot+'"]').forEach(s => s.classList.remove("on"));
+    t.classList.add("on");
+    const b = $("#bBtn");
+    if(b && t.dataset.slot==="p"){ b.disabled=false; b.textContent="Confirm appointment"; }
+  }
+
+  if(t.matches("[data-stamp]")){
+    const s = document.getElementById(t.dataset.stamp);
+    if(s){ s.classList.remove("hidden"); s.classList.remove("hit"); void s.offsetWidth; s.classList.add("hit"); }
+  }
+
+  if(t.matches("[data-tg]")) t.classList.toggle("on");
+  if(t.matches("[data-vslip]")) t.classList.toggle("open");
+  if(t.matches("[data-share]")) $("#shareLink").style.display = "block";
+  if(t.matches("[data-role]")){
+    $$("[data-role]").forEach(b => b.classList.remove("on"));
+    t.classList.add("on"); renderPerms(t.dataset.role);
+  }
+  if(t.matches("[data-pmx]")){
+    $$("[data-pmx]").forEach(b => b.classList.remove("on"));
+    t.classList.add("on");
+  }
+  if(t.id==="walkBtn") $("#walkOut").style.display="block";
+  if(t.id==="lateBtn") $("#lateOut").style.display="block";
+  if(t.matches("[data-callin]")){
+    const row = t.closest(".qrow");
+    row.classList.add("dim");
+    t.outerHTML = '<span class="qs now mono">In room</span>';
+    const next = row.nextElementSibling;
+    if(next) next.querySelector(".qs").textContent = "Next";
+  }
+});
+
+renderPerms("recep");
+setTrack("patient");
+</script>
+</body>
+</html>

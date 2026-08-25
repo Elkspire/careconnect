@@ -1,0 +1,14 @@
+{
+  "extends": "../../packages/config/tsconfig/nestjs.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
+    "baseUrl": "./"
+  }
+}
