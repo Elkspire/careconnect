@@ -164,7 +164,10 @@ export const practitioners = pgTable('practitioners', {
     .defaultNow(),
 });
 
-// Added in 0006_practitioner_reviews.sql.
+// Added in 0006_practitioner_reviews.sql. 0008_review_per_visit.sql briefly
+// moved this to one-per-appointment; 0009_revert_review_per_visit.sql put it
+// back to one-per-(practitioner,patient) — a resubmission updates the
+// patient's existing review rather than creating a second one.
 export const practitionerReviews = pgTable(
   'practitioner_reviews',
   {

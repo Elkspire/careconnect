@@ -132,6 +132,8 @@
     "heading": "My records",
     "empty": "You haven't added any records yet.",
     "recordTypeLabel": "Record type",
+    "familyMemberLabel": "Whose record is this?",
+    "forSelf": "Myself",
     "fileLabel": "File",
     "upload": "Upload",
     "view": "View",

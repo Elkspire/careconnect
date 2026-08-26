@@ -88,9 +88,17 @@ export async function cancelAppointmentAction(locale: string, formData: FormData
 }
 
 export async function uploadVaultRecordAction(locale: string, formData: FormData): Promise<void> {
-  // formData already carries subjectType/familyMemberId/recordType/file from
-  // the upload form as-is — passed straight through to the API, which
-  // validates it (see packages/validation's uploadVaultRecordSchema).
+  // The form only sends familyMemberId (empty = self); derive subjectType
+  // here rather than a hidden field, same pattern as createAppointmentAction
+  // above. An empty familyMemberId would otherwise be sent as "" and fail
+  // the API's z.string().uuid().optional() validation.
+  const familyMemberId = formData.get("familyMemberId");
+  if (familyMemberId) {
+    formData.set("subjectType", "family_member");
+  } else {
+    formData.set("subjectType", "self");
+    formData.delete("familyMemberId");
+  }
   await uploadVaultRecord(formData);
   revalidatePath(`/${locale}/patient/vault`);
 }
