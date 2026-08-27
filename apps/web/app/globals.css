@@ -180,6 +180,121 @@ button.navlink {
   padding: 13px;
 }
 
+/* ---------- landing hero ---------- */
+.hero {
+  width: 100%;
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 56px 48px;
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 0%, rgba(121, 210, 166, 0.14), transparent 70%),
+    linear-gradient(180deg, var(--color-bottle-2) 0%, var(--color-bottle) 100%);
+}
+@media (min-width: 768px) {
+  .hero {
+    padding-block: 76px 64px;
+  }
+}
+.hero-inner {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .hero-inner {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 56px;
+  }
+}
+.hero-copy .kicker-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hero-search {
+  width: 100%;
+  margin: 0;
+  padding: 28px 28px 30px;
+}
+.hero-search .rowend {
+  align-self: stretch;
+}
+.hero-search .rowend .btn {
+  width: 100%;
+  height: 100%;
+}
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 34px;
+  margin-top: 38px;
+}
+.hero-stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-mint);
+}
+.hero-stat em {
+  display: block;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-cream-dim);
+  margin-top: 4px;
+}
+.results-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- trust strip (landing hero) ---------- */
+.trust-strip {
+  display: grid;
+  gap: 26px;
+  padding-block: 36px;
+}
+@media (min-width: 700px) {
+  .trust-strip {
+    grid-template-columns: repeat(3, 1fr);
+    padding-block: 44px;
+  }
+}
+.trust-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+}
+.trust-mark {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  border: 1.5px solid currentColor;
+}
+.trust-item h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-paper);
+  margin: 0 0 4px;
+}
+.trust-item p {
+  font-size: 13.5px;
+  color: var(--color-cream-dim);
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* ---------- labels / fields ---------- */
 .lbl {
   font-family: var(--font-mono);
@@ -825,4 +940,63 @@ button.navlink {
 }
 .disp {
   font-family: var(--font-display);
+}
+
+/* ---------- dashboard shell (patient/clinic areas) ----------
+   A "console window" sitting on the dark page chrome, matching the
+   reference file's .cwin/.cnav/.cmain desktop mockup: a light sidebar +
+   main pane, instead of a bare-page centered column. Stacks (sidebar on
+   top, full width) below md; becomes a fixed side rail from md up. */
+.dash-shell {
+  background: var(--color-paper-2, #fbf9f1);
+  color: var(--color-ink);
+  min-height: calc(100vh - 57px);
+}
+.dash-sidebar {
+  flex: 0 0 auto;
+  background: #efebde;
+  border-bottom: 1px solid rgba(18, 32, 27, 0.1);
+}
+@media (min-width: 768px) {
+  .dash-sidebar {
+    flex: 0 0 232px;
+    border-bottom: 0;
+    border-inline-end: 1px solid rgba(18, 32, 27, 0.1);
+    min-height: calc(100vh - 57px);
+  }
+}
+.dash-navlink {
+  display: block;
+  padding: 12px 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a5a53;
+  white-space: nowrap;
+  border-inline-start: 2px solid transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.dash-navlink:hover {
+  background: rgba(18, 32, 27, 0.05);
+  color: var(--color-ink);
+}
+.dash-navlink.on {
+  background: #fff;
+  border-inline-start-color: var(--color-verified);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.dash-main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 20px 48px;
+}
+@media (min-width: 768px) {
+  .dash-main {
+    padding: 40px 48px 64px;
+  }
+}
+.dash-main h1 {
+  color: var(--color-ink);
 }

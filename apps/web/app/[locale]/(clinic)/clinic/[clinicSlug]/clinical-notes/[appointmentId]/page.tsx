@@ -24,13 +24,13 @@ export default async function ClinicalNotePage(
   // that the clinical/receptionist boundary isn't UI hiding on either side.
   if (staffCtx.role !== "owner") {
     return (
-      <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
+      <div className="max-w-xl">
         <div className="locked">
           <div className="lockmsg">
             <span className="mono">{t("accessDenied")}</span>
           </div>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -45,9 +45,11 @@ export default async function ClinicalNotePage(
   );
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("notesHeading")}</h1>
+    <div className="max-w-2xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("notesHeading")}</h1>
 
       <div className="rx mt-6">
         <div className="rxh">
@@ -79,6 +81,6 @@ export default async function ClinicalNotePage(
           </button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

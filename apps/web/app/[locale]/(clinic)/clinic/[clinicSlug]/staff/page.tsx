@@ -22,9 +22,11 @@ export default async function ClinicStaffPage(
   const revoke = revokeStaffAction.bind(null, locale, clinicSlug, clinicId);
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("staffHeading")}</h1>
+    <div className="max-w-2xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("staffHeading")}</h1>
 
       <div className="card mt-6">
         <div className="pgrid">
@@ -68,6 +70,6 @@ export default async function ClinicStaffPage(
           </button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

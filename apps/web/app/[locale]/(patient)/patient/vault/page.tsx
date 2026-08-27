@@ -16,10 +16,10 @@ function RecordGroup({
 }) {
   return (
     <div className="mt-6">
-      <h2 className="lbl" style={{ color: "var(--color-cream-dim)" }}>
+      <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
         {heading}
       </h2>
-      <ul className="mt-3 flex flex-col gap-2">
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {records.map((record) => (
           <li key={record.id} className="vslip flex items-center justify-between">
             <div>
@@ -64,12 +64,14 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("heading")}</h1>
+    <div className="max-w-6xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
 
       {records.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-cream-dim)" }}>
+        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
           {t("empty")}
         </p>
       ) : (
@@ -92,7 +94,7 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
         </>
       )}
 
-      <form action={upload} className="slip mt-8 flex flex-wrap items-end gap-3">
+      <form action={upload} className="slip mt-8 flex max-w-2xl flex-wrap items-end gap-3">
         <label>
           <span className="lbl">{t("recordTypeLabel")}</span>
           <select name="recordType" className="field tap-target">
@@ -128,6 +130,6 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
           {t("upload")}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

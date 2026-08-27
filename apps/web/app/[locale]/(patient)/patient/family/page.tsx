@@ -10,16 +10,18 @@ export default async function FamilyMembersPage(
   const action = addFamilyMemberAction.bind(null, locale);
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("familyMembersHeading")}</h1>
+    <div className="max-w-5xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("familyMembersHeading")}</h1>
 
       {familyMembers.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-cream-dim)" }}>
+        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
           {t("noFamilyMembers")}
         </p>
       ) : (
-        <ul className="mt-6 flex flex-col gap-2">
+        <ul className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {familyMembers.map((member) => (
             <li key={member.id} className="card flex items-center justify-between">
               <span className="disp font-semibold">{member.fullName}</span>
@@ -31,7 +33,7 @@ export default async function FamilyMembersPage(
         </ul>
       )}
 
-      <form action={action} className="slip mt-8 flex flex-wrap items-end gap-3">
+      <form action={action} className="slip mt-8 flex max-w-xl flex-wrap items-end gap-3">
         <label>
           <span className="lbl">{t("fullNameLabel")}</span>
           <input type="text" name="fullName" required className="field tap-target" />
@@ -57,6 +59,6 @@ export default async function FamilyMembersPage(
           {t("addFamilyMember")}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

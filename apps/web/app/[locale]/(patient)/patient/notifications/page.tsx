@@ -12,11 +12,13 @@ export default async function PatientNotificationsPage(
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("heading")}</h1>
+    <div className="max-w-2xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
       {notifications.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-cream-dim)" }}>
+        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
           {t("empty")}
         </p>
       ) : (
@@ -32,6 +34,6 @@ export default async function PatientNotificationsPage(
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

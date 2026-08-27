@@ -20,11 +20,30 @@ export default async function ClinicTodayPage(
 
   const appointments = await listToday(clinicId);
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
+  const checkedInCount = appointments.filter((a) => a.status === "checked_in").length;
+  const waitingCount = appointments.length - checkedInCount;
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("todayHeading")}</h1>
+    <div className="max-w-5xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        {staffCtx.clinicName}
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("todayHeading")}</h1>
+
+      <div className="stats mt-6">
+        <div className="stat">
+          <b>{appointments.length}</b>
+          <em>{t("todayHeading")}</em>
+        </div>
+        <div className="stat">
+          <b>{checkedInCount}</b>
+          <em>{t("checkedIn")}</em>
+        </div>
+        <div className="stat">
+          <b>{waitingCount}</b>
+          <em>{t("checkIn")}</em>
+        </div>
+      </div>
 
       <div className="slip mt-6">
         {appointments.length === 0 ? (
@@ -53,6 +72,6 @@ export default async function ClinicTodayPage(
           ))
         )}
       </div>
-    </main>
+    </div>
   );
 }

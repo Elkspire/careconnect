@@ -36,9 +36,11 @@ export default async function BookAppointmentPage(
   const slots = days[0]?.slots ?? [];
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("bookingHeading")}</h1>
+    <div className="max-w-2xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("bookingHeading")}</h1>
 
       <div className="slip mt-6">
         <form method="get" className="flex flex-wrap items-end gap-3">
@@ -97,6 +99,6 @@ export default async function BookAppointmentPage(
           </form>
         )}
       </div>
-    </main>
+    </div>
   );
 }

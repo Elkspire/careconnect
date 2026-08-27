@@ -1,48 +1,31 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
 
 export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
   const { locale } = await props.params;
   const t = await getTranslations("patient");
 
+  const navItems: Array<{ href: "/patient" | "/patient/appointments" | "/patient/family" | "/patient/vault" | "/patient/notifications"; label: string }> = [
+    { href: "/patient", label: t("dashboardHeading") },
+    { href: "/patient/appointments", label: t("appointmentsHeading") },
+    { href: "/patient/family", label: t("familyMembersHeading") },
+    { href: "/patient/vault", label: t("vaultHeading") },
+    { href: "/patient/notifications", label: t("notificationsHeading") },
+  ];
+
   return (
-    <div className="flex flex-1 flex-col">
-      <nav className="border-b border-line bg-bottle-2">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap gap-1 px-4 py-2">
-          <Link href="/patient" locale={locale} className="navlink tap-target flex items-center">
-            {t("dashboardHeading")}
-          </Link>
-          <Link
-            href="/patient/appointments"
-            locale={locale}
-            className="navlink tap-target flex items-center"
-          >
-            {t("appointmentsHeading")}
-          </Link>
-          <Link
-            href="/patient/family"
-            locale={locale}
-            className="navlink tap-target flex items-center"
-          >
-            {t("familyMembersHeading")}
-          </Link>
-          <Link
-            href="/patient/vault"
-            locale={locale}
-            className="navlink tap-target flex items-center"
-          >
-            {t("vaultHeading")}
-          </Link>
-          <Link
-            href="/patient/notifications"
-            locale={locale}
-            className="navlink tap-target flex items-center"
-          >
-            {t("notificationsHeading")}
-          </Link>
-        </div>
-      </nav>
-      {props.children}
+    <div className="dash-shell flex flex-1 flex-col md:flex-row">
+      <aside className="dash-sidebar">
+        <nav className="flex flex-row overflow-x-auto md:flex-col md:overflow-visible md:py-4">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} locale={locale as AppLocale} className="dash-navlink tap-target">
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <main className="dash-main">{props.children}</main>
     </div>
   );
 }

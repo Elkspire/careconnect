@@ -21,16 +21,18 @@ export default async function AppointmentsPage(
   const cancelAction = cancelAppointmentAction.bind(null, locale);
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-      <p className="kicker">CareConnect</p>
-      <h1 className="disp mt-2 text-2xl font-bold text-paper">{t("appointmentsHeading")}</h1>
+    <div className="max-w-6xl">
+      <p className="kicker" style={{ color: "var(--color-verified)" }}>
+        CareConnect
+      </p>
+      <h1 className="disp mt-2 text-2xl font-bold">{t("appointmentsHeading")}</h1>
 
       {appointments.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-cream-dim)" }}>
+        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
           {t("noAppointments")}
         </p>
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {appointments.map((appt) => (
             <li key={appt.id} className="vslip">
               <div className="vhead">
@@ -90,6 +92,6 @@ export default async function AppointmentsPage(
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }
