@@ -14,7 +14,7 @@ import {
   CheckInAppointmentDto,
   CreateClinicDto,
   CreatePractitionerLeaveDto,
-  InviteReceptionistDto,
+  InviteStaffDto,
   UpsertPractitionerClinicDto,
 } from './clinic.dto';
 import { ClinicService } from './clinic.service';
@@ -60,7 +60,7 @@ export class ClinicController {
   inviteStaff(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
-    @Body() body: InviteReceptionistDto,
+    @Body() body: InviteStaffDto,
   ) {
     return this.clinicService.inviteStaff(clinicId, user.id, body);
   }
@@ -82,14 +82,75 @@ export class ClinicController {
 
   /** Non-clinical: name, phone, last visit only. See ClinicService.listPatients. */
   @Get(':clinicId/patients')
-  @RequireClinicRole('owner', 'receptionist')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   listPatients(@Param('clinicId') clinicId: string) {
     return this.clinicService.listPatients(clinicId);
   }
 
+  @Get(':clinicId/patients/:patientId')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  getPatientDetail(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.clinicService.getPatientDetail(clinicId, patientId);
+  }
+
+  @Get(':clinicId/patients/:patientId/family/:familyMemberId')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  getFamilyMemberDetail(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+    @Param('familyMemberId') familyMemberId: string,
+  ) {
+    return this.clinicService.getFamilyMemberDetail(
+      clinicId,
+      patientId,
+      familyMemberId,
+    );
+  }
+
+  /**
+   * Vault records the patient linked to a visit here — prescriptions/lab
+   * reports reveal medical info, so this excludes receptionist, same as
+   * clinical notes. Owner and junior_doctor both get full clinical
+   * visibility on this clinic's patients.
+   */
+  @Get(':clinicId/patients/:patientId/records')
+  @RequireClinicRole('owner', 'junior_doctor')
+  getPatientRecords(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.clinicService.getPatientRecords(clinicId, patientId);
+  }
+
+  @Get(':clinicId/patients/:patientId/family/:familyMemberId/records')
+  @RequireClinicRole('owner', 'junior_doctor')
+  getFamilyMemberRecords(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+    @Param('familyMemberId') familyMemberId: string,
+  ) {
+    return this.clinicService.getFamilyMemberRecords(
+      clinicId,
+      patientId,
+      familyMemberId,
+    );
+  }
+
+  @Get(':clinicId/records/:recordId/signed-url')
+  @RequireClinicRole('owner', 'junior_doctor')
+  getRecordSignedUrl(
+    @Param('clinicId') clinicId: string,
+    @Param('recordId') recordId: string,
+  ) {
+    return this.clinicService.getRecordSignedUrl(clinicId, recordId);
+  }
+
   /** Default landing screen for the clinic dashboard. */
   @Get(':clinicId/today')
-  @RequireClinicRole('owner', 'receptionist')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   listToday(@Param('clinicId') clinicId: string) {
     return this.clinicService.listToday(clinicId);
   }

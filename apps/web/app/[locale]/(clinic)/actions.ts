@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { checkIn, inviteStaff, revokeStaff } from "@/lib/api/clinic";
+import { redirect } from "next/navigation";
+import { checkIn, getClinicRecordSignedUrl, inviteStaff, revokeStaff } from "@/lib/api/clinic";
 import { createClinicalNote, updateClinicalNote } from "@/lib/api/clinical";
 
 export async function checkInAction(
@@ -20,11 +21,12 @@ export async function inviteStaffAction(
   clinicId: string,
   formData: FormData,
 ): Promise<void> {
+  const role = formData.get("role") === "junior_doctor" ? "junior_doctor" : "receptionist";
   await inviteStaff(clinicId, {
     clinicId,
     phone: String(formData.get("phone")),
     fullName: String(formData.get("fullName") ?? ""),
-    role: "receptionist",
+    role,
   });
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
 }
@@ -37,6 +39,14 @@ export async function revokeStaffAction(
 ): Promise<void> {
   await revokeStaff(clinicId, String(formData.get("staffId")));
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+}
+
+export async function viewClinicRecordAction(
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  const { url } = await getClinicRecordSignedUrl(clinicId, String(formData.get("recordId")));
+  redirect(url);
 }
 
 export async function saveClinicalNoteAction(

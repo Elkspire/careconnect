@@ -18,11 +18,12 @@ export default async function ClinicalNotePage(
   const clinicId = staffCtx.clinicId;
 
   // Server-side role check — not just an absent nav link. The API already
-  // enforces this (ClinicalController requires 'owner' via ClinicRoleGuard),
-  // this is a second, independent check so the page itself never even
-  // fetches clinical data for a non-owner. Matches the plan's requirement
-  // that the clinical/receptionist boundary isn't UI hiding on either side.
-  if (staffCtx.role !== "owner") {
+  // enforces this (ClinicalController requires owner/junior_doctor via
+  // ClinicRoleGuard), this is a second, independent check so the page
+  // itself never even fetches clinical data for a receptionist. Matches
+  // the plan's requirement that the clinical/receptionist boundary isn't
+  // UI hiding on either side.
+  if (staffCtx.role !== "owner" && staffCtx.role !== "junior_doctor") {
     return (
       <div className="max-w-xl">
         <div className="locked">

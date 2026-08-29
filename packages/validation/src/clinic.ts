@@ -12,12 +12,6 @@ export const inviteStaffSchema = z.object({
 });
 export type InviteStaffInput = z.infer<typeof inviteStaffSchema>;
 
-/** Alias kept for the specific v1 flow named in the plan (owner inviting front-desk staff). */
-export const inviteReceptionistSchema = inviteStaffSchema.extend({
-  role: z.literal("receptionist"),
-});
-export type InviteReceptionistInput = z.infer<typeof inviteReceptionistSchema>;
-
 export const revokeStaffSchema = z.object({
   clinicStaffId: z.string().uuid(),
 });

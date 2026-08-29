@@ -17,6 +17,22 @@ export default async function ClinicStaffPage(
   }
   const clinicId = staffCtx.clinicId;
 
+  // Staff management is owner-only — the API already enforces this
+  // (ClinicController requires 'owner' on every /staff route), this is a
+  // second, independent check so a receptionist/junior doctor's page never
+  // even attempts the now-403'd fetch. Same pattern as clinical-notes.
+  if (staffCtx.role !== "owner") {
+    return (
+      <div className="max-w-xl">
+        <div className="locked">
+          <div className="lockmsg">
+            <span className="mono">{t("accessDenied")}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const staff = await listStaff(clinicId);
   const invite = inviteStaffAction.bind(null, locale, clinicSlug, clinicId);
   const revoke = revokeStaffAction.bind(null, locale, clinicSlug, clinicId);
@@ -33,7 +49,7 @@ export default async function ClinicStaffPage(
           {staff.map((member) => (
             <div key={member.id} className="prow">
               <span>
-                {member.role} — {member.status}
+                {t(`roles.${member.role}` as "roles.owner")} — {member.status}
               </span>
               {member.status === "active" && member.role !== "owner" && (
                 <form action={revoke}>
@@ -62,8 +78,15 @@ export default async function ClinicStaffPage(
             />
           </label>
           <label>
-            <span className="lbl">Full name</span>
+            <span className="lbl">{t("fullNameLabel")}</span>
             <input type="text" name="fullName" required className="field tap-target" />
+          </label>
+          <label>
+            <span className="lbl">{t("roleLabel")}</span>
+            <select name="role" className="field tap-target">
+              <option value="receptionist">{t("roles.receptionist")}</option>
+              <option value="junior_doctor">{t("roles.junior_doctor")}</option>
+            </select>
           </label>
           <button type="submit" className="btn tap-target">
             {t("invite")}

@@ -87,10 +87,12 @@ export const waitlistStatusEnum = pgEnum('waitlist_status', [
   'expired',
   'cancelled',
 ]);
-// v1 intentionally supports only owner|receptionist — see 0001_init.sql.
+// See packages/shared-types CLINIC_STAFF_ROLE for the permission summary —
+// keep this list in sync with it and with 0010_junior_doctor_role.sql.
 export const clinicStaffRoleEnum = pgEnum('clinic_staff_role', [
   'owner',
   'receptionist',
+  'junior_doctor',
 ]);
 export const clinicStaffStatusEnum = pgEnum('clinic_staff_status', [
   'invited',

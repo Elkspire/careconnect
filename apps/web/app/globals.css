@@ -179,6 +179,15 @@ button.navlink {
   border-radius: var(--radius-doc);
   padding: 13px;
 }
+a.card {
+  display: block;
+  cursor: pointer;
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+a.card:hover {
+  border-color: var(--color-verified);
+  box-shadow: 0 4px 14px -8px rgba(0, 0, 0, 0.3);
+}
 
 /* ---------- landing hero ---------- */
 .hero {

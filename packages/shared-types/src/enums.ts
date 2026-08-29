@@ -64,11 +64,13 @@ export const WAITLIST_STATUS = [
 export type WaitlistStatus = (typeof WAITLIST_STATUS)[number];
 
 /**
- * v1 intentionally supports only owner|receptionist. Do not add
- * junior_doctor/assistant here until the v2 permissions matrix is built —
- * see product doc section 3.5 and the Phase 1 plan's RBAC note.
+ * owner: full practice access (staff, fees, schedule, all clinical data).
+ * receptionist: calendar/check-in/billing only — no clinical access, ever.
+ * junior_doctor: patient histories + clinical notes (co-authored under the
+ * owner's practice), but no staff/fee/schedule management. See product doc
+ * section 3.5. `assistant`/nurse from the same table is still deferred.
  */
-export const CLINIC_STAFF_ROLE = ["owner", "receptionist"] as const;
+export const CLINIC_STAFF_ROLE = ["owner", "receptionist", "junior_doctor"] as const;
 export type ClinicStaffRole = (typeof CLINIC_STAFF_ROLE)[number];
 
 export const CLINIC_STAFF_STATUS = ["invited", "active", "revoked"] as const;

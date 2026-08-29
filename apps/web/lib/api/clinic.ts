@@ -1,4 +1,4 @@
-import type { InviteReceptionistInput } from "@careconnect/validation";
+import type { InviteStaffInput } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 
 export interface Clinic {
@@ -22,7 +22,9 @@ export interface TodayAppointment {
 
 export interface ClinicPatient {
   patientId: string;
+  familyMemberId: string | null;
   fullName: string;
+  guardianFullName: string | null;
   phone: string | null;
   lastVisit: string;
 }
@@ -33,6 +35,54 @@ export interface ClinicStaffMember {
   userId: string;
   role: string;
   status: string;
+}
+
+export interface ClinicAppointmentSummary {
+  appointmentId: string;
+  scheduledStart: string;
+  status: string;
+}
+
+export interface ClinicFamilyMemberSummary {
+  familyMemberId: string;
+  fullName: string;
+  lastVisit: string;
+}
+
+export interface ClinicPatientDetail {
+  patient: {
+    patientId: string;
+    fullName: string;
+    phone: string | null;
+    email: string | null;
+    gender: string | null;
+    dob: string | null;
+  };
+  appointments: ClinicAppointmentSummary[];
+  familyMembers: ClinicFamilyMemberSummary[];
+}
+
+export interface ClinicFamilyMemberDetail {
+  familyMember: {
+    familyMemberId: string;
+    fullName: string;
+    relationship: string;
+    gender: string | null;
+    dob: string | null;
+    guardianPatientId: string;
+    guardianFullName: string;
+    guardianPhone: string | null;
+  };
+  appointments: ClinicAppointmentSummary[];
+}
+
+export interface ClinicRecord {
+  id: string;
+  fileName: string;
+  recordType: string;
+  mimeType: string;
+  linkedAppointmentId: string | null;
+  createdAt: string;
 }
 
 export async function listMyClinics(): Promise<Clinic[]> {
@@ -58,6 +108,52 @@ export async function listClinicPatients(clinicId: string): Promise<ClinicPatien
   return parseJsonOrThrow(res, "List clinic patients");
 }
 
+export async function getClinicPatientDetail(
+  clinicId: string,
+  patientId: string,
+): Promise<ClinicPatientDetail> {
+  const res = await authedFetch(`/clinics/${clinicId}/patients/${patientId}`);
+  return parseJsonOrThrow(res, "Get clinic patient detail");
+}
+
+export async function getClinicFamilyMemberDetail(
+  clinicId: string,
+  patientId: string,
+  familyMemberId: string,
+): Promise<ClinicFamilyMemberDetail> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/patients/${patientId}/family/${familyMemberId}`,
+  );
+  return parseJsonOrThrow(res, "Get clinic family member detail");
+}
+
+export async function listPatientRecords(
+  clinicId: string,
+  patientId: string,
+): Promise<ClinicRecord[]> {
+  const res = await authedFetch(`/clinics/${clinicId}/patients/${patientId}/records`);
+  return parseJsonOrThrow(res, "List patient records");
+}
+
+export async function listFamilyMemberRecords(
+  clinicId: string,
+  patientId: string,
+  familyMemberId: string,
+): Promise<ClinicRecord[]> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/patients/${patientId}/family/${familyMemberId}/records`,
+  );
+  return parseJsonOrThrow(res, "List family member records");
+}
+
+export async function getClinicRecordSignedUrl(
+  clinicId: string,
+  recordId: string,
+): Promise<{ url: string }> {
+  const res = await authedFetch(`/clinics/${clinicId}/records/${recordId}/signed-url`);
+  return parseJsonOrThrow(res, "Get clinic record link");
+}
+
 export async function listStaff(clinicId: string): Promise<ClinicStaffMember[]> {
   const res = await authedFetch(`/clinics/${clinicId}/staff`);
   return parseJsonOrThrow(res, "List clinic staff");
@@ -65,7 +161,7 @@ export async function listStaff(clinicId: string): Promise<ClinicStaffMember[]> 
 
 export async function inviteStaff(
   clinicId: string,
-  input: InviteReceptionistInput,
+  input: InviteStaffInput,
 ): Promise<ClinicStaffMember> {
   const res = await authedFetch(`/clinics/${clinicId}/staff`, {
     method: "POST",

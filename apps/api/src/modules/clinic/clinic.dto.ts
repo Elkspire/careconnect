@@ -2,7 +2,7 @@ import {
   checkInAppointmentSchema,
   createClinicSchema,
   createPractitionerLeaveSchema,
-  inviteReceptionistSchema,
+  inviteStaffSchema,
   upsertPractitionerClinicSchema,
 } from '@careconnect/validation';
 import { createZodDto } from 'nestjs-zod';
@@ -14,9 +14,7 @@ export class UpsertPractitionerClinicDto extends createZodDto(
 export class CreatePractitionerLeaveDto extends createZodDto(
   createPractitionerLeaveSchema,
 ) {}
-export class InviteReceptionistDto extends createZodDto(
-  inviteReceptionistSchema,
-) {}
+export class InviteStaffDto extends createZodDto(inviteStaffSchema) {}
 export class CheckInAppointmentDto extends createZodDto(
   checkInAppointmentSchema,
 ) {}

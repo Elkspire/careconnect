@@ -11,7 +11,7 @@ import type {
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { and, eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
-import { patientRecords } from '../../common/database/schema';
+import { appointments, patientRecords } from '../../common/database/schema';
 import { SUPABASE_STORAGE } from '../../common/storage/storage.module';
 
 const BUCKET = 'patient-records';
@@ -51,10 +51,47 @@ export class VaultService {
       throw new BadRequestException(`Unsupported file type: ${file.mimetype}`);
     }
 
-    // {patient_id}/{record_id}/{file_name} — matches the storage RLS policy
-    // convention in 0001_init.sql (first path segment = owner's own id).
+    // Linking a record to an appointment is what makes it visible to that
+    // appointment's clinic (see ClinicService.getPatientRecords) — verify
+    // the appointment actually belongs to this patient/subject so nobody
+    // can share a record into a visit that isn't theirs.
+    if (input.linkedAppointmentId) {
+      const [appointment] = await this.db
+        .select({
+          patientId: appointments.patientId,
+          subjectType: appointments.subjectType,
+          familyMemberId: appointments.familyMemberId,
+        })
+        .from(appointments)
+        .where(eq(appointments.id, input.linkedAppointmentId))
+        .limit(1);
+      const matchesSubject =
+        appointment &&
+        appointment.patientId === patientId &&
+        appointment.subjectType === input.subjectType &&
+        appointment.familyMemberId ===
+          (input.subjectType === 'family_member' ? input.familyMemberId : null);
+      if (!matchesSubject) {
+        throw new BadRequestException(
+          'linkedAppointmentId does not match one of your own appointments',
+        );
+      }
+    }
+
+    // {patient_id}/{record_id}/{safe_file_name} — matches the storage RLS
+    // policy convention in 0001_init.sql (first path segment = owner's own
+    // id). The storage key deliberately does NOT carry the user's original
+    // filename verbatim (even encoded) — real-world names like "ChatGPT
+    // Image Aug 3, 2026, 09_30_41 PM.png" (spaces, commas, ...) produced
+    // Supabase Storage "InvalidKey" errors for some files. The original
+    // name is preserved separately in patientRecords.fileName for display;
+    // the storage key only needs to be a valid, unique object path.
     const recordId = crypto.randomUUID();
-    const path = `${patientId}/${recordId}/${encodeURIComponent(file.originalname)}`;
+    const extensionMatch = /\.([a-zA-Z0-9]+)$/.exec(file.originalname);
+    const extension = extensionMatch?.[1]
+      ? `.${extensionMatch[1].toLowerCase()}`
+      : '';
+    const path = `${patientId}/${recordId}/file${extension}`;
 
     const { error: uploadError } = await this.storage.storage
       .from(BUCKET)
@@ -115,6 +152,35 @@ export class VaultService {
           eq(patientRecords.patientId, patientId),
         ),
       )
+      .limit(1);
+    if (!row) {
+      throw new NotFoundException('Record not found');
+    }
+
+    const { data, error } = await this.storage.storage
+      .from(BUCKET)
+      .createSignedUrl(row.filePath, SIGNED_URL_TTL_SECONDS);
+    if (error || !data) {
+      throw new NotFoundException(
+        'Could not generate a signed URL for this record',
+      );
+    }
+    return { url: data.signedUrl };
+  }
+
+  /**
+   * Same signed-URL flow as getSignedUrl, but without the patientId
+   * ownership check — for a caller (ClinicService) that has already
+   * authorized access some other way, e.g. "this record is linked to an
+   * appointment at a clinic this staff member belongs to."
+   */
+  async getSignedUrlForRecordUnchecked(
+    recordId: string,
+  ): Promise<{ url: string }> {
+    const [row] = await this.db
+      .select({ filePath: patientRecords.filePath })
+      .from(patientRecords)
+      .where(eq(patientRecords.id, recordId))
       .limit(1);
     if (!row) {
       throw new NotFoundException('Record not found');

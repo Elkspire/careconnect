@@ -17,6 +17,10 @@ export default async function ClinicTodayPage(
     notFound();
   }
   const clinicId = staffCtx.clinicId;
+  // Check-in is a front-desk action (owner/receptionist per the product
+  // doc's role matrix) — a junior doctor sees today's queue for context but
+  // doesn't run it.
+  const canCheckIn = staffCtx.role === "owner" || staffCtx.role === "receptionist";
 
   const appointments = await listToday(clinicId);
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
@@ -60,13 +64,15 @@ export default async function ClinicTodayPage(
               </div>
               {appt.status === "checked_in" ? (
                 <span className="qs in">{t("checkedIn")}</span>
-              ) : (
+              ) : canCheckIn ? (
                 <form action={action}>
                   <input type="hidden" name="appointmentId" value={appt.appointmentId} />
                   <button type="submit" className="qb tap-target">
                     {t("checkIn")}
                   </button>
                 </form>
+              ) : (
+                <span className="qs">{t("notCheckedIn")}</span>
               )}
             </div>
           ))

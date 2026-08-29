@@ -1,17 +1,27 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { resolveClinicStaffBySlug } from "@/lib/api/me";
 
 export default async function ClinicLayout(
   props: LayoutProps<"/[locale]/clinic/[clinicSlug]">,
 ) {
   const { locale, clinicSlug } = await props.params;
-  const t = await getTranslations("clinic");
+  const [t, staffCtx] = await Promise.all([
+    getTranslations("clinic"),
+    resolveClinicStaffBySlug(clinicSlug),
+  ]);
 
+  // Staff management is owner-only (per the product doc's role matrix), so
+  // the nav link is hidden for receptionist/junior doctor rather than
+  // linking to a page that just shows "access denied" — the page still
+  // enforces this itself independently, this is purely nav tidiness.
   const navItems = [
     { href: `/clinic/${clinicSlug}/today`, label: t("nav.today") },
     { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients") },
-    { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff") },
+    ...(!staffCtx || staffCtx.role === "owner"
+      ? [{ href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff") }]
+      : []),
     { href: `/clinic/${clinicSlug}/notifications`, label: t("nav.notifications") },
   ];
 
