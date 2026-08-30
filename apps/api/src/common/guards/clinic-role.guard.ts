@@ -9,10 +9,16 @@ import {
 import { Reflector } from '@nestjs/core';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { Request } from 'express';
-import type { ClinicStaffRole } from '@careconnect/shared-types';
+import type {
+  ClinicStaffRole,
+  StaffPermissionKey,
+} from '@careconnect/shared-types';
 import { DRIZZLE, type Database } from '../database/database.module';
 import { clinicStaff } from '../database/schema';
-import { CLINIC_ROLES_KEY } from '../decorators/require-clinic-role.decorator';
+import {
+  CLINIC_PERMISSION_KEY,
+  CLINIC_ROLES_KEY,
+} from '../decorators/require-clinic-role.decorator';
 
 /**
  * Enforces per-clinic RBAC: the caller must be `active` clinic_staff at the
@@ -39,6 +45,9 @@ export class ClinicRoleGuard implements CanActivate {
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
+    const requiredPermission = this.reflector.getAllAndOverride<
+      StaffPermissionKey | undefined
+    >(CLINIC_PERMISSION_KEY, [context.getHandler(), context.getClass()]);
 
     const request = context
       .switchToHttp()
@@ -56,7 +65,10 @@ export class ClinicRoleGuard implements CanActivate {
     }
 
     const [membership] = await this.db
-      .select({ role: clinicStaff.role })
+      .select({
+        role: clinicStaff.role,
+        revokedPermissions: clinicStaff.revokedPermissions,
+      })
       .from(clinicStaff)
       .where(
         and(
@@ -71,6 +83,16 @@ export class ClinicRoleGuard implements CanActivate {
     if (!membership) {
       throw new ForbiddenException(
         'You do not have the required role at this clinic',
+      );
+    }
+
+    if (
+      requiredPermission &&
+      membership.role !== 'owner' &&
+      membership.revokedPermissions.includes(requiredPermission)
+    ) {
+      throw new ForbiddenException(
+        'This permission has been revoked for your role at this clinic',
       );
     }
 

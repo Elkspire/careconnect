@@ -18,16 +18,6 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function initialStatus(): Status {
-  if (typeof window === "undefined") {
-    return "checking";
-  }
-  if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-    return "unsupported";
-  }
-  return Notification.permission === "denied" ? "denied" : "checking";
-}
-
 /**
  * A toggle row for the account page (see app/[locale]/(patient)/patient/page.tsx).
  * Turning it off unsubscribes from push but can't revoke the OS-level
@@ -37,14 +27,36 @@ function initialStatus(): Status {
  */
 export function PushNotifications() {
   const t = useTranslations("site");
-  const [status, setStatus] = useState<Status>(initialStatus);
+  // Always starts at "checking" on both server and client — feature
+  // support and the existing Notification.permission are real browser
+  // state, unknowable during SSR. Computing them synchronously here (this
+  // used to check `typeof window === "undefined"`) made the client's
+  // first render disagree with the server-rendered HTML whenever push
+  // wasn't supported or permission was already denied, which is exactly
+  // what threw the hydration mismatch on the patient dashboard. Deferring
+  // all of it to the effect below keeps the first render identical on
+  // both sides; the real status only ever lands after mount.
+  const [status, setStatus] = useState<Status>("checking");
+  // handleToggle used to swallow every subscribe()/unsubscribe() failure
+  // silently and just revert the toggle — from the outside that looks
+  // exactly like "the toggle does nothing" with no way to tell why (e.g.
+  // a misconfigured VAPID key on the API, or a real network failure).
+  const [error, setError] = useState(false);
 
-  // Mount-only: whether there's already a subscription can only be known
-  // asynchronously, so this can't be folded into initialStatus() above.
   // Deliberately excludes `status` from deps — it must not re-run when
   // handleToggle below sets status to "working".
   useEffect(() => {
-    if (initialStatus() !== "checking") {
+    // These two setState calls are the intentional exception the comment
+    // above describes: the value genuinely cannot be computed during
+    // render without reintroducing the hydration mismatch, since it
+    // depends on browser globals that don't exist during SSR.
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatus("unsupported");
+      return;
+    }
+    if (Notification.permission === "denied") {
+      setStatus("denied");
       return;
     }
     navigator.serviceWorker
@@ -119,6 +131,7 @@ export function PushNotifications() {
 
   async function handleToggle() {
     setStatus("working");
+    setError(false);
     try {
       if (status === "subscribed") {
         await unsubscribe();
@@ -127,6 +140,7 @@ export function PushNotifications() {
       }
     } catch {
       setStatus(status === "subscribed" ? "subscribed" : "default");
+      setError(true);
     }
   }
 
@@ -142,6 +156,7 @@ export function PushNotifications() {
       <span>
         {t("enableNotifications")}
         {status === "denied" && <small>{t("notificationsBlocked")}</small>}
+        {error && <small>{t("notificationsError")}</small>}
       </span>
       <button
         type="button"

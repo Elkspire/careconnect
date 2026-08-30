@@ -35,6 +35,7 @@ export interface ClinicStaffMember {
   userId: string;
   role: string;
   status: string;
+  revokedPermissions: string[];
 }
 
 export interface ClinicAppointmentSummary {

@@ -9,7 +9,8 @@
     "myAccount": "My account",
     "logout": "Log out",
     "enableNotifications": "Push notifications",
-    "notificationsBlocked": "Blocked in your browser's site settings"
+    "notificationsBlocked": "Blocked in your browser's site settings",
+    "notificationsError": "Something went wrong — try again"
   },
   "directory": {
     "heading": "Find a doctor",
@@ -146,6 +147,20 @@
       "owner": "Owner",
       "receptionist": "Receptionist",
       "junior_doctor": "Junior doctor"
+    },
+    "permissionsHeading": "Pick a role to see exactly what it can reach",
+    "permissionsToggleHeading": "Turn off anything they shouldn't be able to do",
+    "permissionAllowed": "Allowed",
+    "permissionBlocked": "Blocked",
+    "customPermissionsNote": "Custom: {permissions}",
+    "permissions": {
+      "viewPatientList": "See patient names, numbers and visit dates",
+      "viewTodayQueue": "See today's appointment queue",
+      "checkInPatients": "Check patients in",
+      "viewRecords": "View uploaded medical records",
+      "clinicalNotes": "Read and write clinical notes",
+      "manageStaff": "Invite or remove staff",
+      "manageFeesSchedule": "Change fees or schedule"
     },
     "invite": "Invite",
     "revoke": "Revoke access",

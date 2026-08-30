@@ -76,6 +76,37 @@ export type ClinicStaffRole = (typeof CLINIC_STAFF_ROLE)[number];
 export const CLINIC_STAFF_STATUS = ["invited", "active", "revoked"] as const;
 export type ClinicStaffStatus = (typeof CLINIC_STAFF_STATUS)[number];
 
+export type AssignableStaffRole = Exclude<ClinicStaffRole, "owner">;
+
+/**
+ * Fine-grained capabilities ClinicRoleGuard checks in addition to the
+ * coarse role list on a route (see RequireStaffPermission). Mirrors the
+ * Staff page's permission matrix in apps/web.
+ */
+export const STAFF_PERMISSION_KEY = [
+  "viewPatientList",
+  "viewTodayQueue",
+  "checkInPatients",
+  "viewRecords",
+  "clinicalNotes",
+  "manageStaff",
+  "manageFeesSchedule",
+] as const;
+export type StaffPermissionKey = (typeof STAFF_PERMISSION_KEY)[number];
+
+/**
+ * The most each assignable role can ever be granted. clinic_staff.
+ * revoked_permissions (see 0011_staff_permission_overrides.sql) lets a
+ * doctor narrow a specific staff member below their role's ceiling —
+ * never past it. manageStaff/manageFeesSchedule stay owner-only
+ * structurally (their routes never list another role), so they never
+ * appear here.
+ */
+export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissionKey[]> = {
+  receptionist: ["viewPatientList", "viewTodayQueue", "checkInPatients"],
+  junior_doctor: ["viewPatientList", "viewTodayQueue", "viewRecords", "clinicalNotes"],
+};
+
 export const RECORD_TYPE = ["prescription_photo", "lab_report", "other_document"] as const;
 export type RecordType = (typeof RECORD_TYPE)[number];
 

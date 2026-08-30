@@ -737,6 +737,29 @@ a.card:hover {
 }
 
 /* ---------- permission matrix ---------- */
+.pmx {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 13px;
+  flex-wrap: wrap;
+}
+.pmx button {
+  border: 1px solid rgba(18, 32, 27, 0.22);
+  background: #fff;
+  border-radius: 2px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--color-ink-soft);
+}
+.pmx button.on {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-color: var(--color-ink);
+}
 .pgrid {
   display: grid;
   gap: 0;

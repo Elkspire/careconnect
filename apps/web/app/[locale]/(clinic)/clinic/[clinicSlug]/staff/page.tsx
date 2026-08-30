@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { listStaff } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { inviteStaffAction, revokeStaffAction } from "../../../actions";
+import { StaffPermissionMatrix } from "@/components/staff-permission-matrix";
+import { StaffInviteFields } from "@/components/staff-invite-fields";
 
 export default async function ClinicStaffPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/staff">,
@@ -50,6 +52,18 @@ export default async function ClinicStaffPage(
             <div key={member.id} className="prow">
               <span>
                 {t(`roles.${member.role}` as "roles.owner")} — {member.status}
+                {member.revokedPermissions.length > 0 && (
+                  <>
+                    <br />
+                    <small style={{ color: "var(--color-ink-soft)" }}>
+                      {t("customPermissionsNote", {
+                        permissions: member.revokedPermissions
+                          .map((p) => t(`permissions.${p}` as "permissions.viewPatientList"))
+                          .join(", "),
+                      })}
+                    </small>
+                  </>
+                )}
               </span>
               {member.status === "active" && member.role !== "owner" && (
                 <form action={revoke}>
@@ -62,6 +76,10 @@ export default async function ClinicStaffPage(
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="card mt-6">
+        <StaffPermissionMatrix />
       </div>
 
       <div className="slip mt-8">
@@ -81,13 +99,7 @@ export default async function ClinicStaffPage(
             <span className="lbl">{t("fullNameLabel")}</span>
             <input type="text" name="fullName" required className="field tap-target" />
           </label>
-          <label>
-            <span className="lbl">{t("roleLabel")}</span>
-            <select name="role" className="field tap-target">
-              <option value="receptionist">{t("roles.receptionist")}</option>
-              <option value="junior_doctor">{t("roles.junior_doctor")}</option>
-            </select>
-          </label>
+          <StaffInviteFields />
           <button type="submit" className="btn tap-target">
             {t("invite")}
           </button>

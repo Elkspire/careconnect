@@ -9,7 +9,10 @@ import {
 } from '@nestjs/common';
 import { Audit } from '../../common/decorators/audit.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { RequireClinicRole } from '../../common/decorators/require-clinic-role.decorator';
+import {
+  RequireClinicRole,
+  RequireStaffPermission,
+} from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
 import { AuditLogInterceptor } from '../../common/interceptors/audit-log.interceptor';
 import { CreateClinicalNoteDto, UpdateClinicalNoteDto } from './clinical.dto';
@@ -26,6 +29,7 @@ import { ClinicalService } from './clinical.service';
  */
 @Controller('clinics/:clinicId/clinical-notes')
 @RequireClinicRole('owner', 'junior_doctor')
+@RequireStaffPermission('clinicalNotes')
 @UseInterceptors(AuditLogInterceptor)
 export class ClinicalController {
   constructor(private readonly clinicalService: ClinicalService) {}

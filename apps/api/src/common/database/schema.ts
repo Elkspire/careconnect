@@ -453,6 +453,10 @@ export const clinicStaff = pgTable(
     role: clinicStaffRoleEnum('role').notNull(),
     status: clinicStaffStatusEnum('status').notNull().default('invited'),
     invitedBy: uuid('invited_by').references(() => authUsers.id),
+    revokedPermissions: text('revoked_permissions')
+      .array()
+      .notNull()
+      .default([]),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

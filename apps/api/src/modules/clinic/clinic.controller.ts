@@ -8,7 +8,10 @@ import {
   Put,
 } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { RequireClinicRole } from '../../common/decorators/require-clinic-role.decorator';
+import {
+  RequireClinicRole,
+  RequireStaffPermission,
+} from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
 import {
   CheckInAppointmentDto,
@@ -83,12 +86,14 @@ export class ClinicController {
   /** Non-clinical: name, phone, last visit only. See ClinicService.listPatients. */
   @Get(':clinicId/patients')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  @RequireStaffPermission('viewPatientList')
   listPatients(@Param('clinicId') clinicId: string) {
     return this.clinicService.listPatients(clinicId);
   }
 
   @Get(':clinicId/patients/:patientId')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  @RequireStaffPermission('viewPatientList')
   getPatientDetail(
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
@@ -98,6 +103,7 @@ export class ClinicController {
 
   @Get(':clinicId/patients/:patientId/family/:familyMemberId')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  @RequireStaffPermission('viewPatientList')
   getFamilyMemberDetail(
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
@@ -118,6 +124,7 @@ export class ClinicController {
    */
   @Get(':clinicId/patients/:patientId/records')
   @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('viewRecords')
   getPatientRecords(
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
@@ -127,6 +134,7 @@ export class ClinicController {
 
   @Get(':clinicId/patients/:patientId/family/:familyMemberId/records')
   @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('viewRecords')
   getFamilyMemberRecords(
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
@@ -141,6 +149,7 @@ export class ClinicController {
 
   @Get(':clinicId/records/:recordId/signed-url')
   @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('viewRecords')
   getRecordSignedUrl(
     @Param('clinicId') clinicId: string,
     @Param('recordId') recordId: string,
@@ -151,12 +160,14 @@ export class ClinicController {
   /** Default landing screen for the clinic dashboard. */
   @Get(':clinicId/today')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  @RequireStaffPermission('viewTodayQueue')
   listToday(@Param('clinicId') clinicId: string) {
     return this.clinicService.listToday(clinicId);
   }
 
   @Post(':clinicId/check-in')
   @RequireClinicRole('owner', 'receptionist')
+  @RequireStaffPermission('checkInPatients')
   checkIn(
     @Param('clinicId') clinicId: string,
     @Body() body: CheckInAppointmentDto,

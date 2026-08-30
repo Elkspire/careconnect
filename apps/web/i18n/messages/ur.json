@@ -9,7 +9,8 @@
     "myAccount": "میرا اکاؤنٹ",
     "logout": "لاگ آؤٹ",
     "enableNotifications": "پش اطلاعات",
-    "notificationsBlocked": "آپ کے براؤزر کی سائٹ ترتیبات میں مسدود ہے"
+    "notificationsBlocked": "آپ کے براؤزر کی سائٹ ترتیبات میں مسدود ہے",
+    "notificationsError": "کچھ غلط ہو گیا — دوبارہ کوشش کریں"
   },
   "directory": {
     "heading": "ڈاکٹر تلاش کریں",
@@ -146,6 +147,20 @@
       "owner": "مالک",
       "receptionist": "ریسیپشنسٹ",
       "junior_doctor": "جونیئر ڈاکٹر"
+    },
+    "permissionsHeading": "کردار منتخب کریں تاکہ معلوم ہو وہ کیا کر سکتا ہے",
+    "permissionsToggleHeading": "جو کام یہ نہیں کر سکتے، انہیں بند کر دیں",
+    "permissionAllowed": "اجازت ہے",
+    "permissionBlocked": "اجازت نہیں",
+    "customPermissionsNote": "مخصوص: {permissions}",
+    "permissions": {
+      "viewPatientList": "مریضوں کے نام، نمبر اور وزٹ کی تاریخیں دیکھیں",
+      "viewTodayQueue": "آج کی اپائنٹمنٹ قطار دیکھیں",
+      "checkInPatients": "مریضوں کو چیک ان کریں",
+      "viewRecords": "اپ لوڈ شدہ طبی ریکارڈز دیکھیں",
+      "clinicalNotes": "طبی نوٹس پڑھیں اور لکھیں",
+      "manageStaff": "عملے کو مدعو کریں یا ہٹائیں",
+      "manageFeesSchedule": "فیس یا شیڈول تبدیل کریں"
     },
     "invite": "مدعو کریں",
     "revoke": "رسائی منسوخ کریں",

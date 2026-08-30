@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { STAFF_PERMISSION_KEY, type StaffPermissionKey } from "@careconnect/shared-types";
 import { checkIn, getClinicRecordSignedUrl, inviteStaff, revokeStaff } from "@/lib/api/clinic";
 import { createClinicalNote, updateClinicalNote } from "@/lib/api/clinical";
 
@@ -27,6 +28,10 @@ export async function inviteStaffAction(
     phone: String(formData.get("phone")),
     fullName: String(formData.get("fullName") ?? ""),
     role,
+    deniedPermissions: formData
+      .getAll("deniedPermissions")
+      .map(String)
+      .filter((v): v is StaffPermissionKey => (STAFF_PERMISSION_KEY as readonly string[]).includes(v)),
   });
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
 }

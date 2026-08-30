@@ -140,10 +140,15 @@ export class ClinicService {
         role: input.role,
         status: 'active',
         invitedBy,
+        revokedPermissions: input.deniedPermissions,
       })
       .onConflictDoUpdate({
         target: [clinicStaff.clinicId, clinicStaff.userId],
-        set: { role: input.role, status: 'active' },
+        set: {
+          role: input.role,
+          status: 'active',
+          revokedPermissions: input.deniedPermissions,
+        },
       })
       .returning();
     return row;
