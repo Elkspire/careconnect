@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
-import { cancelAppointment, createAppointment, rescheduleAppointment } from "@/lib/api/booking";
+import {
+  cancelAppointment,
+  createAppointment,
+  joinWaitlist,
+  leaveWaitlist,
+  rescheduleAppointment,
+} from "@/lib/api/booking";
 import { getVaultRecordSignedUrl, uploadVaultRecord } from "@/lib/api/vault";
 
 // Matches apps/api/src/modules/booking/availability.ts's CLINIC_UTC_OFFSET —
@@ -84,6 +90,33 @@ export async function rescheduleAppointmentAction(
 
 export async function cancelAppointmentAction(locale: string, formData: FormData): Promise<void> {
   await cancelAppointment({ appointmentId: String(formData.get("appointmentId")) });
+  revalidatePath(`/${locale}/patient/appointments`);
+}
+
+export async function joinWaitlistAction(locale: string, formData: FormData): Promise<void> {
+  const familyMemberId = formData.get("familyMemberId");
+  const practitionerId = String(formData.get("practitionerId"));
+  const clinicId = String(formData.get("clinicId"));
+  const requestedDate = String(formData.get("requestedDate"));
+
+  if (familyMemberId) {
+    await joinWaitlist({
+      subjectType: "family_member",
+      familyMemberId: String(familyMemberId),
+      practitionerId,
+      clinicId,
+      requestedDate,
+    });
+  } else {
+    await joinWaitlist({ subjectType: "self", practitionerId, clinicId, requestedDate });
+  }
+
+  revalidatePath(`/${locale}/patient/appointments`);
+  redirect(`/${locale}/patient/appointments`);
+}
+
+export async function leaveWaitlistAction(locale: string, formData: FormData): Promise<void> {
+  await leaveWaitlist(String(formData.get("waitlistEntryId")));
   revalidatePath(`/${locale}/patient/appointments`);
 }
 

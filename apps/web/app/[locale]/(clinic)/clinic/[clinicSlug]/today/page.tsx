@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { listToday } from "@/lib/api/clinic";
+import { listClinicWaitlist, listToday } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
-import { formatClinicTime } from "@/lib/format-time";
+import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
 import { checkInAction } from "../../../actions";
 
 export default async function ClinicTodayPage(
@@ -22,7 +22,10 @@ export default async function ClinicTodayPage(
   // doesn't run it.
   const canCheckIn = staffCtx.role === "owner" || staffCtx.role === "receptionist";
 
-  const appointments = await listToday(clinicId);
+  const [appointments, waitlist] = await Promise.all([
+    listToday(clinicId),
+    listClinicWaitlist(clinicId),
+  ]);
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
   const checkedInCount = appointments.filter((a) => a.status === "checked_in").length;
   const waitingCount = appointments.length - checkedInCount;
@@ -78,6 +81,35 @@ export default async function ClinicTodayPage(
           ))
         )}
       </div>
+
+      {waitlist.length > 0 && (
+        <>
+          <h2 className="lbl mt-8" style={{ color: "var(--color-ink-soft)" }}>
+            {t("waitlistHeading")}
+          </h2>
+          <div className="slip mt-3">
+            {waitlist.map((entry, i) => (
+              <div key={entry.id} className="qrow">
+                <span className="qn mono">{String(i + 1).padStart(2, "0")}</span>
+                <div className="min-w-0">
+                  <b>{entry.patientFullName}</b>
+                  <small>
+                    {formatClinicDate(entry.requestedDate, locale)} ·{" "}
+                    {entry.practitionerFullName}
+                    {entry.subjectType === "family_member" && entry.familyMemberFullName
+                      ? ` · ${entry.familyMemberFullName}`
+                      : ""}
+                    {entry.patientPhone ? ` · ${entry.patientPhone}` : ""}
+                  </small>
+                </div>
+                <span className={`qs${entry.status === "offered" ? " in" : ""}`}>
+                  {t(`waitlistStatus.${entry.status}` as "waitlistStatus.waiting")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

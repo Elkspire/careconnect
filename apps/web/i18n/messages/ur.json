@@ -111,6 +111,17 @@
     "noSlots": "اس تاریخ کے لیے کوئی وقت دستیاب نہیں۔",
     "confirmBooking": "بکنگ کی تصدیق کریں",
     "bookingConfirmed": "اپائنٹمنٹ بک ہو گئی۔",
+    "joinWaitlist": "اس تاریخ کے لیے ویٹ لسٹ میں شامل ہوں",
+    "myWaitlistHeading": "ویٹ لسٹ",
+    "noWaitlistEntries": "آپ فی الحال کسی ویٹ لسٹ میں شامل نہیں ہیں۔",
+    "leaveWaitlist": "ویٹ لسٹ چھوڑیں",
+    "waitlistStatus": {
+      "waiting": "انتظار میں",
+      "offered": "وقت دستیاب ہے — ابھی بک کریں",
+      "converted": "بک ہو گئی",
+      "expired": "ختم ہو گئی",
+      "cancelled": "چھوڑ دی گئی"
+    },
     "status": {
       "booked": "بک شدہ",
       "checked_in": "چیک ان ہو گیا",
@@ -124,6 +135,11 @@
     "noAppointmentsToday": "آج کوئی اپائنٹمنٹ نہیں۔",
     "checkIn": "چیک ان کریں",
     "checkedIn": "چیک ان ہو گیا",
+    "waitlistHeading": "ویٹ لسٹ",
+    "waitlistStatus": {
+      "waiting": "انتظار میں",
+      "offered": "وقت دستیاب ہے"
+    },
     "notCheckedIn": "چیک ان نہیں ہوا",
     "patientsHeading": "مریض",
     "lastVisitLabel": "آخری وزٹ",

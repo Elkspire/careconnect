@@ -29,6 +29,20 @@ export interface ClinicPatient {
   lastVisit: string;
 }
 
+export interface ClinicWaitlistEntry {
+  id: string;
+  practitionerId: string;
+  practitionerFullName: string;
+  patientId: string;
+  patientFullName: string;
+  patientPhone: string | null;
+  subjectType: string;
+  familyMemberFullName: string | null;
+  requestedDate: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface ClinicStaffMember {
   id: string;
   clinicId: string;
@@ -94,6 +108,11 @@ export async function listMyClinics(): Promise<Clinic[]> {
 export async function listToday(clinicId: string): Promise<TodayAppointment[]> {
   const res = await authedFetch(`/clinics/${clinicId}/today`);
   return parseJsonOrThrow(res, "List today's appointments");
+}
+
+export async function listClinicWaitlist(clinicId: string): Promise<ClinicWaitlistEntry[]> {
+  const res = await authedFetch(`/clinics/${clinicId}/waitlist`);
+  return parseJsonOrThrow(res, "List clinic waitlist");
 }
 
 export async function checkIn(clinicId: string, appointmentId: string): Promise<void> {

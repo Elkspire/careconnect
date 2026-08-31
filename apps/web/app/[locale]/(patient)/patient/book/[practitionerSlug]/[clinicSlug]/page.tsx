@@ -4,7 +4,7 @@ import { getAvailability } from "@/lib/api/booking";
 import { getPractitionerProfile } from "@/lib/api/directory";
 import { listFamilyMembers } from "@/lib/api/patients";
 import { clinicTodayIso, formatClinicTime } from "@/lib/format-time";
-import { createAppointmentAction } from "../../../../actions";
+import { createAppointmentAction, joinWaitlistAction } from "../../../../actions";
 
 export default async function BookAppointmentPage(
   props: PageProps<"/[locale]/patient/book/[practitionerSlug]/[clinicSlug]">,
@@ -33,6 +33,7 @@ export default async function BookAppointmentPage(
     listFamilyMembers(),
   ]);
   const action = createAppointmentAction.bind(null, locale);
+  const waitlistAction = joinWaitlistAction.bind(null, locale);
   const slots = days[0]?.slots ?? [];
 
   return (
@@ -71,33 +72,44 @@ export default async function BookAppointmentPage(
 
         <h4 className="lbl">{t("availableSlots")}</h4>
 
-        {slots.length === 0 ? (
-          <p className="mt-2" style={{ color: "var(--color-ink-soft)" }}>
-            {t("noSlots")}
-          </p>
-        ) : (
-          // A single form for the whole grid, not one per slot — the
-          // family-member select above belongs to the booking as a whole,
-          // not to any individual time. Each slot is its own submit button
-          // sharing the "scheduledStart" name with a different value:
-          // clicking one only submits that button's value, so no per-slot
-          // hidden input or JS is needed to pick which time was chosen.
-          <form id="booking-form" action={action} className="slots">
-            <input type="hidden" name="practitionerId" value={practitionerId} />
-            <input type="hidden" name="clinicId" value={clinicId} />
-            {slots.map((slot) => (
+        {
+          // A single form covers both the slot grid and the waitlist
+          // fallback, not two separate forms — the family-member select
+          // above belongs to whichever action fires, and `formAction`
+          // lets one submit button (Join waitlist) override the form's
+          // default action without duplicating the family-member field.
+        }
+        <form id="booking-form" action={action}>
+          <input type="hidden" name="practitionerId" value={practitionerId} />
+          <input type="hidden" name="clinicId" value={clinicId} />
+          <input type="hidden" name="requestedDate" value={date} />
+          {slots.length === 0 ? (
+            <div className="mt-2">
+              <p style={{ color: "var(--color-ink-soft)" }}>{t("noSlots")}</p>
               <button
-                key={slot.start}
                 type="submit"
-                name="scheduledStart"
-                value={slot.start}
-                className="slot tap-target"
+                formAction={waitlistAction}
+                className="btn gh sm tap-target mt-3"
               >
-                {formatClinicTime(slot.start, locale)}
+                {t("joinWaitlist")}
               </button>
-            ))}
-          </form>
-        )}
+            </div>
+          ) : (
+            <div className="slots">
+              {slots.map((slot) => (
+                <button
+                  key={slot.start}
+                  type="submit"
+                  name="scheduledStart"
+                  value={slot.start}
+                  className="slot tap-target"
+                >
+                  {formatClinicTime(slot.start, locale)}
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );

@@ -13,11 +13,23 @@ import type {
   RescheduleAppointmentInput,
 } from '@careconnect/validation';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { and, desc, eq, gte, inArray, isNull, lte, ne, or } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lte,
+  ne,
+  or,
+} from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
   clinicStaff,
+  clinics,
   practitionerClinic,
   practitionerLeave,
   practitioners,
@@ -30,12 +42,21 @@ import {
   EVENT_APPOINTMENT_BOOKED,
   EVENT_APPOINTMENT_CANCELLED,
   EVENT_APPOINTMENT_RESCHEDULED,
+  EVENT_WAITLIST_OFFERED,
+  WaitlistOfferedEvent,
 } from '../notifications/events';
 import { PatientsService } from '../patients/patients.service';
 import { computeAvailableSlots, type WeeklyTimings } from './availability';
 
 /** Statuses that occupy a slot and therefore block new bookings. */
 const ACTIVE_APPOINTMENT_STATUSES = ['booked', 'checked_in'] as const;
+
+/** Same fixed Asia/Karachi (UTC+5, no DST) assumption as availability.ts — waitlist_entries.requested_date is a plain "YYYY-MM-DD" in clinic-local time. */
+function toClinicDateString(date: Date): string {
+  return new Date(date.getTime() + 5 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+}
 
 @Injectable()
 export class BookingService {
@@ -242,6 +263,13 @@ export class BookingService {
         previousStart,
       ),
     );
+    // The old date just lost a booking — someone on the waitlist for it
+    // may now be able to get in.
+    await this.offerNextWaitlistSlot(
+      row.practitionerId,
+      row.clinicId,
+      toClinicDateString(previousStart),
+    );
     return row;
   }
 
@@ -302,6 +330,11 @@ export class BookingService {
         isStaff,
       ),
     );
+    await this.offerNextWaitlistSlot(
+      row.practitionerId,
+      row.clinicId,
+      toClinicDateString(row.scheduledStart),
+    );
     return row;
   }
 
@@ -355,11 +388,95 @@ export class BookingService {
     return row;
   }
 
+  /** Includes practitioner/clinic names — same reasoning as listMyAppointments. */
   listMyWaitlistEntries(callerId: string) {
     return this.db
+      .select({
+        id: waitlistEntries.id,
+        subjectType: waitlistEntries.subjectType,
+        familyMemberId: waitlistEntries.familyMemberId,
+        practitionerId: waitlistEntries.practitionerId,
+        practitionerFullName: practitioners.fullName,
+        practitionerSlug: practitioners.slug,
+        clinicId: waitlistEntries.clinicId,
+        clinicName: clinics.name,
+        requestedDate: waitlistEntries.requestedDate,
+        status: waitlistEntries.status,
+        createdAt: waitlistEntries.createdAt,
+      })
+      .from(waitlistEntries)
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, waitlistEntries.practitionerId),
+      )
+      .innerJoin(clinics, eq(clinics.id, waitlistEntries.clinicId))
+      .where(eq(waitlistEntries.patientId, callerId))
+      .orderBy(desc(waitlistEntries.createdAt));
+  }
+
+  /** Withdraws a waitlist entry — the patient booked elsewhere, or no longer wants it. */
+  async leaveWaitlist(
+    callerId: string,
+    waitlistEntryId: string,
+  ): Promise<void> {
+    const [row] = await this.db
+      .update(waitlistEntries)
+      .set({ status: 'cancelled' })
+      .where(
+        and(
+          eq(waitlistEntries.id, waitlistEntryId),
+          eq(waitlistEntries.patientId, callerId),
+          inArray(waitlistEntries.status, ['waiting', 'offered']),
+        ),
+      )
+      .returning({ id: waitlistEntries.id });
+    if (!row) {
+      throw new NotFoundException('Waitlist entry not found');
+    }
+  }
+
+  /**
+   * Offers a just-freed date to the longest-waiting patient for it —
+   * "notified when a slot frees up" per the product doc. This only offers
+   * (marks the entry 'offered' and notifies); the patient still has to book
+   * it themselves through the normal flow like anyone else. Doesn't hold
+   * or reserve the slot — a real reservation window is future work.
+   */
+  private async offerNextWaitlistSlot(
+    practitionerId: string,
+    clinicId: string,
+    freedDate: string,
+  ): Promise<void> {
+    const [entry] = await this.db
       .select()
       .from(waitlistEntries)
-      .where(eq(waitlistEntries.patientId, callerId));
+      .where(
+        and(
+          eq(waitlistEntries.practitionerId, practitionerId),
+          eq(waitlistEntries.clinicId, clinicId),
+          eq(waitlistEntries.requestedDate, freedDate),
+          eq(waitlistEntries.status, 'waiting'),
+        ),
+      )
+      .orderBy(asc(waitlistEntries.createdAt))
+      .limit(1);
+    if (!entry) return;
+
+    await this.db
+      .update(waitlistEntries)
+      .set({ status: 'offered' })
+      .where(eq(waitlistEntries.id, entry.id));
+
+    this.eventEmitter.emit(
+      EVENT_WAITLIST_OFFERED,
+      new WaitlistOfferedEvent(
+        entry.id,
+        entry.patientId,
+        practitionerId,
+        clinicId,
+        freedDate,
+      ),
+    );
   }
 
   private async getAppointmentOrThrow(appointmentId: string) {

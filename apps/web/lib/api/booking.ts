@@ -2,6 +2,7 @@ import type {
   AvailabilityQuery,
   CancelAppointmentInput,
   CreateAppointmentInput,
+  JoinWaitlistInput,
   RescheduleAppointmentInput,
 } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
@@ -28,6 +29,20 @@ export interface Appointment {
 export interface MyAppointment extends Appointment {
   practitionerFullName: string;
   practitionerSlug: string;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  subjectType: string;
+  familyMemberId: string | null;
+  practitionerId: string;
+  practitionerFullName: string;
+  practitionerSlug: string;
+  clinicId: string;
+  clinicName: string;
+  requestedDate: string;
+  status: string;
+  createdAt: string;
 }
 
 // Public — no auth required, so a patient can preview slots before signing in.
@@ -73,4 +88,24 @@ export async function cancelAppointment(input: CancelAppointmentInput): Promise<
 export async function listMyAppointments(): Promise<MyAppointment[]> {
   const res = await authedFetch("/booking/appointments");
   return parseJsonOrThrow(res, "List appointments");
+}
+
+export async function joinWaitlist(input: JoinWaitlistInput): Promise<WaitlistEntry> {
+  const res = await authedFetch("/booking/waitlist", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Join waitlist");
+}
+
+export async function listMyWaitlist(): Promise<WaitlistEntry[]> {
+  const res = await authedFetch("/booking/waitlist");
+  return parseJsonOrThrow(res, "List waitlist");
+}
+
+export async function leaveWaitlist(id: string): Promise<void> {
+  const res = await authedFetch(`/booking/waitlist/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error(`Leave waitlist failed: ${res.status}`);
+  }
 }

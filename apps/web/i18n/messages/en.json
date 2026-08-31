@@ -111,6 +111,17 @@
     "noSlots": "No available slots for this date.",
     "confirmBooking": "Confirm booking",
     "bookingConfirmed": "Appointment booked.",
+    "joinWaitlist": "Join the waitlist for this date",
+    "myWaitlistHeading": "Waitlist",
+    "noWaitlistEntries": "You're not on any waitlist right now.",
+    "leaveWaitlist": "Leave waitlist",
+    "waitlistStatus": {
+      "waiting": "Waiting",
+      "offered": "Slot offered — book now",
+      "converted": "Booked",
+      "expired": "Expired",
+      "cancelled": "Left"
+    },
     "status": {
       "booked": "Booked",
       "checked_in": "Checked in",
@@ -124,6 +135,11 @@
     "noAppointmentsToday": "No appointments today.",
     "checkIn": "Check in",
     "checkedIn": "Checked in",
+    "waitlistHeading": "Waitlist",
+    "waitlistStatus": {
+      "waiting": "Waiting",
+      "offered": "Slot offered"
+    },
     "notCheckedIn": "Not checked in",
     "patientsHeading": "Patients",
     "lastVisitLabel": "Last visit",

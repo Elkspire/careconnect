@@ -1,24 +1,34 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { listMyAppointments } from "@/lib/api/booking";
+import { listMyAppointments, listMyWaitlist } from "@/lib/api/booking";
 import { listFamilyMembers } from "@/lib/api/patients";
-import { formatClinicDateTime } from "@/lib/format-time";
-import { cancelAppointmentAction, rescheduleAppointmentAction } from "../../actions";
+import { formatClinicDate, formatClinicDateTime } from "@/lib/format-time";
+import {
+  cancelAppointmentAction,
+  leaveWaitlistAction,
+  rescheduleAppointmentAction,
+} from "../../actions";
 
 const REVIEWABLE_STATUSES = ["checked_in", "completed"];
+const ACTIVE_WAITLIST_STATUSES = ["waiting", "offered"];
 
 export default async function AppointmentsPage(
   props: PageProps<"/[locale]/patient/appointments">,
 ) {
   const { locale } = await props.params;
-  const [t, appointments, familyMembers] = await Promise.all([
+  const [t, appointments, waitlistEntries, familyMembers] = await Promise.all([
     getTranslations("patient"),
     listMyAppointments(),
+    listMyWaitlist(),
     listFamilyMembers(),
   ]);
   const familyMemberNameById = new Map(familyMembers.map((m) => [m.id, m.fullName]));
   const rescheduleAction = rescheduleAppointmentAction.bind(null, locale);
   const cancelAction = cancelAppointmentAction.bind(null, locale);
+  const leaveWaitlist = leaveWaitlistAction.bind(null, locale);
+  const activeWaitlistEntries = waitlistEntries.filter((e) =>
+    ACTIVE_WAITLIST_STATUSES.includes(e.status),
+  );
 
   return (
     <div className="max-w-6xl">
@@ -91,6 +101,42 @@ export default async function AppointmentsPage(
             </li>
           ))}
         </ul>
+      )}
+
+      {activeWaitlistEntries.length > 0 && (
+        <>
+          <h2 className="lbl mt-8" style={{ color: "var(--color-ink-soft)" }}>
+            {t("myWaitlistHeading")}
+          </h2>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {activeWaitlistEntries.map((entry) => (
+              <li key={entry.id} className="vslip">
+                <div className="vhead">
+                  <b>{formatClinicDate(entry.requestedDate, locale)}</b>
+                  <span className={`vtag vd ${entry.status === "offered" ? "dr" : ""}`}>
+                    {t(`waitlistStatus.${entry.status}` as "waitlistStatus.waiting")}
+                  </span>
+                </div>
+                <small className="mt-1 block">{entry.practitionerFullName}</small>
+                <small className="mono mt-1 block" style={{ color: "#7a8a82" }}>
+                  {entry.clinicName}
+                </small>
+                <small className="mono mt-1 block" style={{ color: "#7a8a82" }}>
+                  {entry.subjectType === "family_member"
+                    ? (entry.familyMemberId && familyMemberNameById.get(entry.familyMemberId)) ??
+                      t("forFamilyMember")
+                    : t("forSelf")}
+                </small>
+                <form action={leaveWaitlist} className="mt-3">
+                  <input type="hidden" name="waitlistEntryId" value={entry.id} />
+                  <button type="submit" className="btn gh sm tap-target">
+                    {t("leaveWaitlist")}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );

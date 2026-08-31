@@ -26,6 +26,7 @@ import {
   practitionerClinic,
   practitionerLeave,
   practitioners,
+  waitlistEntries,
 } from '../../common/database/schema';
 import {
   EVENT_PATIENT_CHECKED_IN,
@@ -512,6 +513,47 @@ export class ClinicService {
         ),
       )
       .orderBy(appointments.scheduledStart);
+  }
+
+  /**
+   * Patients waiting for a slot to free up at this clinic — the front-desk
+   * "someone is calling, nothing suits, put them on the list" screen. Only
+   * still-active entries (waiting/offered); converted/expired/cancelled
+   * ones are done, cluttering the desk view with nothing to act on.
+   */
+  listClinicWaitlist(clinicId: string) {
+    return this.db
+      .select({
+        id: waitlistEntries.id,
+        practitionerId: waitlistEntries.practitionerId,
+        practitionerFullName: practitioners.fullName,
+        patientId: patients.id,
+        patientFullName: patients.fullName,
+        patientPhone: authUsers.phone,
+        subjectType: waitlistEntries.subjectType,
+        familyMemberFullName: familyMembers.fullName,
+        requestedDate: waitlistEntries.requestedDate,
+        status: waitlistEntries.status,
+        createdAt: waitlistEntries.createdAt,
+      })
+      .from(waitlistEntries)
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, waitlistEntries.practitionerId),
+      )
+      .innerJoin(patients, eq(patients.id, waitlistEntries.patientId))
+      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(
+        familyMembers,
+        eq(familyMembers.id, waitlistEntries.familyMemberId),
+      )
+      .where(
+        and(
+          eq(waitlistEntries.clinicId, clinicId),
+          inArray(waitlistEntries.status, ['waiting', 'offered']),
+        ),
+      )
+      .orderBy(waitlistEntries.requestedDate, waitlistEntries.createdAt);
   }
 
   async checkIn(clinicId: string, input: CheckInAppointmentInput) {

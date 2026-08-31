@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
@@ -62,5 +70,13 @@ export class BookingController {
   @Get('waitlist')
   listMyWaitlist(@CurrentUser() user: AuthenticatedUser) {
     return this.bookingService.listMyWaitlistEntries(user.id);
+  }
+
+  @Delete('waitlist/:id')
+  leaveWaitlist(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.bookingService.leaveWaitlist(user.id, id);
   }
 }

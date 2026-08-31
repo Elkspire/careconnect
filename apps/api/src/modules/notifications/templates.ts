@@ -11,7 +11,8 @@ export type TemplateKey =
   | 'appointment_reminder_24h'
   | 'appointment_reminder_2h'
   | 'patient_checked_in'
-  | 'appointment_no_show';
+  | 'appointment_no_show'
+  | 'waitlist_slot_available';
 
 type TemplateFn = (payload: Record<string, string>) => string;
 
@@ -61,6 +62,12 @@ const templates: Record<TemplateKey, Record<'en' | 'ur', TemplateFn>> = {
       `You missed your ${p.when} appointment with ${p.practitionerName} at ${p.clinicName}. Please rebook if you still need it.`,
     ur: (p) =>
       `آپ ${p.practitionerName} کے ساتھ ${p.clinicName} میں ${p.when} کی اپائنٹمنٹ سے محروم رہے۔ اگر اب بھی ضرورت ہو تو براہ کرم دوبارہ بک کریں۔`,
+  },
+  waitlist_slot_available: {
+    en: (p) =>
+      `A slot opened up with ${p.practitionerName} at ${p.clinicName} on ${p.requestedDate} — you're first on the waitlist. Book it before it's gone.`,
+    ur: (p) =>
+      `${p.practitionerName} کے ساتھ ${p.clinicName} میں ${p.requestedDate} کو ایک وقت خالی ہو گیا ہے — آپ ویٹ لسٹ میں سب سے پہلے ہیں۔ جلد بک کریں۔`,
   },
 };
 

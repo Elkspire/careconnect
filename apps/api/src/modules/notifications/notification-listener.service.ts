@@ -20,7 +20,9 @@ import {
   EVENT_APPOINTMENT_REMINDER,
   EVENT_APPOINTMENT_RESCHEDULED,
   EVENT_PATIENT_CHECKED_IN,
+  EVENT_WAITLIST_OFFERED,
   PatientCheckedInEvent,
+  WaitlistOfferedEvent,
 } from './events';
 import { NotificationDispatcher } from './notification-dispatcher.service';
 
@@ -167,6 +169,28 @@ export class NotificationListenerService {
       payload: { patientName: patient.fullName },
       locale: ctx.practitionerLocale,
       relatedAppointmentId: event.appointment.appointmentId,
+    });
+  }
+
+  @OnEvent(EVENT_WAITLIST_OFFERED)
+  async onWaitlistOffered(event: WaitlistOfferedEvent): Promise<void> {
+    const ctx = await this.loadContext({
+      patientId: event.patientId,
+      practitionerId: event.practitionerId,
+      clinicId: event.clinicId,
+    });
+    if (!ctx) return;
+
+    await this.dispatcher.dispatch({
+      eventType: EVENT_WAITLIST_OFFERED,
+      templateKey: 'waitlist_slot_available',
+      recipient: { userId: ctx.patientId, phone: ctx.patientPhone },
+      payload: {
+        practitionerName: ctx.practitionerName,
+        clinicName: ctx.clinicName,
+        requestedDate: event.requestedDate,
+      },
+      locale: ctx.patientLocale,
     });
   }
 
