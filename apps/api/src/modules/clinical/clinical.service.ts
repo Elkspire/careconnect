@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import type {
   CreateClinicalNoteInput,
+  SavePrescriptionInput,
   UpdateClinicalNoteInput,
 } from '@careconnect/validation';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
@@ -17,7 +18,9 @@ import {
   clinicStaff,
   familyMembers,
   practitioners,
+  prescriptionItems,
 } from '../../common/database/schema';
+import { MedicalSummaryService } from '../medical-summary/medical-summary.service';
 
 /**
  * Physically isolated: this is the only module that ever touches
@@ -36,7 +39,10 @@ import {
  */
 @Injectable()
 export class ClinicalService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly medicalSummaryService: MedicalSummaryService,
+  ) {}
 
   private async isActiveJuniorDoctor(
     callerId: string,
@@ -171,9 +177,10 @@ export class ClinicalService {
    * place that actually exposes it. clinical_notes itself never leaves
    * this module — the route only returns the fields below.
    */
-  listMyHistory(patientId: string) {
-    return this.db
+  async listMyHistory(patientId: string) {
+    const visits = await this.db
       .select({
+        noteId: clinicalNotes.id,
         appointmentId: clinicalNotes.appointmentId,
         notes: clinicalNotes.notes,
         diagnosis: clinicalNotes.diagnosis,
@@ -197,5 +204,193 @@ export class ClinicalService {
       )
       .where(eq(clinicalNotes.patientId, patientId))
       .orderBy(desc(appointments.scheduledStart));
+    if (visits.length === 0) {
+      return [];
+    }
+
+    const items = await this.db
+      .select({
+        clinicalNoteId: prescriptionItems.clinicalNoteId,
+        drugName: prescriptionItems.drugName,
+        dosage: prescriptionItems.dosage,
+        frequency: prescriptionItems.frequency,
+        duration: prescriptionItems.duration,
+        instructions: prescriptionItems.instructions,
+      })
+      .from(prescriptionItems)
+      .where(
+        inArray(
+          prescriptionItems.clinicalNoteId,
+          visits.map((v) => v.noteId),
+        ),
+      )
+      .orderBy(asc(prescriptionItems.sortOrder));
+    const itemsByNoteId = new Map<string, typeof items>();
+    for (const item of items) {
+      const list = itemsByNoteId.get(item.clinicalNoteId) ?? [];
+      list.push(item);
+      itemsByNoteId.set(item.clinicalNoteId, list);
+    }
+
+    return visits.map(({ noteId, ...visit }) => ({
+      ...visit,
+      prescriptionItems: itemsByNoteId.get(noteId) ?? [],
+    }));
+  }
+
+  /**
+   * The patient's (or family member's) recorded allergies for this
+   * appointment — shown at the top of the clinical-notes page so a
+   * prescriber sees them before writing, not just as a post-save keyword
+   * check. Appointment-level, not note-level, since a doctor needs this
+   * before any note/prescription exists yet.
+   */
+  async getAppointmentAllergies(
+    callerId: string,
+    clinicId: string,
+    appointmentId: string,
+  ): Promise<string[]> {
+    const [appt] = await this.db
+      .select({
+        practitionerId: appointments.practitionerId,
+        clinicId: appointments.clinicId,
+        patientId: appointments.patientId,
+        subjectType: appointments.subjectType,
+        familyMemberId: appointments.familyMemberId,
+      })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+    if (!appt || appt.clinicId !== clinicId) {
+      throw new NotFoundException('Appointment not found');
+    }
+    if (
+      appt.practitionerId !== callerId &&
+      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+    ) {
+      throw new ForbiddenException(
+        'You are not the treating practitioner for this appointment',
+      );
+    }
+
+    const summary = await this.medicalSummaryService.get(
+      appt.patientId,
+      appt.subjectType,
+      appt.familyMemberId ?? undefined,
+    );
+    return summary?.allergies ?? [];
+  }
+
+  /** Shared by savePrescription/getPrescription: find the note + the same owner/junior-doctor check as everywhere else in this file. */
+  private async getAuthorizedNote(
+    callerId: string,
+    clinicId: string,
+    appointmentId: string,
+  ) {
+    const [row] = await this.db
+      .select({
+        note: clinicalNotes,
+        appointmentClinicId: appointments.clinicId,
+        subjectType: appointments.subjectType,
+        familyMemberId: appointments.familyMemberId,
+      })
+      .from(clinicalNotes)
+      .innerJoin(appointments, eq(appointments.id, clinicalNotes.appointmentId))
+      .where(eq(clinicalNotes.appointmentId, appointmentId))
+      .limit(1);
+    if (!row || row.appointmentClinicId !== clinicId) {
+      throw new NotFoundException('Clinical note not found');
+    }
+    if (
+      row.note.practitionerId !== callerId &&
+      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+    ) {
+      throw new NotFoundException('Clinical note not found');
+    }
+    return row;
+  }
+
+  private getPrescriptionItems(clinicalNoteId: string) {
+    return this.db
+      .select({
+        id: prescriptionItems.id,
+        drugName: prescriptionItems.drugName,
+        dosage: prescriptionItems.dosage,
+        frequency: prescriptionItems.frequency,
+        duration: prescriptionItems.duration,
+        instructions: prescriptionItems.instructions,
+      })
+      .from(prescriptionItems)
+      .where(eq(prescriptionItems.clinicalNoteId, clinicalNoteId))
+      .orderBy(asc(prescriptionItems.sortOrder));
+  }
+
+  async getPrescription(
+    callerId: string,
+    clinicId: string,
+    appointmentId: string,
+  ) {
+    const { note } = await this.getAuthorizedNote(
+      callerId,
+      clinicId,
+      appointmentId,
+    );
+    return this.getPrescriptionItems(note.id);
+  }
+
+  /**
+   * Replaces the whole prescription for a visit. Flags drug names that
+   * match the patient's (or family member's, matching the appointment's
+   * own subject) recorded allergy list from medical_summaries — a plain
+   * case-insensitive keyword match, *not* a real drug-interaction/
+   * cross-reactivity check (that needs a real pharmacology database, e.g.
+   * knowing "Augmentin" contains a penicillin — out of scope here).
+   * Informational, not a submission block: the web form requires the
+   * prescriber to confirm they've reviewed the allergies shown alongside
+   * it (a human-review gate) rather than trusting an automated keyword
+   * match to be authoritative — see savePrescriptionSchema's doc comment.
+   */
+  async savePrescription(
+    callerId: string,
+    clinicId: string,
+    appointmentId: string,
+    input: SavePrescriptionInput,
+  ) {
+    const { note, subjectType, familyMemberId } = await this.getAuthorizedNote(
+      callerId,
+      clinicId,
+      appointmentId,
+    );
+
+    const summary = await this.medicalSummaryService.get(
+      note.patientId,
+      subjectType,
+      familyMemberId ?? undefined,
+    );
+    const allergies = summary?.allergies ?? [];
+    const allergyWarnings = input.items
+      .filter((item) =>
+        allergies.some((allergy) => {
+          const drug = item.drugName.toLowerCase().trim();
+          const a = allergy.toLowerCase().trim();
+          return drug.includes(a) || a.includes(drug);
+        }),
+      )
+      .map((item) => item.drugName);
+
+    await this.db
+      .delete(prescriptionItems)
+      .where(eq(prescriptionItems.clinicalNoteId, note.id));
+    if (input.items.length > 0) {
+      await this.db.insert(prescriptionItems).values(
+        input.items.map((item, i) => ({
+          clinicalNoteId: note.id,
+          ...item,
+          sortOrder: i,
+        })),
+      );
+    }
+    const items = await this.getPrescriptionItems(note.id);
+    return { items, allergyWarnings };
   }
 }

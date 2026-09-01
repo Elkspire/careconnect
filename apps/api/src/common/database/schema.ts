@@ -448,6 +448,35 @@ export const clinicalNotes = pgTable(
   ],
 );
 
+/**
+ * A structured line item on a visit's prescription — the "Rx pad" from the
+ * product doc/journeys, alongside (not replacing) clinical_notes' free-text
+ * notes/diagnosis. One clinical note has zero or more of these; saving a
+ * prescription replaces the whole set for that note (see
+ * ClinicalService.savePrescription) rather than editing lines individually,
+ * so there's no per-item update/delete route. Same table-isolation
+ * boundary as clinical_notes — never touched outside ClinicalService.
+ */
+export const prescriptionItems = pgTable(
+  'prescription_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    clinicalNoteId: uuid('clinical_note_id')
+      .notNull()
+      .references(() => clinicalNotes.id, { onDelete: 'cascade' }),
+    drugName: text('drug_name').notNull(),
+    dosage: text('dosage'),
+    frequency: text('frequency'),
+    duration: text('duration'),
+    instructions: text('instructions'),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('prescription_items_note_idx').on(t.clinicalNoteId)],
+);
+
 // ---- clinic RBAC ----
 
 export const clinicStaff = pgTable(

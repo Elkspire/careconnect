@@ -903,6 +903,36 @@ a.card:hover {
   color: var(--color-stamp);
   line-height: 1;
 }
+.rxline {
+  display: flex;
+  gap: 9px;
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px dashed rgba(18, 32, 27, 0.12);
+}
+.rxline:last-child {
+  border-bottom: 0;
+}
+.rxline b {
+  font-weight: 600;
+}
+.rxline small {
+  display: block;
+  color: var(--color-ink-soft);
+}
+.rxline .rxmeta {
+  margin-left: auto;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #5b6b63;
+  white-space: nowrap;
+}
+.rxfoot {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(18, 32, 27, 0.2);
+}
 
 /* ---------- stats ---------- */
 .stats {

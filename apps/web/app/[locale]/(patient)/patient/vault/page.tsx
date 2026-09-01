@@ -204,6 +204,21 @@ function HistorySection({
                   : ""}
               </small>
               <small>{entry.notes}</small>
+              {entry.prescriptionItems.length > 0 && (
+                <div className="rx mt-2">
+                  {entry.prescriptionItems.map((item, i) => (
+                    <div key={i} className="rxline">
+                      <div>
+                        <b>{item.drugName}</b>
+                        {item.instructions && <small>{item.instructions}</small>}
+                      </div>
+                      <span className="rxmeta">
+                        {[item.dosage, item.frequency, item.duration].filter(Boolean).join(" · ")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}

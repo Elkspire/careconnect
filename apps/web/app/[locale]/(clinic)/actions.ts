@@ -16,7 +16,11 @@ import {
   upsertFamilyMemberMedicalSummary,
   upsertPatientMedicalSummary,
 } from "@/lib/api/clinic";
-import { createClinicalNote, updateClinicalNote } from "@/lib/api/clinical";
+import {
+  createClinicalNote,
+  savePrescription,
+  updateClinicalNote,
+} from "@/lib/api/clinical";
 
 /** One item per non-empty line — how the medical summary form's textareas encode a string list. */
 function linesToList(raw: FormDataEntryValue | null): string[] {
@@ -121,4 +125,35 @@ export async function saveClinicalNoteAction(
     await createClinicalNote(clinicId, { appointmentId, notes, diagnosis });
   }
   revalidatePath(`/${locale}/clinic/${clinicSlug}/clinical-notes/${appointmentId}`);
+}
+
+const PRESCRIPTION_ROWS = 8;
+
+export async function saveClinicalPrescriptionAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  appointmentId: string,
+  formData: FormData,
+): Promise<void> {
+  const items = [];
+  for (let i = 1; i <= PRESCRIPTION_ROWS; i++) {
+    const drugName = String(formData.get(`drugName${i}`) ?? "").trim();
+    if (!drugName) continue;
+    items.push({
+      drugName,
+      dosage: String(formData.get(`dosage${i}`) ?? "").trim() || undefined,
+      frequency: String(formData.get(`frequency${i}`) ?? "").trim() || undefined,
+      duration: String(formData.get(`duration${i}`) ?? "").trim() || undefined,
+      instructions: String(formData.get(`instructions${i}`) ?? "").trim() || undefined,
+    });
+  }
+
+  const { allergyWarnings } = await savePrescription(clinicId, appointmentId, items);
+  const basePath = `/${locale}/clinic/${clinicSlug}/clinical-notes/${appointmentId}`;
+  redirect(
+    allergyWarnings.length > 0
+      ? `${basePath}?warned=${encodeURIComponent(allergyWarnings.join(","))}`
+      : basePath,
+  );
 }

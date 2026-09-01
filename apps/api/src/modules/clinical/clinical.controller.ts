@@ -15,7 +15,11 @@ import {
 } from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
 import { AuditLogInterceptor } from '../../common/interceptors/audit-log.interceptor';
-import { CreateClinicalNoteDto, UpdateClinicalNoteDto } from './clinical.dto';
+import {
+  CreateClinicalNoteDto,
+  SavePrescriptionDto,
+  UpdateClinicalNoteDto,
+} from './clinical.dto';
 import { ClinicalService } from './clinical.service';
 
 /**
@@ -63,6 +67,50 @@ export class ClinicalController {
     @Body() body: UpdateClinicalNoteDto,
   ) {
     return this.clinicalService.updateNote(
+      user.id,
+      clinicId,
+      appointmentId,
+      body,
+    );
+  }
+
+  @Get(':appointmentId/allergies')
+  @Audit('view', 'clinical_note', 'owner')
+  getAppointmentAllergies(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.clinicalService.getAppointmentAllergies(
+      user.id,
+      clinicId,
+      appointmentId,
+    );
+  }
+
+  @Get(':appointmentId/prescription')
+  @Audit('view', 'clinical_note', 'owner')
+  getPrescription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.clinicalService.getPrescription(
+      user.id,
+      clinicId,
+      appointmentId,
+    );
+  }
+
+  @Post(':appointmentId/prescription')
+  @Audit('update', 'clinical_note', 'owner')
+  savePrescription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('appointmentId') appointmentId: string,
+    @Body() body: SavePrescriptionDto,
+  ) {
+    return this.clinicalService.savePrescription(
       user.id,
       clinicId,
       appointmentId,

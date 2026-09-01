@@ -1,4 +1,8 @@
-import type { CreateClinicalNoteInput, UpdateClinicalNoteInput } from "@careconnect/validation";
+import type {
+  CreateClinicalNoteInput,
+  PrescriptionItemInput,
+  UpdateClinicalNoteInput,
+} from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 
 export interface ClinicalNote {
@@ -44,6 +48,14 @@ export async function updateClinicalNote(
   return parseJsonOrThrow(res, "Update clinical note");
 }
 
+export interface PrescriptionItem {
+  drugName: string;
+  dosage: string | null;
+  frequency: string | null;
+  duration: string | null;
+  instructions: string | null;
+}
+
 export interface MyClinicalHistoryEntry {
   appointmentId: string;
   notes: string;
@@ -54,10 +66,42 @@ export interface MyClinicalHistoryEntry {
   practitionerFullName: string;
   clinicName: string;
   scheduledStart: string;
+  prescriptionItems: PrescriptionItem[];
 }
 
 /** A patient's own doctor-authored visit history, across every clinic they've visited. */
 export async function listMyClinicalHistory(): Promise<MyClinicalHistoryEntry[]> {
   const res = await authedFetch("/patients/me/clinical-history");
   return parseJsonOrThrow(res, "List clinical history");
+}
+
+/** The patient's (or family member's) recorded allergies for this appointment, shown before writing a note/prescription. */
+export async function getAppointmentAllergies(
+  clinicId: string,
+  appointmentId: string,
+): Promise<string[]> {
+  const res = await authedFetch(`/clinics/${clinicId}/clinical-notes/${appointmentId}/allergies`);
+  return parseJsonOrThrow(res, "Get appointment allergies");
+}
+
+export async function getPrescription(
+  clinicId: string,
+  appointmentId: string,
+): Promise<PrescriptionItem[]> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/clinical-notes/${appointmentId}/prescription`,
+  );
+  return parseJsonOrThrow(res, "Get prescription");
+}
+
+export async function savePrescription(
+  clinicId: string,
+  appointmentId: string,
+  items: PrescriptionItemInput[],
+): Promise<{ items: PrescriptionItem[]; allergyWarnings: string[] }> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/clinical-notes/${appointmentId}/prescription`,
+    { method: "POST", body: JSON.stringify({ items }) },
+  );
+  return parseJsonOrThrow(res, "Save prescription");
 }

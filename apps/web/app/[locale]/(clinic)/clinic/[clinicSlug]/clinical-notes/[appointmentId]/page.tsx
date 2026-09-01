@@ -1,13 +1,24 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getClinicalNote } from "@/lib/api/clinical";
+import {
+  getAppointmentAllergies,
+  getClinicalNote,
+  getPrescription,
+} from "@/lib/api/clinical";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
-import { saveClinicalNoteAction } from "../../../../actions";
+import {
+  saveClinicalNoteAction,
+  saveClinicalPrescriptionAction,
+} from "../../../../actions";
+
+const PRESCRIPTION_ROWS = 8;
 
 export default async function ClinicalNotePage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/clinical-notes/[appointmentId]">,
 ) {
   const { locale, clinicSlug, appointmentId } = await props.params;
+  const sp = await props.searchParams;
+  const warned = typeof sp.warned === "string" ? sp.warned.split(",").filter(Boolean) : [];
   const [t, staffCtx] = await Promise.all([
     getTranslations("clinic"),
     resolveClinicStaffBySlug(clinicSlug),
@@ -35,7 +46,11 @@ export default async function ClinicalNotePage(
     );
   }
 
-  const note = await getClinicalNote(clinicId, appointmentId);
+  const [note, allergies, prescriptionItems] = await Promise.all([
+    getClinicalNote(clinicId, appointmentId),
+    getAppointmentAllergies(clinicId, appointmentId),
+    getPrescription(clinicId, appointmentId),
+  ]);
   const action = saveClinicalNoteAction.bind(
     null,
     locale,
@@ -44,6 +59,14 @@ export default async function ClinicalNotePage(
     appointmentId,
     note !== null,
   );
+  const prescriptionAction = saveClinicalPrescriptionAction.bind(
+    null,
+    locale,
+    clinicSlug,
+    clinicId,
+    appointmentId,
+  );
+  const rows = Array.from({ length: PRESCRIPTION_ROWS }, (_, i) => prescriptionItems[i] ?? null);
 
   return (
     <div className="max-w-2xl">
@@ -51,6 +74,25 @@ export default async function ClinicalNotePage(
         CareConnect
       </p>
       <h1 className="disp mt-2 text-2xl font-bold">{t("notesHeading")}</h1>
+
+      {allergies.length > 0 && (
+        <div className="flagrow mt-4">
+          {allergies.map((a) => (
+            <span key={a} className="flag mono">
+              {a}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {warned.length > 0 && (
+        <div className="alert mt-4">
+          <div>
+            <b>{t("allergyWarningTitle")}</b>
+            <p>{t("allergyWarningBody", { drugs: warned.join(", ") })}</p>
+          </div>
+        </div>
+      )}
 
       <div className="rx mt-6">
         <div className="rxh">
@@ -82,6 +124,74 @@ export default async function ClinicalNotePage(
           </button>
         </form>
       </div>
+
+      {note && (
+        <div className="rx mt-6">
+          <div className="rxh">
+            <span className="rxsym">℞</span>
+            <b className="disp">{t("prescriptionHeading")}</b>
+          </div>
+          <form action={prescriptionAction} className="flex flex-col gap-3">
+            {rows.map((item, i) => (
+              <div key={i} className="rxline flex-wrap gap-2 sm:flex-nowrap">
+                <input
+                  type="text"
+                  name={`drugName${i + 1}`}
+                  defaultValue={item?.drugName ?? ""}
+                  placeholder={t("drugNameLabel")}
+                  className="field tap-target"
+                  style={{ flex: "1 1 160px" }}
+                />
+                <input
+                  type="text"
+                  name={`dosage${i + 1}`}
+                  defaultValue={item?.dosage ?? ""}
+                  placeholder={t("dosageLabel")}
+                  className="field tap-target"
+                  style={{ flex: "1 1 90px" }}
+                />
+                <input
+                  type="text"
+                  name={`frequency${i + 1}`}
+                  defaultValue={item?.frequency ?? ""}
+                  placeholder={t("frequencyLabel")}
+                  className="field tap-target"
+                  style={{ flex: "1 1 90px" }}
+                />
+                <input
+                  type="text"
+                  name={`duration${i + 1}`}
+                  defaultValue={item?.duration ?? ""}
+                  placeholder={t("durationLabel")}
+                  className="field tap-target"
+                  style={{ flex: "1 1 90px" }}
+                />
+                <input
+                  type="text"
+                  name={`instructions${i + 1}`}
+                  defaultValue={item?.instructions ?? ""}
+                  placeholder={t("instructionsLabel")}
+                  className="field tap-target"
+                  style={{ flex: "1 1 140px" }}
+                />
+              </div>
+            ))}
+
+            <label className="rxfoot flex items-start gap-2">
+              <input type="checkbox" required className="tap-target" style={{ marginTop: 3 }} />
+              <span className="text-sm">
+                {allergies.length > 0
+                  ? t("reviewedAllergiesLabel")
+                  : t("reviewedNoAllergiesLabel")}
+              </span>
+            </label>
+
+            <button type="submit" className="btn tap-target self-start">
+              {t("savePrescription")}
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
