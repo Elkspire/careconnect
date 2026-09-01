@@ -68,9 +68,16 @@ export type WaitlistStatus = (typeof WAITLIST_STATUS)[number];
  * receptionist: calendar/check-in/billing only — no clinical access, ever.
  * junior_doctor: patient histories + clinical notes (co-authored under the
  * owner's practice), but no staff/fee/schedule management. See product doc
- * section 3.5. `assistant`/nurse from the same table is still deferred.
+ * section 3.5. assistant: records vitals and attaches reports before the
+ * consult — never notes, prescriptions, or diagnosis (journeys.html's
+ * "Assistant" track).
  */
-export const CLINIC_STAFF_ROLE = ["owner", "receptionist", "junior_doctor"] as const;
+export const CLINIC_STAFF_ROLE = [
+  "owner",
+  "receptionist",
+  "junior_doctor",
+  "assistant",
+] as const;
 export type ClinicStaffRole = (typeof CLINIC_STAFF_ROLE)[number];
 
 export const CLINIC_STAFF_STATUS = ["invited", "active", "revoked"] as const;
@@ -91,6 +98,7 @@ export const STAFF_PERMISSION_KEY = [
   "clinicalNotes",
   "manageStaff",
   "manageFeesSchedule",
+  "recordVitals",
 ] as const;
 export type StaffPermissionKey = (typeof STAFF_PERMISSION_KEY)[number];
 
@@ -100,11 +108,22 @@ export type StaffPermissionKey = (typeof STAFF_PERMISSION_KEY)[number];
  * doctor narrow a specific staff member below their role's ceiling —
  * never past it. manageStaff/manageFeesSchedule stay owner-only
  * structurally (their routes never list another role), so they never
- * appear here.
+ * appear here. junior_doctor gets recordVitals too — read-only in
+ * practice, since ClinicController's write route only ever lists
+ * owner/assistant regardless of this ceiling — so a doctor sees vitals
+ * taken before their consult (journeys.html: "she opens the consultation
+ * knowing... today's blood pressure").
  */
 export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissionKey[]> = {
   receptionist: ["viewPatientList", "viewTodayQueue", "checkInPatients"],
-  junior_doctor: ["viewPatientList", "viewTodayQueue", "viewRecords", "clinicalNotes"],
+  junior_doctor: [
+    "viewPatientList",
+    "viewTodayQueue",
+    "viewRecords",
+    "clinicalNotes",
+    "recordVitals",
+  ],
+  assistant: ["viewTodayQueue", "recordVitals"],
 };
 
 export const BLOOD_GROUP = [

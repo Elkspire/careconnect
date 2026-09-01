@@ -5,6 +5,7 @@ import {
   getClinicalNote,
   getPrescription,
 } from "@/lib/api/clinical";
+import { getVitals } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import {
   saveClinicalNoteAction,
@@ -46,10 +47,11 @@ export default async function ClinicalNotePage(
     );
   }
 
-  const [note, allergies, prescriptionItems] = await Promise.all([
+  const [note, allergies, prescriptionItems, vitals] = await Promise.all([
     getClinicalNote(clinicId, appointmentId),
     getAppointmentAllergies(clinicId, appointmentId),
     getPrescription(clinicId, appointmentId),
+    getVitals(clinicId, appointmentId),
   ]);
   const action = saveClinicalNoteAction.bind(
     null,
@@ -84,6 +86,47 @@ export default async function ClinicalNotePage(
           ))}
         </div>
       )}
+
+      <div className="card mt-4">
+        <p className="lbl">{t("vitalsSummaryHeading")}</p>
+        {vitals ? (
+          <>
+            <div className="pgrid mt-2">
+              {(vitals.systolicMmhg !== null || vitals.diastolicMmhg !== null) && (
+                <div className="trow">
+                  <span>{t("bloodPressureLabel")}</span>
+                  <b className="mono">
+                    {vitals.systolicMmhg ?? "—"}/{vitals.diastolicMmhg ?? "—"}
+                  </b>
+                </div>
+              )}
+              {vitals.pulseBpm !== null && (
+                <div className="trow">
+                  <span>{t("pulseLabel")}</span>
+                  <b className="mono">{vitals.pulseBpm}</b>
+                </div>
+              )}
+              {vitals.weightKg !== null && (
+                <div className="trow">
+                  <span>{t("weightLabel")}</span>
+                  <b className="mono">{vitals.weightKg}</b>
+                </div>
+              )}
+              {vitals.temperatureF !== null && (
+                <div className="trow">
+                  <span>{t("temperatureLabel")}</span>
+                  <b className="mono">{vitals.temperatureF}</b>
+                </div>
+              )}
+            </div>
+            <small className="mt-2 block" style={{ color: "var(--color-ink-soft)" }}>
+              {t("recordedByLabel", { name: vitals.recordedByName ?? vitals.recordedByPhone ?? "" })}
+            </small>
+          </>
+        ) : (
+          <p style={{ color: "var(--color-ink-soft)" }}>{t("noVitalsRecorded")}</p>
+        )}
+      </div>
 
       {warned.length > 0 && (
         <div className="alert mt-4">

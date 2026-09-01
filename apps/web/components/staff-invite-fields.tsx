@@ -8,7 +8,7 @@ import {
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
 
-const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
+const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor", "assistant"];
 
 /**
  * Role picker + per-permission toggles for the invite form. A toggle can

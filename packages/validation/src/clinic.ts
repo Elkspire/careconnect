@@ -37,3 +37,12 @@ export const revokeStaffSchema = z.object({
   clinicStaffId: z.string().uuid(),
 });
 export type RevokeStaffInput = z.infer<typeof revokeStaffSchema>;
+
+// A junior doctor only sees patients explicitly assigned to them at this
+// clinic — this is the owner-side action that grants that visibility.
+export const assignPatientSchema = z.object({
+  juniorDoctorUserId: z.string().uuid(),
+  patientId: z.string().uuid(),
+  familyMemberId: z.string().uuid().optional(),
+});
+export type AssignPatientInput = z.infer<typeof assignPatientSchema>;

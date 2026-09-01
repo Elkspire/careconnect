@@ -1,8 +1,10 @@
 import {
+  assignPatientSchema,
   checkInAppointmentSchema,
   createClinicSchema,
   createPractitionerLeaveSchema,
   inviteStaffSchema,
+  recordVitalsSchema,
   upsertMedicalSummarySchema,
   upsertPractitionerClinicSchema,
 } from '@careconnect/validation';
@@ -22,3 +24,5 @@ export class CheckInAppointmentDto extends createZodDto(
 export class UpsertMedicalSummaryDto extends createZodDto(
   upsertMedicalSummarySchema,
 ) {}
+export class AssignPatientDto extends createZodDto(assignPatientSchema) {}
+export class RecordVitalsDto extends createZodDto(recordVitalsSchema) {}

@@ -88,11 +88,13 @@ export const waitlistStatusEnum = pgEnum('waitlist_status', [
   'cancelled',
 ]);
 // See packages/shared-types CLINIC_STAFF_ROLE for the permission summary —
-// keep this list in sync with it and with 0010_junior_doctor_role.sql.
+// keep this list in sync with it, 0010_junior_doctor_role.sql, and
+// 0016_assistant_role_vitals.sql.
 export const clinicStaffRoleEnum = pgEnum('clinic_staff_role', [
   'owner',
   'receptionist',
   'junior_doctor',
+  'assistant',
 ]);
 export const clinicStaffStatusEnum = pgEnum('clinic_staff_status', [
   'invited',
@@ -527,6 +529,81 @@ export const clinicStaff = pgTable(
     index('clinic_staff_clinic_idx').on(t.clinicId),
   ],
 );
+
+/**
+ * "A junior doctor sees the patients assigned to them, not the whole
+ * practice" (product doc 3.5 / journeys.html's junior-doctor track) — the
+ * owner explicitly assigns a patient (or one specific family member) to a
+ * junior doctor; everything clinical ClinicService/ClinicalService expose
+ * to a junior_doctor caller is filtered through this table. Owner and
+ * receptionist are never scoped by it — this only narrows junior_doctor.
+ */
+export const patientAssignments = pgTable(
+  'patient_assignments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    clinicId: uuid('clinic_id')
+      .notNull()
+      .references(() => clinics.id, { onDelete: 'cascade' }),
+    juniorDoctorUserId: uuid('junior_doctor_user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+    subjectType: appointmentSubjectTypeEnum('subject_type')
+      .notNull()
+      .default('self'),
+    familyMemberId: uuid('family_member_id').references(
+      () => familyMembers.id,
+      { onDelete: 'cascade' },
+    ),
+    assignedBy: uuid('assigned_by')
+      .notNull()
+      .references(() => authUsers.id),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('patient_assignments_lookup_idx').on(
+      t.clinicId,
+      t.juniorDoctorUserId,
+      t.patientId,
+    ),
+  ],
+);
+
+/**
+ * The assistant role's actual job (journeys.html's "Assistant" track,
+ * step 01): blood pressure/pulse/weight/temperature taken before the
+ * doctor's consultation, attributed to whoever recorded them. One row per
+ * appointment — 'save vitals' is a single action in the product doc, not
+ * an editable log, so this is an upsert target, not an append-only series.
+ * All four measurements are individually optional (a busy assistant may
+ * not always get all four), but the API requires at least one.
+ */
+export const vitals = pgTable('vitals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  appointmentId: uuid('appointment_id')
+    .notNull()
+    .unique()
+    .references(() => appointments.id, { onDelete: 'cascade' }),
+  systolicMmhg: smallint('systolic_mmhg'),
+  diastolicMmhg: smallint('diastolic_mmhg'),
+  pulseBpm: smallint('pulse_bpm'),
+  weightKg: numeric('weight_kg', { precision: 5, scale: 2 }),
+  temperatureF: numeric('temperature_f', { precision: 4, scale: 1 }),
+  recordedBy: uuid('recorded_by')
+    .notNull()
+    .references(() => authUsers.id),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 // ---- patient vault ----
 

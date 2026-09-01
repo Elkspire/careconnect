@@ -5,14 +5,18 @@ import { redirect } from "next/navigation";
 import {
   BLOOD_GROUP,
   STAFF_PERMISSION_KEY,
+  type AssignableStaffRole,
   type BloodGroup,
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
 import {
+  assignPatient,
   checkIn,
   getClinicRecordSignedUrl,
   inviteStaff,
+  recordVitals,
   revokeStaff,
+  unassignPatient,
   upsertFamilyMemberMedicalSummary,
   upsertPatientMedicalSummary,
 } from "@/lib/api/clinic";
@@ -40,13 +44,40 @@ export async function checkInAction(
   revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
 }
 
+/** Empty string -> field omitted, not sent as 0 — recordVitalsSchema treats each measurement as optional. */
+function optionalNumber(raw: FormDataEntryValue | null): number | undefined {
+  const str = String(raw ?? "").trim();
+  if (!str) return undefined;
+  const n = Number(str);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+export async function recordVitalsAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  const appointmentId = String(formData.get("appointmentId"));
+  await recordVitals(clinicId, appointmentId, {
+    systolicMmhg: optionalNumber(formData.get("systolicMmhg")),
+    diastolicMmhg: optionalNumber(formData.get("diastolicMmhg")),
+    pulseBpm: optionalNumber(formData.get("pulseBpm")),
+    weightKg: optionalNumber(formData.get("weightKg")),
+    temperatureF: optionalNumber(formData.get("temperatureF")),
+  });
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+}
+
 export async function inviteStaffAction(
   locale: string,
   clinicSlug: string,
   clinicId: string,
   formData: FormData,
 ): Promise<void> {
-  const role = formData.get("role") === "junior_doctor" ? "junior_doctor" : "receptionist";
+  const roleRaw = formData.get("role");
+  const role: AssignableStaffRole =
+    roleRaw === "junior_doctor" || roleRaw === "assistant" ? roleRaw : "receptionist";
   await inviteStaff(clinicId, {
     clinicId,
     phone: String(formData.get("phone")),
@@ -67,6 +98,34 @@ export async function revokeStaffAction(
   formData: FormData,
 ): Promise<void> {
   await revokeStaff(clinicId, String(formData.get("staffId")));
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+}
+
+export async function assignPatientAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  // The subject select encodes "patientId:familyMemberId" (family half
+  // empty for the patient themself) — one <select> can only post one
+  // value, and this form has no client JS to pair a second field to it.
+  const [patientId, familyMemberId] = String(formData.get("subject") ?? "").split(":");
+  await assignPatient(clinicId, {
+    juniorDoctorUserId: String(formData.get("juniorDoctorUserId")),
+    patientId: String(patientId),
+    familyMemberId: familyMemberId || undefined,
+  });
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+}
+
+export async function unassignPatientAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  await unassignPatient(clinicId, String(formData.get("assignmentId")));
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
 }
 

@@ -8,7 +8,7 @@ import {
   type AssignableStaffRole,
 } from "@/lib/staff-permissions";
 
-const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
+const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor", "assistant"];
 
 /** Lets a doctor pick a role and see exactly what it can and can't reach,
  * before assigning it in the invite form below. */

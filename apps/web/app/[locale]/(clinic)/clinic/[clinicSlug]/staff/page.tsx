@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { listStaff } from "@/lib/api/clinic";
+import { listClinicPatients, listPatientAssignments, listStaff } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
-import { inviteStaffAction, revokeStaffAction } from "../../../actions";
+import {
+  assignPatientAction,
+  inviteStaffAction,
+  revokeStaffAction,
+  unassignPatientAction,
+} from "../../../actions";
 import { StaffPermissionMatrix } from "@/components/staff-permission-matrix";
 import { StaffInviteFields } from "@/components/staff-invite-fields";
 
@@ -35,9 +40,18 @@ export default async function ClinicStaffPage(
     );
   }
 
-  const staff = await listStaff(clinicId);
+  const [staff, patients, assignments] = await Promise.all([
+    listStaff(clinicId),
+    listClinicPatients(clinicId),
+    listPatientAssignments(clinicId),
+  ]);
   const invite = inviteStaffAction.bind(null, locale, clinicSlug, clinicId);
   const revoke = revokeStaffAction.bind(null, locale, clinicSlug, clinicId);
+  const assign = assignPatientAction.bind(null, locale, clinicSlug, clinicId);
+  const unassign = unassignPatientAction.bind(null, locale, clinicSlug, clinicId);
+  const activeJuniorDoctors = staff.filter(
+    (member) => member.role === "junior_doctor" && member.status === "active",
+  );
 
   return (
     <div className="max-w-2xl">
@@ -51,6 +65,7 @@ export default async function ClinicStaffPage(
           {staff.map((member) => (
             <div key={member.id} className="prow">
               <span>
+                {member.fullName ?? member.phone} —{" "}
                 {t(`roles.${member.role}` as "roles.owner")} — {member.status}
                 {member.revokedPermissions.length > 0 && (
                   <>
@@ -104,6 +119,72 @@ export default async function ClinicStaffPage(
             {t("invite")}
           </button>
         </form>
+      </div>
+
+      <div className="slip mt-8">
+        <h2 className="disp text-lg font-bold">{t("assignmentsHeading")}</h2>
+        <p className="mt-1" style={{ color: "var(--color-ink-soft)" }}>
+          {t("assignmentsPrompt")}
+        </p>
+
+        <div className="pgrid mt-4">
+          {assignments.length === 0 && (
+            <p style={{ color: "var(--color-ink-soft)" }}>{t("noAssignments")}</p>
+          )}
+          {assignments.map((a) => (
+            <div key={a.id} className="prow">
+              <span>
+                {a.juniorDoctorFullName} —{" "}
+                {a.familyMemberFullName
+                  ? `${a.familyMemberFullName} (${t("familyMemberOfLabel", { name: a.patientFullName })})`
+                  : a.patientFullName}
+              </span>
+              <form action={unassign}>
+                <input type="hidden" name="assignmentId" value={a.id} />
+                <button type="submit" className="qb tap-target">
+                  {t("unassign")}
+                </button>
+              </form>
+            </div>
+          ))}
+        </div>
+
+        {activeJuniorDoctors.length === 0 ? (
+          <p className="mt-4" style={{ color: "var(--color-ink-soft)" }}>
+            {t("noJuniorDoctors")}
+          </p>
+        ) : (
+          <form action={assign} className="mt-4 flex flex-wrap items-end gap-3">
+            <label>
+              <span className="lbl">{t("assignJuniorDoctorLabel")}</span>
+              <select name="juniorDoctorUserId" required className="field tap-target">
+                {activeJuniorDoctors.map((doc) => (
+                  <option key={doc.userId} value={doc.userId}>
+                    {doc.fullName ?? doc.phone}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="lbl">{t("assignPatientLabel")}</span>
+              <select name="subject" required className="field tap-target">
+                {patients.map((p) => (
+                  <option
+                    key={`${p.patientId}:${p.familyMemberId ?? ""}`}
+                    value={`${p.patientId}:${p.familyMemberId ?? ""}`}
+                  >
+                    {p.familyMemberId
+                      ? `${p.fullName} (${t("familyMemberOfLabel", { name: p.guardianFullName ?? "" })})`
+                      : p.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="btn tap-target">
+              {t("assign")}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

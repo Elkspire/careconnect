@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -10,11 +11,12 @@ import type {
   CreateClinicInput,
   CreatePractitionerLeaveInput,
   InviteStaffInput,
+  RecordVitalsInput,
   UpsertMedicalSummaryInput,
   UpsertPractitionerClinicInput,
 } from '@careconnect/validation';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { and, desc, eq, gte, inArray, lt, max, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, lt, max, sql } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
@@ -22,11 +24,13 @@ import {
   clinicStaff,
   clinics,
   familyMembers,
+  patientAssignments,
   patientRecords,
   patients,
   practitionerClinic,
   practitionerLeave,
   practitioners,
+  vitals,
   waitlistEntries,
 } from '../../common/database/schema';
 import {
@@ -46,12 +50,46 @@ export class ClinicService {
     private readonly medicalSummaryService: MedicalSummaryService,
   ) {}
 
-  /** Shared by every "has this clinic actually treated this patient/family member" gate. */
+  private async isActiveJuniorDoctor(
+    clinicId: string,
+    callerId: string,
+  ): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: clinicStaff.id })
+      .from(clinicStaff)
+      .where(
+        and(
+          eq(clinicStaff.clinicId, clinicId),
+          eq(clinicStaff.userId, callerId),
+          eq(clinicStaff.role, 'junior_doctor'),
+          eq(clinicStaff.status, 'active'),
+        ),
+      )
+      .limit(1);
+    return !!row;
+  }
+
+  /**
+   * Shared by every "has this clinic actually treated this patient/family
+   * member, and — if the caller is a junior doctor — are they specifically
+   * assigned to this patient" gate. Owner and receptionist callers only
+   * ever hit the first check; a junior_doctor caller additionally needs a
+   * patient_assignments row, per the product doc's assignment-scoped
+   * design (see 0015_patient_assignments.sql).
+   */
   private async assertClinicHasTreated(
     clinicId: string,
+    callerId: string,
     patientId: string,
     familyMemberId?: string,
   ): Promise<void> {
+    const notFound = () =>
+      new NotFoundException(
+        familyMemberId
+          ? 'Family member not found at this clinic'
+          : 'Patient not found at this clinic',
+      );
+
     const [hasVisited] = await this.db
       .select({ id: appointments.id })
       .from(appointments)
@@ -66,11 +104,27 @@ export class ClinicService {
       )
       .limit(1);
     if (!hasVisited) {
-      throw new NotFoundException(
-        familyMemberId
-          ? 'Family member not found at this clinic'
-          : 'Patient not found at this clinic',
-      );
+      throw notFound();
+    }
+
+    if (await this.isActiveJuniorDoctor(clinicId, callerId)) {
+      const [assigned] = await this.db
+        .select({ id: patientAssignments.id })
+        .from(patientAssignments)
+        .where(
+          and(
+            eq(patientAssignments.clinicId, clinicId),
+            eq(patientAssignments.juniorDoctorUserId, callerId),
+            eq(patientAssignments.patientId, patientId),
+            familyMemberId
+              ? eq(patientAssignments.familyMemberId, familyMemberId)
+              : isNull(patientAssignments.familyMemberId),
+          ),
+        )
+        .limit(1);
+      if (!assigned) {
+        throw notFound();
+      }
     }
   }
 
@@ -186,10 +240,29 @@ export class ClinicService {
     return row;
   }
 
+  /**
+   * fullName is resolved here (not just the raw clinic_staff row) so the
+   * owner's staff page — and the assignment picker below, which otherwise
+   * has nothing but indistinguishable user ids to choose between — can
+   * show who's who. Owner/junior_doctor always have a practitioners row
+   * (see inviteStaff's check above); receptionist doesn't, hence the left
+   * join and the phone-number fallback.
+   */
   listStaff(clinicId: string) {
     return this.db
-      .select()
+      .select({
+        id: clinicStaff.id,
+        clinicId: clinicStaff.clinicId,
+        userId: clinicStaff.userId,
+        role: clinicStaff.role,
+        status: clinicStaff.status,
+        revokedPermissions: clinicStaff.revokedPermissions,
+        fullName: practitioners.fullName,
+        phone: authUsers.phone,
+      })
       .from(clinicStaff)
+      .leftJoin(practitioners, eq(practitioners.id, clinicStaff.userId))
+      .innerJoin(authUsers, eq(authUsers.id, clinicStaff.userId))
       .where(eq(clinicStaff.clinicId, clinicId));
   }
 
@@ -216,7 +289,7 @@ export class ClinicService {
    * the patient's own visits) rather than being folded into the patient's
    * own row, so a family member shows up as a distinct patient to staff.
    */
-  async listPatients(clinicId: string) {
+  async listPatients(clinicId: string, callerId: string) {
     const rows = await this.db
       .select({
         patientId: patients.id,
@@ -243,14 +316,44 @@ export class ClinicService {
       )
       .orderBy(desc(max(appointments.scheduledStart)));
 
-    return rows.map((row) => ({
-      patientId: row.patientId,
-      familyMemberId: row.familyMemberId,
-      fullName: row.familyMemberFullName ?? row.guardianFullName,
-      guardianFullName: row.familyMemberId ? row.guardianFullName : null,
-      phone: row.phone,
-      lastVisit: row.lastVisit,
-    }));
+    // A junior doctor only sees their assigned subset — filtered in JS
+    // rather than a SQL join, since a per-row assignment match on a
+    // nullable family_member_id is awkward to express as a join condition
+    // without risking silently duplicating rows. Both sets are small
+    // (one clinic's worth), so this costs nothing that matters.
+    let assignedKeys: Set<string> | null = null;
+    if (await this.isActiveJuniorDoctor(clinicId, callerId)) {
+      const assignments = await this.db
+        .select({
+          patientId: patientAssignments.patientId,
+          familyMemberId: patientAssignments.familyMemberId,
+        })
+        .from(patientAssignments)
+        .where(
+          and(
+            eq(patientAssignments.clinicId, clinicId),
+            eq(patientAssignments.juniorDoctorUserId, callerId),
+          ),
+        );
+      assignedKeys = new Set(
+        assignments.map((a) => `${a.patientId}:${a.familyMemberId ?? ''}`),
+      );
+    }
+
+    return rows
+      .filter(
+        (row) =>
+          !assignedKeys ||
+          assignedKeys.has(`${row.patientId}:${row.familyMemberId ?? ''}`),
+      )
+      .map((row) => ({
+        patientId: row.patientId,
+        familyMemberId: row.familyMemberId,
+        fullName: row.familyMemberFullName ?? row.guardianFullName,
+        guardianFullName: row.familyMemberId ? row.guardianFullName : null,
+        phone: row.phone,
+        lastVisit: row.lastVisit,
+      }));
   }
 
   /**
@@ -261,7 +364,13 @@ export class ClinicService {
    * prescriptions — and the patient must have at least one appointment
    * at this clinic (no browsing arbitrary patient IDs).
    */
-  async getPatientDetail(clinicId: string, patientId: string) {
+  async getPatientDetail(
+    clinicId: string,
+    callerId: string,
+    patientId: string,
+  ) {
+    await this.assertClinicHasTreated(clinicId, callerId, patientId);
+
     const [patient] = await this.db
       .select({
         patientId: patients.id,
@@ -273,14 +382,6 @@ export class ClinicService {
       })
       .from(patients)
       .innerJoin(authUsers, eq(authUsers.id, patients.id))
-      .innerJoin(
-        appointments,
-        and(
-          eq(appointments.patientId, patients.id),
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.subjectType, 'self'),
-        ),
-      )
       .where(eq(patients.id, patientId))
       .limit(1);
     if (!patient) {
@@ -339,9 +440,17 @@ export class ClinicService {
    */
   async getFamilyMemberDetail(
     clinicId: string,
+    callerId: string,
     patientId: string,
     familyMemberId: string,
   ) {
+    await this.assertClinicHasTreated(
+      clinicId,
+      callerId,
+      patientId,
+      familyMemberId,
+    );
+
     const [familyMember] = await this.db
       .select({
         familyMemberId: familyMembers.id,
@@ -400,8 +509,12 @@ export class ClinicService {
    * real clinic front desk pulling a patient's file. Owner only, same
    * sensitivity as clinical_notes.
    */
-  async getPatientRecords(clinicId: string, patientId: string) {
-    await this.assertClinicHasTreated(clinicId, patientId);
+  async getPatientRecords(
+    clinicId: string,
+    callerId: string,
+    patientId: string,
+  ) {
+    await this.assertClinicHasTreated(clinicId, callerId, patientId);
 
     return this.db
       .select({
@@ -424,10 +537,16 @@ export class ClinicService {
 
   async getFamilyMemberRecords(
     clinicId: string,
+    callerId: string,
     patientId: string,
     familyMemberId: string,
   ) {
-    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
+    await this.assertClinicHasTreated(
+      clinicId,
+      callerId,
+      patientId,
+      familyMemberId,
+    );
 
     return this.db
       .select({
@@ -450,6 +569,7 @@ export class ClinicService {
 
   async getRecordSignedUrl(
     clinicId: string,
+    callerId: string,
     recordId: string,
   ): Promise<{ url: string }> {
     const [record] = await this.db
@@ -465,24 +585,14 @@ export class ClinicService {
       throw new NotFoundException('Record not found');
     }
 
-    const subjectCondition =
+    await this.assertClinicHasTreated(
+      clinicId,
+      callerId,
+      record.patientId,
       record.subjectType === 'family_member' && record.familyMemberId
-        ? eq(appointments.familyMemberId, record.familyMemberId)
-        : eq(appointments.subjectType, 'self');
-    const [hasVisited] = await this.db
-      .select({ id: appointments.id })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.patientId, record.patientId),
-          subjectCondition,
-        ),
-      )
-      .limit(1);
-    if (!hasVisited) {
-      throw new NotFoundException('Record not found at this clinic');
-    }
+        ? record.familyMemberId
+        : undefined,
+    );
     return this.vaultService.getSignedUrlForRecordUnchecked(recordId);
   }
 
@@ -494,8 +604,12 @@ export class ClinicService {
    * editing someone's allergy list is clinical judgment, not just viewing
    * a file.
    */
-  async getPatientMedicalSummary(clinicId: string, patientId: string) {
-    await this.assertClinicHasTreated(clinicId, patientId);
+  async getPatientMedicalSummary(
+    clinicId: string,
+    callerId: string,
+    patientId: string,
+  ) {
+    await this.assertClinicHasTreated(clinicId, callerId, patientId);
     return this.medicalSummaryService.get(patientId, 'self');
   }
 
@@ -505,7 +619,7 @@ export class ClinicService {
     updatedBy: string,
     input: UpsertMedicalSummaryInput,
   ) {
-    await this.assertClinicHasTreated(clinicId, patientId);
+    await this.assertClinicHasTreated(clinicId, updatedBy, patientId);
     return this.medicalSummaryService.upsert(
       patientId,
       'self',
@@ -517,10 +631,16 @@ export class ClinicService {
 
   async getFamilyMemberMedicalSummary(
     clinicId: string,
+    callerId: string,
     patientId: string,
     familyMemberId: string,
   ) {
-    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
+    await this.assertClinicHasTreated(
+      clinicId,
+      callerId,
+      patientId,
+      familyMemberId,
+    );
     return this.medicalSummaryService.get(
       patientId,
       'family_member',
@@ -535,7 +655,12 @@ export class ClinicService {
     updatedBy: string,
     input: UpsertMedicalSummaryInput,
   ) {
-    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
+    await this.assertClinicHasTreated(
+      clinicId,
+      updatedBy,
+      patientId,
+      familyMemberId,
+    );
     return this.medicalSummaryService.upsert(
       patientId,
       'family_member',
@@ -664,5 +789,243 @@ export class ClinicService {
       }),
     );
     return row;
+  }
+
+  /**
+   * Owner-only management of the assignment gate itself (see
+   * assertClinicHasTreated) — patient names resolved here for display,
+   * not returned by the assignment-consuming methods above, which never
+   * need the junior doctor's own identity.
+   */
+  listPatientAssignments(clinicId: string) {
+    return this.db
+      .select({
+        id: patientAssignments.id,
+        juniorDoctorUserId: patientAssignments.juniorDoctorUserId,
+        juniorDoctorFullName: practitioners.fullName,
+        patientId: patientAssignments.patientId,
+        patientFullName: patients.fullName,
+        familyMemberId: patientAssignments.familyMemberId,
+        familyMemberFullName: familyMembers.fullName,
+        createdAt: patientAssignments.createdAt,
+      })
+      .from(patientAssignments)
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, patientAssignments.juniorDoctorUserId),
+      )
+      .innerJoin(patients, eq(patients.id, patientAssignments.patientId))
+      .leftJoin(
+        familyMembers,
+        eq(familyMembers.id, patientAssignments.familyMemberId),
+      )
+      .where(eq(patientAssignments.clinicId, clinicId))
+      .orderBy(desc(patientAssignments.createdAt));
+  }
+
+  async assignPatient(
+    clinicId: string,
+    assignedBy: string,
+    juniorDoctorUserId: string,
+    patientId: string,
+    familyMemberId: string | undefined,
+  ) {
+    const [juniorDoctor] = await this.db
+      .select({ id: clinicStaff.id })
+      .from(clinicStaff)
+      .where(
+        and(
+          eq(clinicStaff.clinicId, clinicId),
+          eq(clinicStaff.userId, juniorDoctorUserId),
+          eq(clinicStaff.role, 'junior_doctor'),
+          eq(clinicStaff.status, 'active'),
+        ),
+      )
+      .limit(1);
+    if (!juniorDoctor) {
+      throw new NotFoundException(
+        'No active junior doctor with that id at this clinic',
+      );
+    }
+    const [hasVisited] = await this.db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.patientId, patientId),
+          familyMemberId
+            ? eq(appointments.familyMemberId, familyMemberId)
+            : eq(appointments.subjectType, 'self'),
+        ),
+      )
+      .limit(1);
+    if (!hasVisited) {
+      throw new NotFoundException(
+        familyMemberId
+          ? 'Family member not found at this clinic'
+          : 'Patient not found at this clinic',
+      );
+    }
+    const [existing] = await this.db
+      .select({ id: patientAssignments.id })
+      .from(patientAssignments)
+      .where(
+        and(
+          eq(patientAssignments.clinicId, clinicId),
+          eq(patientAssignments.juniorDoctorUserId, juniorDoctorUserId),
+          eq(patientAssignments.patientId, patientId),
+          familyMemberId
+            ? eq(patientAssignments.familyMemberId, familyMemberId)
+            : isNull(patientAssignments.familyMemberId),
+        ),
+      )
+      .limit(1);
+    if (existing) {
+      throw new ConflictException('Already assigned to this junior doctor');
+    }
+
+    const [row] = await this.db
+      .insert(patientAssignments)
+      .values({
+        clinicId,
+        juniorDoctorUserId,
+        patientId,
+        subjectType: familyMemberId ? 'family_member' : 'self',
+        familyMemberId: familyMemberId ?? null,
+        assignedBy,
+      })
+      .returning();
+    return row;
+  }
+
+  async unassignPatient(clinicId: string, assignmentId: string): Promise<void> {
+    const [row] = await this.db
+      .delete(patientAssignments)
+      .where(
+        and(
+          eq(patientAssignments.id, assignmentId),
+          eq(patientAssignments.clinicId, clinicId),
+        ),
+      )
+      .returning({ id: patientAssignments.id });
+    if (!row) {
+      throw new NotFoundException('Assignment not found');
+    }
+  }
+
+  /** Shared by recordVitals/getVitals: confirm the appointment is this clinic's. */
+  private async getAppointmentForVitals(
+    clinicId: string,
+    appointmentId: string,
+  ) {
+    const [appointment] = await this.db
+      .select({
+        clinicId: appointments.clinicId,
+        patientId: appointments.patientId,
+        familyMemberId: appointments.familyMemberId,
+      })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+    if (!appointment || appointment.clinicId !== clinicId) {
+      throw new NotFoundException('Appointment not found at this clinic');
+    }
+    return appointment;
+  }
+
+  /**
+   * One row per appointment — "save vitals" replaces the whole reading,
+   * it isn't an append-only log (see the vitals table's own doc comment).
+   */
+  async recordVitals(
+    clinicId: string,
+    appointmentId: string,
+    recordedBy: string,
+    input: RecordVitalsInput,
+  ) {
+    await this.getAppointmentForVitals(clinicId, appointmentId);
+    // Only the fields actually present in this save are written — a
+    // partial re-save (e.g. correcting just the pulse) must not clear out
+    // measurements taken earlier and already saved for this appointment.
+    const measurements: Partial<typeof vitals.$inferInsert> = {};
+    if (input.systolicMmhg !== undefined)
+      measurements.systolicMmhg = input.systolicMmhg;
+    if (input.diastolicMmhg !== undefined)
+      measurements.diastolicMmhg = input.diastolicMmhg;
+    if (input.pulseBpm !== undefined) measurements.pulseBpm = input.pulseBpm;
+    if (input.weightKg !== undefined)
+      measurements.weightKg = String(input.weightKg);
+    if (input.temperatureF !== undefined)
+      measurements.temperatureF = String(input.temperatureF);
+
+    const [row] = await this.db
+      .insert(vitals)
+      .values({ appointmentId, recordedBy, ...measurements })
+      .onConflictDoUpdate({
+        target: vitals.appointmentId,
+        set: { ...measurements, recordedBy, updatedAt: new Date() },
+      })
+      .returning();
+    return row;
+  }
+
+  /**
+   * A junior doctor only sees vitals for a patient assigned to them —
+   * same gate as everywhere else in this file (see assertClinicHasTreated).
+   * Owner and assistant are never scoped by it.
+   */
+  async getVitals(clinicId: string, callerId: string, appointmentId: string) {
+    const appointment = await this.getAppointmentForVitals(
+      clinicId,
+      appointmentId,
+    );
+    if (await this.isActiveJuniorDoctor(clinicId, callerId)) {
+      const [assigned] = await this.db
+        .select({ id: patientAssignments.id })
+        .from(patientAssignments)
+        .where(
+          and(
+            eq(patientAssignments.clinicId, clinicId),
+            eq(patientAssignments.juniorDoctorUserId, callerId),
+            eq(patientAssignments.patientId, appointment.patientId),
+            appointment.familyMemberId
+              ? eq(
+                  patientAssignments.familyMemberId,
+                  appointment.familyMemberId,
+                )
+              : isNull(patientAssignments.familyMemberId),
+          ),
+        )
+        .limit(1);
+      if (!assigned) {
+        throw new NotFoundException('Appointment not found at this clinic');
+      }
+    }
+    // "Everything is attributed" (journeys.html) — a disputed reading has
+    // a name on it, not just a user id. Assistants don't have a
+    // practitioners row (only owner/junior_doctor require one), hence the
+    // left join and phone fallback, same as listStaff above.
+    const [row] = await this.db
+      .select({
+        id: vitals.id,
+        appointmentId: vitals.appointmentId,
+        systolicMmhg: vitals.systolicMmhg,
+        diastolicMmhg: vitals.diastolicMmhg,
+        pulseBpm: vitals.pulseBpm,
+        weightKg: vitals.weightKg,
+        temperatureF: vitals.temperatureF,
+        recordedBy: vitals.recordedBy,
+        recordedByName: practitioners.fullName,
+        recordedByPhone: authUsers.phone,
+        createdAt: vitals.createdAt,
+        updatedAt: vitals.updatedAt,
+      })
+      .from(vitals)
+      .leftJoin(practitioners, eq(practitioners.id, vitals.recordedBy))
+      .innerJoin(authUsers, eq(authUsers.id, vitals.recordedBy))
+      .where(eq(vitals.appointmentId, appointmentId))
+      .limit(1);
+    return row ?? null;
   }
 }

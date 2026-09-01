@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { listClinicWaitlist, listToday } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
-import { checkInAction } from "../../../actions";
+import { checkInAction, recordVitalsAction } from "../../../actions";
 
 export default async function ClinicTodayPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/today">,
@@ -21,12 +21,16 @@ export default async function ClinicTodayPage(
   // doc's role matrix) — a junior doctor sees today's queue for context but
   // doesn't run it.
   const canCheckIn = staffCtx.role === "owner" || staffCtx.role === "receptionist";
+  // Vitals are the assistant's actual job (journeys.html's Assistant
+  // track) — recorded after check-in, before the doctor's consultation.
+  const canRecordVitals = staffCtx.role === "owner" || staffCtx.role === "assistant";
 
   const [appointments, waitlist] = await Promise.all([
     listToday(clinicId),
     listClinicWaitlist(clinicId),
   ]);
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
+  const vitalsAction = recordVitalsAction.bind(null, locale, clinicSlug, clinicId);
   const checkedInCount = appointments.filter((a) => a.status === "checked_in").length;
   const waitingCount = appointments.length - checkedInCount;
 
@@ -57,25 +61,93 @@ export default async function ClinicTodayPage(
           <p style={{ color: "var(--color-ink-soft)" }}>{t("noAppointmentsToday")}</p>
         ) : (
           appointments.map((appt, i) => (
-            <div key={appt.appointmentId} className="qrow">
-              <span className="qn mono">{String(i + 1).padStart(2, "0")}</span>
-              <div className="min-w-0">
-                <b>{appt.patientFullName}</b>
-                <small>
-                  {formatClinicTime(appt.scheduledStart, locale)} · {appt.patientPhone}
-                </small>
+            <div key={appt.appointmentId}>
+              <div className="qrow">
+                <span className="qn mono">{String(i + 1).padStart(2, "0")}</span>
+                <div className="min-w-0">
+                  <b>{appt.patientFullName}</b>
+                  <small>
+                    {formatClinicTime(appt.scheduledStart, locale)} · {appt.patientPhone}
+                  </small>
+                </div>
+                {appt.status === "checked_in" ? (
+                  <span className="qs in">{t("checkedIn")}</span>
+                ) : canCheckIn ? (
+                  <form action={action}>
+                    <input type="hidden" name="appointmentId" value={appt.appointmentId} />
+                    <button type="submit" className="qb tap-target">
+                      {t("checkIn")}
+                    </button>
+                  </form>
+                ) : (
+                  <span className="qs">{t("notCheckedIn")}</span>
+                )}
               </div>
-              {appt.status === "checked_in" ? (
-                <span className="qs in">{t("checkedIn")}</span>
-              ) : canCheckIn ? (
-                <form action={action}>
-                  <input type="hidden" name="appointmentId" value={appt.appointmentId} />
-                  <button type="submit" className="qb tap-target">
-                    {t("checkIn")}
-                  </button>
-                </form>
-              ) : (
-                <span className="qs">{t("notCheckedIn")}</span>
+              {appt.status === "checked_in" && canRecordVitals && (
+                <details className="ms-8 mt-1">
+                  <summary
+                    className="tap-target"
+                    style={{ cursor: "pointer", color: "var(--color-ink-soft)" }}
+                  >
+                    {t("recordVitals")}
+                  </summary>
+                  <form
+                    action={vitalsAction}
+                    className="mt-2 flex flex-wrap items-end gap-3"
+                  >
+                    <input type="hidden" name="appointmentId" value={appt.appointmentId} />
+                    <label>
+                      <span className="lbl">{t("systolicLabel")}</span>
+                      <input
+                        type="number"
+                        name="systolicMmhg"
+                        className="field tap-target"
+                        style={{ width: "7rem" }}
+                      />
+                    </label>
+                    <label>
+                      <span className="lbl">{t("diastolicLabel")}</span>
+                      <input
+                        type="number"
+                        name="diastolicMmhg"
+                        className="field tap-target"
+                        style={{ width: "7rem" }}
+                      />
+                    </label>
+                    <label>
+                      <span className="lbl">{t("pulseLabel")}</span>
+                      <input
+                        type="number"
+                        name="pulseBpm"
+                        className="field tap-target"
+                        style={{ width: "7rem" }}
+                      />
+                    </label>
+                    <label>
+                      <span className="lbl">{t("weightLabel")}</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        name="weightKg"
+                        className="field tap-target"
+                        style={{ width: "7rem" }}
+                      />
+                    </label>
+                    <label>
+                      <span className="lbl">{t("temperatureLabel")}</span>
+                      <input
+                        type="number"
+                        step="0.1"
+                        name="temperatureF"
+                        className="field tap-target"
+                        style={{ width: "7rem" }}
+                      />
+                    </label>
+                    <button type="submit" className="btn tap-target">
+                      {t("saveVitals")}
+                    </button>
+                  </form>
+                </details>
               )}
             </div>
           ))

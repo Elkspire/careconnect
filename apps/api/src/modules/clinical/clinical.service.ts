@@ -9,7 +9,7 @@ import type {
   SavePrescriptionInput,
   UpdateClinicalNoteInput,
 } from '@careconnect/validation';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
@@ -17,6 +17,7 @@ import {
   clinics,
   clinicStaff,
   familyMembers,
+  patientAssignments,
   practitioners,
   prescriptionItems,
 } from '../../common/database/schema';
@@ -44,11 +45,22 @@ export class ClinicalService {
     private readonly medicalSummaryService: MedicalSummaryService,
   ) {}
 
-  private async isActiveJuniorDoctor(
+  /**
+   * "A junior doctor sees the patients assigned to them, not the whole
+   * practice" applies here too, not just the non-clinical patient list in
+   * ClinicService — otherwise any active junior doctor at the clinic could
+   * co-author/read notes and prescriptions for a patient they were never
+   * assigned, which is a bigger exposure than the patient-list gap it would
+   * leave inconsistent with. Mirrors patient_assignments the same way
+   * ClinicService.assertClinicHasTreated does.
+   */
+  private async isAssignedJuniorDoctor(
     callerId: string,
     clinicId: string,
+    patientId: string,
+    familyMemberId?: string | null,
   ): Promise<boolean> {
-    const [row] = await this.db
+    const [staffRow] = await this.db
       .select({ id: clinicStaff.id })
       .from(clinicStaff)
       .where(
@@ -60,7 +72,24 @@ export class ClinicalService {
         ),
       )
       .limit(1);
-    return !!row;
+    if (!staffRow) {
+      return false;
+    }
+    const [assignmentRow] = await this.db
+      .select({ id: patientAssignments.id })
+      .from(patientAssignments)
+      .where(
+        and(
+          eq(patientAssignments.clinicId, clinicId),
+          eq(patientAssignments.juniorDoctorUserId, callerId),
+          eq(patientAssignments.patientId, patientId),
+          familyMemberId
+            ? eq(patientAssignments.familyMemberId, familyMemberId)
+            : isNull(patientAssignments.familyMemberId),
+        ),
+      )
+      .limit(1);
+    return !!assignmentRow;
   }
 
   async createNote(
@@ -73,6 +102,7 @@ export class ClinicalService {
         practitionerId: appointments.practitionerId,
         patientId: appointments.patientId,
         clinicId: appointments.clinicId,
+        familyMemberId: appointments.familyMemberId,
       })
       .from(appointments)
       .where(eq(appointments.id, input.appointmentId))
@@ -88,7 +118,12 @@ export class ClinicalService {
     const isTreatingPractitioner = appointment.practitionerId === callerId;
     if (
       !isTreatingPractitioner &&
-      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+      !(await this.isAssignedJuniorDoctor(
+        callerId,
+        clinicId,
+        appointment.patientId,
+        appointment.familyMemberId,
+      ))
     ) {
       throw new ForbiddenException(
         'You are not the treating practitioner for this appointment',
@@ -114,6 +149,7 @@ export class ClinicalService {
       .select({
         note: clinicalNotes,
         appointmentClinicId: appointments.clinicId,
+        familyMemberId: appointments.familyMemberId,
       })
       .from(clinicalNotes)
       .innerJoin(appointments, eq(appointments.id, clinicalNotes.appointmentId))
@@ -124,7 +160,12 @@ export class ClinicalService {
     }
     if (
       row.note.practitionerId !== callerId &&
-      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+      !(await this.isAssignedJuniorDoctor(
+        callerId,
+        clinicId,
+        row.note.patientId,
+        row.familyMemberId,
+      ))
     ) {
       throw new NotFoundException('Clinical note not found');
     }
@@ -140,7 +181,9 @@ export class ClinicalService {
     const [existing] = await this.db
       .select({
         practitionerId: clinicalNotes.practitionerId,
+        patientId: clinicalNotes.patientId,
         appointmentClinicId: appointments.clinicId,
+        familyMemberId: appointments.familyMemberId,
       })
       .from(clinicalNotes)
       .innerJoin(appointments, eq(appointments.id, clinicalNotes.appointmentId))
@@ -151,7 +194,12 @@ export class ClinicalService {
     }
     if (
       existing.practitionerId !== callerId &&
-      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+      !(await this.isAssignedJuniorDoctor(
+        callerId,
+        clinicId,
+        existing.patientId,
+        existing.familyMemberId,
+      ))
     ) {
       throw new NotFoundException('Clinical note not found');
     }
@@ -266,7 +314,12 @@ export class ClinicalService {
     }
     if (
       appt.practitionerId !== callerId &&
-      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+      !(await this.isAssignedJuniorDoctor(
+        callerId,
+        clinicId,
+        appt.patientId,
+        appt.familyMemberId,
+      ))
     ) {
       throw new ForbiddenException(
         'You are not the treating practitioner for this appointment',
@@ -303,7 +356,12 @@ export class ClinicalService {
     }
     if (
       row.note.practitionerId !== callerId &&
-      !(await this.isActiveJuniorDoctor(callerId, clinicId))
+      !(await this.isAssignedJuniorDoctor(
+        callerId,
+        clinicId,
+        row.note.patientId,
+        row.familyMemberId,
+      ))
     ) {
       throw new NotFoundException('Clinical note not found');
     }

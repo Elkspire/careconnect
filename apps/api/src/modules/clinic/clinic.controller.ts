@@ -14,10 +14,12 @@ import {
 } from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
 import {
+  AssignPatientDto,
   CheckInAppointmentDto,
   CreateClinicDto,
   CreatePractitionerLeaveDto,
   InviteStaffDto,
+  RecordVitalsDto,
   UpsertMedicalSummaryDto,
   UpsertPractitionerClinicDto,
 } from './clinic.dto';
@@ -88,30 +90,36 @@ export class ClinicController {
   @Get(':clinicId/patients')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewPatientList')
-  listPatients(@Param('clinicId') clinicId: string) {
-    return this.clinicService.listPatients(clinicId);
+  listPatients(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.listPatients(clinicId, user.id);
   }
 
   @Get(':clinicId/patients/:patientId')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewPatientList')
   getPatientDetail(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
   ) {
-    return this.clinicService.getPatientDetail(clinicId, patientId);
+    return this.clinicService.getPatientDetail(clinicId, user.id, patientId);
   }
 
   @Get(':clinicId/patients/:patientId/family/:familyMemberId')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewPatientList')
   getFamilyMemberDetail(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
     @Param('familyMemberId') familyMemberId: string,
   ) {
     return this.clinicService.getFamilyMemberDetail(
       clinicId,
+      user.id,
       patientId,
       familyMemberId,
     );
@@ -127,22 +135,25 @@ export class ClinicController {
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
   getPatientRecords(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
   ) {
-    return this.clinicService.getPatientRecords(clinicId, patientId);
+    return this.clinicService.getPatientRecords(clinicId, user.id, patientId);
   }
 
   @Get(':clinicId/patients/:patientId/family/:familyMemberId/records')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
   getFamilyMemberRecords(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
     @Param('familyMemberId') familyMemberId: string,
   ) {
     return this.clinicService.getFamilyMemberRecords(
       clinicId,
+      user.id,
       patientId,
       familyMemberId,
     );
@@ -152,20 +163,26 @@ export class ClinicController {
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
   getRecordSignedUrl(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('recordId') recordId: string,
   ) {
-    return this.clinicService.getRecordSignedUrl(clinicId, recordId);
+    return this.clinicService.getRecordSignedUrl(clinicId, user.id, recordId);
   }
 
   @Get(':clinicId/patients/:patientId/medical-summary')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
   getPatientMedicalSummary(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
   ) {
-    return this.clinicService.getPatientMedicalSummary(clinicId, patientId);
+    return this.clinicService.getPatientMedicalSummary(
+      clinicId,
+      user.id,
+      patientId,
+    );
   }
 
   @Put(':clinicId/patients/:patientId/medical-summary')
@@ -189,12 +206,14 @@ export class ClinicController {
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
   getFamilyMemberMedicalSummary(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
     @Param('patientId') patientId: string,
     @Param('familyMemberId') familyMemberId: string,
   ) {
     return this.clinicService.getFamilyMemberMedicalSummary(
       clinicId,
+      user.id,
       patientId,
       familyMemberId,
     );
@@ -221,7 +240,7 @@ export class ClinicController {
 
   /** Default landing screen for the clinic dashboard. */
   @Get(':clinicId/today')
-  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor', 'assistant')
   @RequireStaffPermission('viewTodayQueue')
   listToday(@Param('clinicId') clinicId: string) {
     return this.clinicService.listToday(clinicId);
@@ -242,5 +261,73 @@ export class ClinicController {
     @Body() body: CheckInAppointmentDto,
   ) {
     return this.clinicService.checkIn(clinicId, body);
+  }
+
+  /**
+   * "A junior doctor sees the patients assigned to them, not the whole
+   * practice" — owner-only, same trust level as staff invite/revoke above.
+   */
+  @Get(':clinicId/patient-assignments')
+  @RequireClinicRole('owner')
+  listPatientAssignments(@Param('clinicId') clinicId: string) {
+    return this.clinicService.listPatientAssignments(clinicId);
+  }
+
+  @Post(':clinicId/patient-assignments')
+  @RequireClinicRole('owner')
+  assignPatient(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Body() body: AssignPatientDto,
+  ) {
+    return this.clinicService.assignPatient(
+      clinicId,
+      user.id,
+      body.juniorDoctorUserId,
+      body.patientId,
+      body.familyMemberId,
+    );
+  }
+
+  @Delete(':clinicId/patient-assignments/:assignmentId')
+  @RequireClinicRole('owner')
+  unassignPatient(
+    @Param('clinicId') clinicId: string,
+    @Param('assignmentId') assignmentId: string,
+  ) {
+    return this.clinicService.unassignPatient(clinicId, assignmentId);
+  }
+
+  /**
+   * "Not part of your role: prescription pad" — the write side is
+   * owner/assistant only, structurally excluding junior_doctor the same
+   * way receptionist is excluded from clinical-notes routes.
+   */
+  @Put(':clinicId/appointments/:appointmentId/vitals')
+  @RequireClinicRole('owner', 'assistant')
+  @RequireStaffPermission('recordVitals')
+  recordVitals(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('appointmentId') appointmentId: string,
+    @Body() body: RecordVitalsDto,
+  ) {
+    return this.clinicService.recordVitals(
+      clinicId,
+      appointmentId,
+      user.id,
+      body,
+    );
+  }
+
+  @Get(':clinicId/appointments/:appointmentId/vitals')
+  @RequireClinicRole('owner', 'junior_doctor', 'assistant')
+  @RequireStaffPermission('recordVitals')
+  getVitals(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('appointmentId') appointmentId: string,
+  ) {
+    return this.clinicService.getVitals(clinicId, user.id, appointmentId);
   }
 }

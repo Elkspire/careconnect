@@ -1,4 +1,8 @@
-import type { InviteStaffInput, UpsertMedicalSummaryInput } from "@careconnect/validation";
+import type {
+  InviteStaffInput,
+  RecordVitalsInput,
+  UpsertMedicalSummaryInput,
+} from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 import type { MedicalSummary } from "./medical-summary";
 
@@ -51,6 +55,8 @@ export interface ClinicStaffMember {
   role: string;
   status: string;
   revokedPermissions: string[];
+  fullName: string | null;
+  phone: string | null;
 }
 
 export interface ClinicAppointmentSummary {
@@ -99,6 +105,32 @@ export interface ClinicRecord {
   mimeType: string;
   linkedAppointmentId: string | null;
   createdAt: string;
+}
+
+export interface PatientAssignment {
+  id: string;
+  juniorDoctorUserId: string;
+  juniorDoctorFullName: string;
+  patientId: string;
+  patientFullName: string;
+  familyMemberId: string | null;
+  familyMemberFullName: string | null;
+  createdAt: string;
+}
+
+export interface Vitals {
+  id: string;
+  appointmentId: string;
+  systolicMmhg: number | null;
+  diastolicMmhg: number | null;
+  pulseBpm: number | null;
+  weightKg: string | null;
+  temperatureF: string | null;
+  recordedBy: string;
+  recordedByName: string | null;
+  recordedByPhone: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export async function listMyClinics(): Promise<Clinic[]> {
@@ -240,4 +272,46 @@ export async function revokeStaff(clinicId: string, staffId: string): Promise<vo
   if (!res.ok) {
     throw new Error(`Revoke staff failed: ${res.status}`);
   }
+}
+
+export async function listPatientAssignments(clinicId: string): Promise<PatientAssignment[]> {
+  const res = await authedFetch(`/clinics/${clinicId}/patient-assignments`);
+  return parseJsonOrThrow(res, "List patient assignments");
+}
+
+export async function assignPatient(
+  clinicId: string,
+  input: { juniorDoctorUserId: string; patientId: string; familyMemberId?: string },
+): Promise<PatientAssignment> {
+  const res = await authedFetch(`/clinics/${clinicId}/patient-assignments`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Assign patient");
+}
+
+export async function unassignPatient(clinicId: string, assignmentId: string): Promise<void> {
+  const res = await authedFetch(`/clinics/${clinicId}/patient-assignments/${assignmentId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error(`Unassign patient failed: ${res.status}`);
+  }
+}
+
+export async function recordVitals(
+  clinicId: string,
+  appointmentId: string,
+  input: RecordVitalsInput,
+): Promise<Vitals> {
+  const res = await authedFetch(`/clinics/${clinicId}/appointments/${appointmentId}/vitals`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Record vitals");
+}
+
+export async function getVitals(clinicId: string, appointmentId: string): Promise<Vitals | null> {
+  const res = await authedFetch(`/clinics/${clinicId}/appointments/${appointmentId}/vitals`);
+  return parseJsonOrThrow(res, "Get vitals");
 }
