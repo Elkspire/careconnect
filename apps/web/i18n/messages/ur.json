@@ -150,6 +150,7 @@
     "dobLabel": "تاریخ پیدائش",
     "viewClinicalNote": "طبی نوٹ دیکھیں",
     "recordsHeading": "ریکارڈز",
+    "medicalSummaryHeading": "طبی خلاصہ",
     "noRecordsLinked": "ابھی تک کوئی ریکارڈ اپ لوڈ نہیں کیا گیا۔",
     "guardianLabel": "سرپرست",
     "guardianPhoneLabel": "سرپرست کا فون نمبر",
@@ -204,6 +205,16 @@
       "prescription_photo": "نسخہ",
       "lab_report": "لیب رپورٹ",
       "other_document": "دیگر دستاویز"
-    }
+    },
+    "noMedicalSummary": "ابھی تک کوئی الرجی، بیماری یا بلڈ گروپ درج نہیں ہے۔",
+    "activeMedicationsLabel": "جاری ادویات",
+    "editMedicalSummary": "طبی خلاصہ ترمیم کریں",
+    "saveMedicalSummary": "محفوظ کریں",
+    "bloodGroupLabel": "بلڈ گروپ",
+    "unknown": "نامعلوم",
+    "allergiesLabel": "الرجیز",
+    "chronicConditionsLabel": "دائمی امراض",
+    "oneItemPerLine": "ہر لائن میں ایک آئٹم",
+    "visitHistoryHeading": "ملاقاتوں کی تاریخ"
   }
 }

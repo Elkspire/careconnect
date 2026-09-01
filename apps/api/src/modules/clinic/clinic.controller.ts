@@ -18,6 +18,7 @@ import {
   CreateClinicDto,
   CreatePractitionerLeaveDto,
   InviteStaffDto,
+  UpsertMedicalSummaryDto,
   UpsertPractitionerClinicDto,
 } from './clinic.dto';
 import { ClinicService } from './clinic.service';
@@ -155,6 +156,67 @@ export class ClinicController {
     @Param('recordId') recordId: string,
   ) {
     return this.clinicService.getRecordSignedUrl(clinicId, recordId);
+  }
+
+  @Get(':clinicId/patients/:patientId/medical-summary')
+  @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('viewRecords')
+  getPatientMedicalSummary(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.clinicService.getPatientMedicalSummary(clinicId, patientId);
+  }
+
+  @Put(':clinicId/patients/:patientId/medical-summary')
+  @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('clinicalNotes')
+  upsertPatientMedicalSummary(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+    @Body() body: UpsertMedicalSummaryDto,
+  ) {
+    return this.clinicService.upsertPatientMedicalSummary(
+      clinicId,
+      patientId,
+      user.id,
+      body,
+    );
+  }
+
+  @Get(':clinicId/patients/:patientId/family/:familyMemberId/medical-summary')
+  @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('viewRecords')
+  getFamilyMemberMedicalSummary(
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+    @Param('familyMemberId') familyMemberId: string,
+  ) {
+    return this.clinicService.getFamilyMemberMedicalSummary(
+      clinicId,
+      patientId,
+      familyMemberId,
+    );
+  }
+
+  @Put(':clinicId/patients/:patientId/family/:familyMemberId/medical-summary')
+  @RequireClinicRole('owner', 'junior_doctor')
+  @RequireStaffPermission('clinicalNotes')
+  upsertFamilyMemberMedicalSummary(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Param('patientId') patientId: string,
+    @Param('familyMemberId') familyMemberId: string,
+    @Body() body: UpsertMedicalSummaryDto,
+  ) {
+    return this.clinicService.upsertFamilyMemberMedicalSummary(
+      clinicId,
+      patientId,
+      familyMemberId,
+      user.id,
+      body,
+    );
   }
 
   /** Default landing screen for the clinic dashboard. */

@@ -10,6 +10,7 @@ import type {
   CreateClinicInput,
   CreatePractitionerLeaveInput,
   InviteStaffInput,
+  UpsertMedicalSummaryInput,
   UpsertPractitionerClinicInput,
 } from '@careconnect/validation';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -33,6 +34,7 @@ import {
   PatientCheckedInEvent,
 } from '../notifications/events';
 import { slugify } from '../../common/util/slug';
+import { MedicalSummaryService } from '../medical-summary/medical-summary.service';
 import { VaultService } from '../vault/vault.service';
 
 @Injectable()
@@ -41,7 +43,36 @@ export class ClinicService {
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly eventEmitter: EventEmitter2,
     private readonly vaultService: VaultService,
+    private readonly medicalSummaryService: MedicalSummaryService,
   ) {}
+
+  /** Shared by every "has this clinic actually treated this patient/family member" gate. */
+  private async assertClinicHasTreated(
+    clinicId: string,
+    patientId: string,
+    familyMemberId?: string,
+  ): Promise<void> {
+    const [hasVisited] = await this.db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          eq(appointments.patientId, patientId),
+          familyMemberId
+            ? eq(appointments.familyMemberId, familyMemberId)
+            : eq(appointments.subjectType, 'self'),
+        ),
+      )
+      .limit(1);
+    if (!hasVisited) {
+      throw new NotFoundException(
+        familyMemberId
+          ? 'Family member not found at this clinic'
+          : 'Patient not found at this clinic',
+      );
+    }
+  }
 
   async createClinic(ownerPractitionerId: string, input: CreateClinicInput) {
     const [row] = await this.db
@@ -370,20 +401,7 @@ export class ClinicService {
    * sensitivity as clinical_notes.
    */
   async getPatientRecords(clinicId: string, patientId: string) {
-    const [hasVisited] = await this.db
-      .select({ id: appointments.id })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.patientId, patientId),
-          eq(appointments.subjectType, 'self'),
-        ),
-      )
-      .limit(1);
-    if (!hasVisited) {
-      throw new NotFoundException('Patient not found at this clinic');
-    }
+    await this.assertClinicHasTreated(clinicId, patientId);
 
     return this.db
       .select({
@@ -409,20 +427,7 @@ export class ClinicService {
     patientId: string,
     familyMemberId: string,
   ) {
-    const [hasVisited] = await this.db
-      .select({ id: appointments.id })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.clinicId, clinicId),
-          eq(appointments.patientId, patientId),
-          eq(appointments.familyMemberId, familyMemberId),
-        ),
-      )
-      .limit(1);
-    if (!hasVisited) {
-      throw new NotFoundException('Family member not found at this clinic');
-    }
+    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
 
     return this.db
       .select({
@@ -479,6 +484,65 @@ export class ClinicService {
       throw new NotFoundException('Record not found at this clinic');
     }
     return this.vaultService.getSignedUrlForRecordUnchecked(recordId);
+  }
+
+  /**
+   * Allergies/conditions/blood-group/active-medications — read/write for
+   * any clinic that's actually treated this patient, gated one notch
+   * tighter than the plain record list (owner/junior_doctor's
+   * 'clinicalNotes' permission for writes, not just 'viewRecords'), since
+   * editing someone's allergy list is clinical judgment, not just viewing
+   * a file.
+   */
+  async getPatientMedicalSummary(clinicId: string, patientId: string) {
+    await this.assertClinicHasTreated(clinicId, patientId);
+    return this.medicalSummaryService.get(patientId, 'self');
+  }
+
+  async upsertPatientMedicalSummary(
+    clinicId: string,
+    patientId: string,
+    updatedBy: string,
+    input: UpsertMedicalSummaryInput,
+  ) {
+    await this.assertClinicHasTreated(clinicId, patientId);
+    return this.medicalSummaryService.upsert(
+      patientId,
+      'self',
+      undefined,
+      updatedBy,
+      input,
+    );
+  }
+
+  async getFamilyMemberMedicalSummary(
+    clinicId: string,
+    patientId: string,
+    familyMemberId: string,
+  ) {
+    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
+    return this.medicalSummaryService.get(
+      patientId,
+      'family_member',
+      familyMemberId,
+    );
+  }
+
+  async upsertFamilyMemberMedicalSummary(
+    clinicId: string,
+    patientId: string,
+    familyMemberId: string,
+    updatedBy: string,
+    input: UpsertMedicalSummaryInput,
+  ) {
+    await this.assertClinicHasTreated(clinicId, patientId, familyMemberId);
+    return this.medicalSummaryService.upsert(
+      patientId,
+      'family_member',
+      familyMemberId,
+      updatedBy,
+      input,
+    );
   }
 
   /**

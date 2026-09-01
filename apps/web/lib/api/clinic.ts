@@ -1,5 +1,6 @@
-import type { InviteStaffInput } from "@careconnect/validation";
+import type { InviteStaffInput, UpsertMedicalSummaryInput } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
+import type { MedicalSummary } from "./medical-summary";
 
 export interface Clinic {
   id: string;
@@ -172,6 +173,50 @@ export async function getClinicRecordSignedUrl(
 ): Promise<{ url: string }> {
   const res = await authedFetch(`/clinics/${clinicId}/records/${recordId}/signed-url`);
   return parseJsonOrThrow(res, "Get clinic record link");
+}
+
+export async function getPatientMedicalSummary(
+  clinicId: string,
+  patientId: string,
+): Promise<MedicalSummary | null> {
+  const res = await authedFetch(`/clinics/${clinicId}/patients/${patientId}/medical-summary`);
+  return parseJsonOrThrow(res, "Get patient medical summary");
+}
+
+export async function upsertPatientMedicalSummary(
+  clinicId: string,
+  patientId: string,
+  input: UpsertMedicalSummaryInput,
+): Promise<MedicalSummary> {
+  const res = await authedFetch(`/clinics/${clinicId}/patients/${patientId}/medical-summary`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Update patient medical summary");
+}
+
+export async function getFamilyMemberMedicalSummary(
+  clinicId: string,
+  patientId: string,
+  familyMemberId: string,
+): Promise<MedicalSummary | null> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/patients/${patientId}/family/${familyMemberId}/medical-summary`,
+  );
+  return parseJsonOrThrow(res, "Get family member medical summary");
+}
+
+export async function upsertFamilyMemberMedicalSummary(
+  clinicId: string,
+  patientId: string,
+  familyMemberId: string,
+  input: UpsertMedicalSummaryInput,
+): Promise<MedicalSummary> {
+  const res = await authedFetch(
+    `/clinics/${clinicId}/patients/${patientId}/family/${familyMemberId}/medical-summary`,
+    { method: "PUT", body: JSON.stringify(input) },
+  );
+  return parseJsonOrThrow(res, "Update family member medical summary");
 }
 
 export async function listStaff(clinicId: string): Promise<ClinicStaffMember[]> {

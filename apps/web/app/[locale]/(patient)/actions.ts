@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { BLOOD_GROUP, type BloodGroup } from "@careconnect/shared-types";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
 import {
   cancelAppointment,
@@ -11,6 +12,18 @@ import {
   rescheduleAppointment,
 } from "@/lib/api/booking";
 import { getVaultRecordSignedUrl, uploadVaultRecord } from "@/lib/api/vault";
+import {
+  upsertFamilyMemberMedicalSummary,
+  upsertMyMedicalSummary,
+} from "@/lib/api/medical-summary";
+
+/** One item per non-empty line — how the medical summary form's textareas encode a string list. */
+function linesToList(raw: FormDataEntryValue | null): string[] {
+  return String(raw ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
 // Matches apps/api/src/modules/booking/availability.ts's CLINIC_UTC_OFFSET —
 // v1 is Pakistan-only, so every appointment time is reasoned about in PKT.
@@ -139,4 +152,28 @@ export async function uploadVaultRecordAction(locale: string, formData: FormData
 export async function viewVaultRecordAction(_locale: string, formData: FormData): Promise<void> {
   const { url } = await getVaultRecordSignedUrl(String(formData.get("recordId")));
   redirect(url);
+}
+
+export async function upsertMedicalSummaryAction(
+  locale: string,
+  formData: FormData,
+): Promise<void> {
+  const bloodGroupRaw = String(formData.get("bloodGroup") ?? "");
+  const bloodGroup = BLOOD_GROUP.includes(bloodGroupRaw as BloodGroup)
+    ? (bloodGroupRaw as BloodGroup)
+    : undefined;
+  const input = {
+    bloodGroup,
+    allergies: linesToList(formData.get("allergies")),
+    chronicConditions: linesToList(formData.get("chronicConditions")),
+    activeMedications: linesToList(formData.get("activeMedications")),
+  };
+
+  const familyMemberId = formData.get("familyMemberId");
+  if (familyMemberId) {
+    await upsertFamilyMemberMedicalSummary(String(familyMemberId), input);
+  } else {
+    await upsertMyMedicalSummary(input);
+  }
+  revalidatePath(`/${locale}/patient/vault`);
 }

@@ -3,14 +3,19 @@ import type {
   AddFamilyMemberInput,
   UpdateFamilyMemberInput,
   UpdatePatientProfileInput,
+  UpsertMedicalSummaryInput,
 } from '@careconnect/validation';
 import { and, eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import { familyMembers, patients } from '../../common/database/schema';
+import { MedicalSummaryService } from '../medical-summary/medical-summary.service';
 
 @Injectable()
 export class PatientsService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly medicalSummaryService: MedicalSummaryService,
+  ) {}
 
   async upsertProfile(userId: string, input: UpdatePatientProfileInput) {
     const [row] = await this.db
@@ -107,5 +112,46 @@ export class PatientsService {
     if (!row) {
       throw new NotFoundException('Family member not found');
     }
+  }
+
+  getMyMedicalSummary(patientId: string) {
+    return this.medicalSummaryService.get(patientId, 'self');
+  }
+
+  upsertMyMedicalSummary(patientId: string, input: UpsertMedicalSummaryInput) {
+    return this.medicalSummaryService.upsert(
+      patientId,
+      'self',
+      undefined,
+      patientId,
+      input,
+    );
+  }
+
+  async getFamilyMemberMedicalSummary(
+    patientId: string,
+    familyMemberId: string,
+  ) {
+    await this.assertFamilyMemberOwnedBy(patientId, familyMemberId);
+    return this.medicalSummaryService.get(
+      patientId,
+      'family_member',
+      familyMemberId,
+    );
+  }
+
+  async upsertFamilyMemberMedicalSummary(
+    patientId: string,
+    familyMemberId: string,
+    input: UpsertMedicalSummaryInput,
+  ) {
+    await this.assertFamilyMemberOwnedBy(patientId, familyMemberId);
+    return this.medicalSummaryService.upsert(
+      patientId,
+      'family_member',
+      familyMemberId,
+      patientId,
+      input,
+    );
   }
 }

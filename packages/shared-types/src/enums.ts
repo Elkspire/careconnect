@@ -107,6 +107,18 @@ export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissio
   junior_doctor: ["viewPatientList", "viewTodayQueue", "viewRecords", "clinicalNotes"],
 };
 
+export const BLOOD_GROUP = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+] as const;
+export type BloodGroup = (typeof BLOOD_GROUP)[number];
+
 export const RECORD_TYPE = ["prescription_photo", "lab_report", "other_document"] as const;
 export type RecordType = (typeof RECORD_TYPE)[number];
 

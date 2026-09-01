@@ -8,12 +8,15 @@ import type {
   CreateClinicalNoteInput,
   UpdateClinicalNoteInput,
 } from '@careconnect/validation';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
   clinicalNotes,
+  clinics,
   clinicStaff,
+  familyMembers,
+  practitioners,
 } from '../../common/database/schema';
 
 /**
@@ -156,5 +159,43 @@ export class ClinicalService {
       throw new NotFoundException('Clinical note not found');
     }
     return row;
+  }
+
+  /**
+   * A patient reading their own visit history — the "every doctor I visit
+   * adds their note to my file, so my history builds itself" half of the
+   * patient-owns-the-record principle. Deliberately a different access
+   * shape than everything else in this file (filtered by patientId, not
+   * practitionerId/junior-doctor membership): a patient has always been
+   * allowed to see what's written about them, this is just the first
+   * place that actually exposes it. clinical_notes itself never leaves
+   * this module — the route only returns the fields below.
+   */
+  listMyHistory(patientId: string) {
+    return this.db
+      .select({
+        appointmentId: clinicalNotes.appointmentId,
+        notes: clinicalNotes.notes,
+        diagnosis: clinicalNotes.diagnosis,
+        createdAt: clinicalNotes.createdAt,
+        subjectType: appointments.subjectType,
+        familyMemberFullName: familyMembers.fullName,
+        practitionerFullName: practitioners.fullName,
+        clinicName: clinics.name,
+        scheduledStart: appointments.scheduledStart,
+      })
+      .from(clinicalNotes)
+      .innerJoin(appointments, eq(appointments.id, clinicalNotes.appointmentId))
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, clinicalNotes.practitionerId),
+      )
+      .innerJoin(clinics, eq(clinics.id, appointments.clinicId))
+      .leftJoin(
+        familyMembers,
+        eq(familyMembers.id, appointments.familyMemberId),
+      )
+      .where(eq(clinicalNotes.patientId, patientId))
+      .orderBy(desc(appointments.scheduledStart));
   }
 }

@@ -150,6 +150,7 @@
     "dobLabel": "Date of birth",
     "viewClinicalNote": "View clinical note",
     "recordsHeading": "Records",
+    "medicalSummaryHeading": "Medical summary",
     "noRecordsLinked": "No records uploaded yet.",
     "guardianLabel": "Guardian",
     "guardianPhoneLabel": "Guardian's phone",
@@ -204,6 +205,16 @@
       "prescription_photo": "Prescription",
       "lab_report": "Lab report",
       "other_document": "Other document"
-    }
+    },
+    "noMedicalSummary": "No allergies, conditions, or blood group on file yet.",
+    "activeMedicationsLabel": "Active medications",
+    "editMedicalSummary": "Edit medical summary",
+    "saveMedicalSummary": "Save",
+    "bloodGroupLabel": "Blood group",
+    "unknown": "Unknown",
+    "allergiesLabel": "Allergies",
+    "chronicConditionsLabel": "Chronic conditions",
+    "oneItemPerLine": "One per line",
+    "visitHistoryHeading": "Visit history"
   }
 }

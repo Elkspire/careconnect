@@ -8,3 +8,4 @@ export * from "./vault";
 export * from "./clinical";
 export * from "./notifications";
 export * from "./reviews";
+export * from "./medical-summary";

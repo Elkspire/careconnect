@@ -99,6 +99,16 @@ export const clinicStaffStatusEnum = pgEnum('clinic_staff_status', [
   'active',
   'revoked',
 ]);
+export const bloodGroupEnum = pgEnum('blood_group', [
+  'A+',
+  'A-',
+  'B+',
+  'B-',
+  'AB+',
+  'AB-',
+  'O+',
+  'O-',
+]);
 export const recordTypeEnum = pgEnum('record_type', [
   'prescription_photo',
   'lab_report',
@@ -505,6 +515,53 @@ export const patientRecords = pgTable(
       .defaultNow(),
   },
   (t) => [index('patient_records_patient_idx').on(t.patientId)],
+);
+
+/**
+ * The "flagged prominently" summary from the product doc's clinic-side
+ * patient view — allergies, chronic conditions, blood group, active
+ * medications. One row per subject (self or a family member), not per
+ * upload: unlike patient_records this is a small structured fact sheet,
+ * kept current rather than accumulated. Both the patient and any clinic
+ * they've visited can write to it (patient-owns-the-record: doctors write,
+ * the patient always keeps read/write on their own copy) — same
+ * clinical-sensitivity boundary as patient_records for who at a clinic can
+ * reach it (owner/junior_doctor, never receptionist).
+ */
+export const medicalSummaries = pgTable(
+  'medical_summaries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+    subjectType: appointmentSubjectTypeEnum('subject_type')
+      .notNull()
+      .default('self'),
+    familyMemberId: uuid('family_member_id').references(
+      () => familyMembers.id,
+      {
+        onDelete: 'cascade',
+      },
+    ),
+    bloodGroup: bloodGroupEnum('blood_group'),
+    allergies: text('allergies').array().notNull().default([]),
+    chronicConditions: text('chronic_conditions').array().notNull().default([]),
+    activeMedications: text('active_medications').array().notNull().default([]),
+    updatedBy: uuid('updated_by')
+      .notNull()
+      .references(() => authUsers.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  // One row per subject: enforced with two partial unique indexes in
+  // 0012_medical_summaries.sql (family_member_id is nullable, so a single
+  // plain unique(patientId, subjectType, familyMemberId) constraint would
+  // let NULL != NULL admit multiple "self" rows) — MedicalSummaryService's
+  // upsert also selects-then-branches rather than relying on
+  // onConflictDoUpdate against a partial index.
+  (t) => [index('medical_summaries_patient_idx').on(t.patientId)],
 );
 
 // ---- audit ----

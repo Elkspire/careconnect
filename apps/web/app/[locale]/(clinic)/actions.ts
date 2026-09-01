@@ -2,9 +2,29 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { STAFF_PERMISSION_KEY, type StaffPermissionKey } from "@careconnect/shared-types";
-import { checkIn, getClinicRecordSignedUrl, inviteStaff, revokeStaff } from "@/lib/api/clinic";
+import {
+  BLOOD_GROUP,
+  STAFF_PERMISSION_KEY,
+  type BloodGroup,
+  type StaffPermissionKey,
+} from "@careconnect/shared-types";
+import {
+  checkIn,
+  getClinicRecordSignedUrl,
+  inviteStaff,
+  revokeStaff,
+  upsertFamilyMemberMedicalSummary,
+  upsertPatientMedicalSummary,
+} from "@/lib/api/clinic";
 import { createClinicalNote, updateClinicalNote } from "@/lib/api/clinical";
+
+/** One item per non-empty line — how the medical summary form's textareas encode a string list. */
+function linesToList(raw: FormDataEntryValue | null): string[] {
+  return String(raw ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
 export async function checkInAction(
   locale: string,
@@ -52,6 +72,36 @@ export async function viewClinicRecordAction(
 ): Promise<void> {
   const { url } = await getClinicRecordSignedUrl(clinicId, String(formData.get("recordId")));
   redirect(url);
+}
+
+export async function upsertClinicMedicalSummaryAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  patientId: string,
+  formData: FormData,
+): Promise<void> {
+  const bloodGroupRaw = String(formData.get("bloodGroup") ?? "");
+  const bloodGroup = BLOOD_GROUP.includes(bloodGroupRaw as BloodGroup)
+    ? (bloodGroupRaw as BloodGroup)
+    : undefined;
+  const input = {
+    bloodGroup,
+    allergies: linesToList(formData.get("allergies")),
+    chronicConditions: linesToList(formData.get("chronicConditions")),
+    activeMedications: linesToList(formData.get("activeMedications")),
+  };
+
+  const familyMemberId = formData.get("familyMemberId");
+  if (familyMemberId) {
+    await upsertFamilyMemberMedicalSummary(clinicId, patientId, String(familyMemberId), input);
+    revalidatePath(
+      `/${locale}/clinic/${clinicSlug}/patients/${patientId}/family/${String(familyMemberId)}`,
+    );
+  } else {
+    await upsertPatientMedicalSummary(clinicId, patientId, input);
+    revalidatePath(`/${locale}/clinic/${clinicSlug}/patients/${patientId}`);
+  }
 }
 
 export async function saveClinicalNoteAction(
