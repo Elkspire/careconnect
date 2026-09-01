@@ -169,8 +169,29 @@ export const practitioners = pgTable('practitioners', {
     .notNull()
     .default('unverified'),
   verifiedAt: timestamp('verified_at', { withTimezone: true }),
+  // Set by AdminService.reject — an unverified/pending profile stays
+  // invisible in the directory either way; this is just why, for the
+  // practitioner's and the next reviewer's benefit. Cleared on verify.
+  verificationNote: text('verification_note'),
   bio: text('bio'),
   languages: text('languages').array().notNull().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * Platform-operator allowlist — deliberately not a clinic_staff role or a
+ * column on patients/practitioners: an admin isn't tied to any one
+ * clinic or acting as a patient/doctor, they're reviewing the whole
+ * directory. No self-serve way to join this table on purpose; the first
+ * (and so far only) admin is granted with a direct database insert. See
+ * AdminGuard for enforcement.
+ */
+export const platformAdmins = pgTable('platform_admins', {
+  id: uuid('id')
+    .primaryKey()
+    .references(() => authUsers.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

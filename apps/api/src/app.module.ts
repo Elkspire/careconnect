@@ -9,6 +9,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { ClinicRoleGuard } from './common/guards/clinic-role.guard';
 import { SupabaseAuthGuard } from './common/guards/supabase-auth.guard';
 import { StorageModule } from './common/storage/storage.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingModule } from './modules/booking/booking.module';
@@ -37,6 +38,7 @@ import { VaultModule } from './modules/vault/vault.module';
     ClinicalModule,
     VaultModule,
     NotificationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

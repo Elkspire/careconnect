@@ -227,5 +227,20 @@
     "chronicConditionsLabel": "دائمی امراض",
     "oneItemPerLine": "ہر لائن میں ایک آئٹم",
     "visitHistoryHeading": "ملاقاتوں کی تاریخ"
+  },
+  "admin": {
+    "heading": "معالج کی تصدیق",
+    "scopeNote": "معالج کی جمع کرائی گئی رجسٹریشن نمبر اور تفصیلات کا جائزہ لیتا ہے — ابھی دستاویزات (شناختی کارڈ، ڈگری، رجسٹریشن سرٹیفکیٹ) اپ لوڈ کرنے کا کوئی طریقہ نہیں ہے۔",
+    "accessDenied": "آپ کو اس صفحہ تک رسائی نہیں ہے۔",
+    "empty": "جائزے کے لیے کچھ باقی نہیں۔",
+    "joinedLabel": "شمولیت",
+    "registrationNoLabel": "رجسٹریشن نمبر",
+    "phoneLabel": "فون نمبر",
+    "statusLabel": "حیثیت",
+    "lastNoteLabel": "آخری نوٹ",
+    "verify": "تصدیق کریں",
+    "reject": "مسترد کریں",
+    "rejectReasonLabel": "وجہ",
+    "confirmReject": "مسترد کرنے کی تصدیق کریں"
   }
 }

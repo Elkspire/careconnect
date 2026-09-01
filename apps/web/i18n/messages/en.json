@@ -227,5 +227,20 @@
     "chronicConditionsLabel": "Chronic conditions",
     "oneItemPerLine": "One per line",
     "visitHistoryHeading": "Visit history"
+  },
+  "admin": {
+    "heading": "Practitioner verification",
+    "scopeNote": "Reviews the registration number and details a practitioner submitted — there's no document upload (CNIC, degree, registration certificate) to check yet.",
+    "accessDenied": "You don't have access to this page.",
+    "empty": "Nothing waiting for review.",
+    "joinedLabel": "Joined",
+    "registrationNoLabel": "Registration number",
+    "phoneLabel": "Phone",
+    "statusLabel": "Status",
+    "lastNoteLabel": "Last note",
+    "verify": "Verify",
+    "reject": "Reject",
+    "rejectReasonLabel": "Reason",
+    "confirmReject": "Confirm rejection"
   }
 }
