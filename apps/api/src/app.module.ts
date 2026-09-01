@@ -19,6 +19,7 @@ import { DirectoryModule } from './modules/directory/directory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PatientsModule } from './modules/patients/patients.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { SharesModule } from './modules/shares/shares.module';
 import { VaultModule } from './modules/vault/vault.module';
 
 @Module({
@@ -37,6 +38,7 @@ import { VaultModule } from './modules/vault/vault.module';
     ClinicModule,
     ClinicalModule,
     VaultModule,
+    SharesModule,
     NotificationsModule,
     AdminModule,
   ],

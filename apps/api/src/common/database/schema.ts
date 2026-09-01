@@ -691,6 +691,70 @@ export const medicalSummaries = pgTable(
   (t) => [index('medical_summaries_patient_idx').on(t.patientId)],
 );
 
+/**
+ * "The record is hers, and she decides who reads it" (journeys.html,
+ * Patient · Step 07). A patient-created, token-gated, read-only view into
+ * a subject's history — scope (which of clinical history/lab reports/
+ * other records), a fixed-window or revocable duration, no account needed
+ * to view. See record_share_accesses below for the audit half.
+ */
+export const recordShares = pgTable(
+  'record_shares',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    patientId: uuid('patient_id')
+      .notNull()
+      .references(() => patients.id, { onDelete: 'cascade' }),
+    subjectType: appointmentSubjectTypeEnum('subject_type')
+      .notNull()
+      .default('self'),
+    familyMemberId: uuid('family_member_id').references(
+      () => familyMembers.id,
+      { onDelete: 'cascade' },
+    ),
+    token: text('token').notNull().unique(),
+    includeClinicalHistory: boolean('include_clinical_history')
+      .notNull()
+      .default(true),
+    includeLabReports: boolean('include_lab_reports').notNull().default(true),
+    includeOtherRecords: boolean('include_other_records')
+      .notNull()
+      .default(false),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => authUsers.id),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('record_shares_patient_idx').on(t.patientId),
+    index('record_shares_token_idx').on(t.token),
+  ],
+);
+
+/**
+ * A viewer opening a share link is never an authenticated Supabase
+ * session — this can only ever record *that* the link was opened and
+ * *when*, not *who* by. An honest limit of an unauthenticated link, not a
+ * shortcut taken here.
+ */
+export const recordShareAccesses = pgTable(
+  'record_share_accesses',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    shareId: uuid('share_id')
+      .notNull()
+      .references(() => recordShares.id, { onDelete: 'cascade' }),
+    accessedAt: timestamp('accessed_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('record_share_accesses_share_idx').on(t.shareId)],
+);
+
 // ---- audit ----
 
 export const auditLog = pgTable(

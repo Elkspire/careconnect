@@ -9,6 +9,7 @@ import type {
   SavePrescriptionInput,
   UpdateClinicalNoteInput,
 } from '@careconnect/validation';
+import type { AppointmentSubjectType } from '@careconnect/shared-types';
 import { and, asc, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
@@ -224,8 +225,25 @@ export class ClinicalService {
    * allowed to see what's written about them, this is just the first
    * place that actually exposes it. clinical_notes itself never leaves
    * this module — the route only returns the fields below.
+   *
+   * `subject` narrows to one specific subject (self, or one family
+   * member) — used by SharesModule to build a second-opinion share's
+   * bundle for the one person it was scoped to, rather than the patient's
+   * whole family. Omitted, this returns everything, same as before.
    */
-  async listMyHistory(patientId: string) {
+  async listMyHistory(
+    patientId: string,
+    subject?: { subjectType: AppointmentSubjectType; familyMemberId?: string },
+  ) {
+    const conditions = [eq(clinicalNotes.patientId, patientId)];
+    if (subject) {
+      conditions.push(eq(appointments.subjectType, subject.subjectType));
+      conditions.push(
+        subject.subjectType === 'family_member'
+          ? eq(appointments.familyMemberId, subject.familyMemberId!)
+          : isNull(appointments.familyMemberId),
+      );
+    }
     const visits = await this.db
       .select({
         noteId: clinicalNotes.id,
@@ -250,7 +268,7 @@ export class ClinicalService {
         familyMembers,
         eq(familyMembers.id, appointments.familyMemberId),
       )
-      .where(eq(clinicalNotes.patientId, patientId))
+      .where(and(...conditions))
       .orderBy(desc(appointments.scheduledStart));
     if (visits.length === 0) {
       return [];

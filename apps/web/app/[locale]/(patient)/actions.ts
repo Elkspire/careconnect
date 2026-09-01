@@ -16,6 +16,7 @@ import {
   upsertFamilyMemberMedicalSummary,
   upsertMyMedicalSummary,
 } from "@/lib/api/medical-summary";
+import { createShare, revokeShare } from "@/lib/api/shares";
 
 /** One item per non-empty line — how the medical summary form's textareas encode a string list. */
 function linesToList(raw: FormDataEntryValue | null): string[] {
@@ -175,5 +176,23 @@ export async function upsertMedicalSummaryAction(
   } else {
     await upsertMyMedicalSummary(input);
   }
+  revalidatePath(`/${locale}/patient/vault`);
+}
+
+export async function createShareAction(locale: string, formData: FormData): Promise<void> {
+  const familyMemberId = formData.get("familyMemberId");
+  await createShare({
+    subjectType: familyMemberId ? "family_member" : "self",
+    familyMemberId: familyMemberId ? String(familyMemberId) : undefined,
+    includeClinicalHistory: formData.get("includeClinicalHistory") === "on",
+    includeLabReports: formData.get("includeLabReports") === "on",
+    includeOtherRecords: formData.get("includeOtherRecords") === "on",
+    duration: (formData.get("duration") as "24h" | "7d" | "forever") ?? "7d",
+  });
+  revalidatePath(`/${locale}/patient/vault`);
+}
+
+export async function revokeShareAction(locale: string, formData: FormData): Promise<void> {
+  await revokeShare(String(formData.get("shareId")));
   revalidatePath(`/${locale}/patient/vault`);
 }

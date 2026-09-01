@@ -7,8 +7,11 @@ import {
   getMyMedicalSummary,
   type MedicalSummary,
 } from "@/lib/api/medical-summary";
-import { formatClinicDate } from "@/lib/format-time";
+import { listMyShares, type RecordShare } from "@/lib/api/shares";
+import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
 import {
+  createShareAction,
+  revokeShareAction,
   upsertMedicalSummaryAction,
   uploadVaultRecordAction,
   viewVaultRecordAction,
@@ -227,14 +230,154 @@ function HistorySection({
   );
 }
 
+/**
+ * A plain helper, not a component or hook, so the impure Date.now() call
+ * it makes isn't subject to the react-hooks/purity rule the way it would
+ * be inline in ShareSection's render body below.
+ */
+function shareStatus(share: RecordShare): "revoked" | "expired" | "active" {
+  if (share.revokedAt) return "revoked";
+  if (share.expiresAt && new Date(share.expiresAt).getTime() < Date.now()) return "expired";
+  return "active";
+}
+
+function ShareSection({
+  shares,
+  familyMembers,
+  locale,
+  t,
+  create,
+  revoke,
+}: {
+  shares: RecordShare[];
+  familyMembers: FamilyMember[];
+  locale: string;
+  t: Awaited<ReturnType<typeof getTranslations<"vault">>>;
+  create: (formData: FormData) => Promise<void>;
+  revoke: (formData: FormData) => Promise<void>;
+}) {
+  return (
+    <div className="mt-8">
+      <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
+        {t("shareHeading")}
+      </h2>
+
+      <div className="pgrid mt-3">
+        {shares.length === 0 ? (
+          <p style={{ color: "var(--color-ink-soft)" }}>{t("noShares")}</p>
+        ) : (
+          shares.map((s) => {
+            const status = shareStatus(s);
+            const shareUrl = `/${locale}/s/${s.token}`;
+            return (
+              <div key={s.id} className="prow">
+                <div className="min-w-0">
+                  <b>{s.familyMemberFullName ?? t("forSelf")}</b>
+                  {status === "active" && (
+                    <>
+                      <br />
+                      <a
+                        href={shareUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mono text-sm"
+                        style={{ color: "var(--color-verified)" }}
+                      >
+                        {shareUrl}
+                      </a>
+                    </>
+                  )}
+                  <br />
+                  <small>
+                    {status === "revoked"
+                      ? t("shareRevoked")
+                      : status === "expired"
+                        ? t("shareExpired")
+                        : s.expiresAt
+                          ? t("shareExpiresLabel", {
+                              date: `${formatClinicDate(s.expiresAt, locale)} ${formatClinicTime(s.expiresAt, locale)}`,
+                            })
+                          : t("shareNeverExpires")}
+                    {" · "}
+                    {t("shareOpenedCount", { count: s.accessCount })}
+                  </small>
+                </div>
+                {status !== "revoked" && (
+                  <form action={revoke}>
+                    <input type="hidden" name="shareId" value={s.id} />
+                    <button type="submit" className="qb tap-target">
+                      {t("revokeShare")}
+                    </button>
+                  </form>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <form action={create} className="slip mt-4 flex max-w-xl flex-col gap-3">
+        {familyMembers.length > 0 && (
+          <label>
+            <span className="lbl">{t("shareSubjectLabel")}</span>
+            <select name="familyMemberId" className="field tap-target">
+              <option value="">{t("forSelf")}</option>
+              {familyMembers.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.fullName}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="trow items-center">
+          <span>
+            {t("shareIncludeClinicalHistory")}
+            <small>{t("shareIncludeClinicalHistoryHint")}</small>
+          </span>
+          <input
+            type="checkbox"
+            name="includeClinicalHistory"
+            defaultChecked
+            className="tap-target"
+          />
+        </label>
+        <label className="trow items-center">
+          <span>{t("shareIncludeLabReports")}</span>
+          <input type="checkbox" name="includeLabReports" defaultChecked className="tap-target" />
+        </label>
+        <label className="trow items-center">
+          <span>
+            {t("shareIncludeOtherRecords")}
+            <small>{t("shareIncludeOtherRecordsHint")}</small>
+          </span>
+          <input type="checkbox" name="includeOtherRecords" className="tap-target" />
+        </label>
+        <label>
+          <span className="lbl">{t("shareDurationLabel")}</span>
+          <select name="duration" defaultValue="7d" className="field tap-target">
+            <option value="24h">{t("duration24h")}</option>
+            <option value="7d">{t("duration7d")}</option>
+            <option value="forever">{t("durationForever")}</option>
+          </select>
+        </label>
+        <button type="submit" className="btn tap-target self-start">
+          {t("createShare")}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default async function VaultPage(props: PageProps<"/[locale]/patient/vault">) {
   const { locale } = await props.params;
-  const [t, records, familyMembers, myMedicalSummary, history] = await Promise.all([
+  const [t, records, familyMembers, myMedicalSummary, history, shares] = await Promise.all([
     getTranslations("vault"),
     listVaultRecords(),
     listFamilyMembers(),
     getMyMedicalSummary(),
     listMyClinicalHistory(),
+    listMyShares(),
   ]);
   const familyMedicalSummaries = await Promise.all(
     familyMembers.map((m) => getFamilyMemberMedicalSummary(m.id)),
@@ -246,6 +389,8 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
   const upload = uploadVaultRecordAction.bind(null, locale);
   const view = viewVaultRecordAction.bind(null, locale);
   const saveSummary = upsertMedicalSummaryAction.bind(null, locale);
+  const createShareBound = createShareAction.bind(null, locale);
+  const revokeShareBound = revokeShareAction.bind(null, locale);
 
   // Each family member's records are kept visually separate rather than
   // mixed into one list — the whole point of tagging records by subject.
@@ -345,6 +490,15 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
       </form>
 
       {history.length > 0 && <HistorySection entries={history} t={t} locale={locale} />}
+
+      <ShareSection
+        shares={shares}
+        familyMembers={familyMembers}
+        locale={locale}
+        t={t}
+        create={createShareBound}
+        revoke={revokeShareBound}
+      />
     </div>
   );
 }

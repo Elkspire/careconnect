@@ -8,5 +8,6 @@ import { PatientClinicalController } from './patient-clinical.controller';
   imports: [MedicalSummaryModule],
   controllers: [ClinicalController, PatientClinicalController],
   providers: [ClinicalService],
+  exports: [ClinicalService],
 })
 export class ClinicalModule {}

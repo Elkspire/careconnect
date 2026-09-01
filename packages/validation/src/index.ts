@@ -11,3 +11,4 @@ export * from "./reviews";
 export * from "./medical-summary";
 export * from "./admin";
 export * from "./vitals";
+export * from "./shares";
