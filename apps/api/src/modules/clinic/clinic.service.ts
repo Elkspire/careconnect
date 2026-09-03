@@ -1028,4 +1028,99 @@ export class ClinicService {
       .limit(1);
     return row ?? null;
   }
+
+  /**
+   * Owner-only practice snapshot: visits/cancellations/no-shows per day,
+   * unique patients, and per-practitioner visit share, over a fixed
+   * trailing 30-day window (day boundaries are UTC, not clinic-local
+   * Pakistan time — a real simplification, not worth a timezone-aware
+   * bucketing pass yet). "Estimated revenue" is exactly that: visits ×
+   * each practitioner's *current* configured consultationFee, not what
+   * was actually charged at the time — appointments don't snapshot a fee,
+   * and CareConnect doesn't process payments at all (see the product
+   * doc's own open question on the platform's revenue model, which this
+   * deliberately doesn't answer). Never present this as collected revenue.
+   */
+  async getAnalytics(clinicId: string) {
+    const since = sql<Date>`date_trunc('day', now()) - interval '29 days'`;
+    const dayExpr = sql<string>`date_trunc('day', ${appointments.scheduledStart})`;
+    const visitStatuses = sql`(${appointments.status} in ('checked_in', 'completed'))`;
+
+    const [daily, uniquePatientsRow, byPractitioner] = await Promise.all([
+      this.db
+        .select({
+          day: dayExpr,
+          visits: sql<number>`count(*) filter (where ${visitStatuses})::int`,
+          cancelled: sql<number>`count(*) filter (where ${appointments.status} = 'cancelled')::int`,
+          noShows: sql<number>`count(*) filter (where ${appointments.status} = 'no_show')::int`,
+          estimatedRevenue: sql<string>`coalesce(sum(${practitionerClinic.consultationFee}) filter (where ${visitStatuses}), 0)`,
+        })
+        .from(appointments)
+        .innerJoin(
+          practitionerClinic,
+          and(
+            eq(practitionerClinic.practitionerId, appointments.practitionerId),
+            eq(practitionerClinic.clinicId, appointments.clinicId),
+          ),
+        )
+        .where(
+          and(
+            eq(appointments.clinicId, clinicId),
+            gte(appointments.scheduledStart, since),
+          ),
+        )
+        .groupBy(dayExpr)
+        .orderBy(dayExpr),
+
+      this.db
+        .select({
+          count: sql<number>`count(distinct (${appointments.patientId}::text || ':' || coalesce(${appointments.familyMemberId}::text, '')))::int`,
+        })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, clinicId),
+            gte(appointments.scheduledStart, since),
+            inArray(appointments.status, ['checked_in', 'completed']),
+          ),
+        ),
+
+      this.db
+        .select({
+          practitionerId: appointments.practitionerId,
+          practitionerFullName: practitioners.fullName,
+          visits: sql<number>`count(*) filter (where ${visitStatuses})::int`,
+        })
+        .from(appointments)
+        .innerJoin(
+          practitioners,
+          eq(practitioners.id, appointments.practitionerId),
+        )
+        .where(
+          and(
+            eq(appointments.clinicId, clinicId),
+            gte(appointments.scheduledStart, since),
+          ),
+        )
+        .groupBy(appointments.practitionerId, practitioners.fullName)
+        .orderBy(desc(sql`count(*) filter (where ${visitStatuses})`)),
+    ]);
+
+    const totals = daily.reduce(
+      (acc, d) => ({
+        visits: acc.visits + d.visits,
+        cancelled: acc.cancelled + d.cancelled,
+        noShows: acc.noShows + d.noShows,
+        estimatedRevenue: acc.estimatedRevenue + Number(d.estimatedRevenue),
+      }),
+      { visits: 0, cancelled: 0, noShows: 0, estimatedRevenue: 0 },
+    );
+
+    return {
+      windowDays: 30,
+      daily,
+      totals: { ...totals, uniquePatients: uniquePatientsRow[0]?.count ?? 0 },
+      byPractitioner,
+    };
+  }
 }

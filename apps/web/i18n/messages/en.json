@@ -219,7 +219,32 @@
     "allergyWarningTitle": "Possible allergy match",
     "allergyWarningBody": "{drugs} may match something on this patient's recorded allergy list — this is a plain keyword match, not a clinical interaction check, so use your own judgment.",
     "accessDenied": "You don't have access to this page.",
-    "nav": { "today": "Today", "patients": "Patients", "staff": "Staff", "notifications": "Notifications" }
+    "analyticsHeading": "Analytics",
+    "windowLabel": "Last 30 days",
+    "totalVisitsLabel": "Visits",
+    "uniquePatientsLabel": "Unique patients",
+    "cancelledLabel": "Cancelled",
+    "noShowsLabel": "No-shows",
+    "estimatedRevenueLabel": "Estimated revenue",
+    "revenueDisclaimer": "Visits × each doctor's current consultation fee — not a record of what was actually collected. CareConnect doesn't process payments.",
+    "dailyBreakdownHeading": "Day by day",
+    "byPractitionerHeading": "By practitioner",
+    "dateLabel": "Date",
+    "noActivityYet": "No appointment activity in this window yet.",
+    "reviewsHeading": "Reviews",
+    "reviewsPrompt": "Reviews left by patients you've treated. Report one that violates guidelines for a platform admin to review.",
+    "noReviewsYet": "No reviews yet.",
+    "reportReview": "Report",
+    "reportReasonLabel": "Why are you reporting this review?",
+    "submitReport": "Submit report",
+    "nav": {
+      "today": "Today",
+      "patients": "Patients",
+      "staff": "Staff",
+      "analytics": "Analytics",
+      "reviews": "Reviews",
+      "notifications": "Notifications"
+    }
   },
   "notifications": {
     "heading": "Notifications",
@@ -299,6 +324,16 @@
     "verify": "Verify",
     "reject": "Reject",
     "rejectReasonLabel": "Reason",
-    "confirmReject": "Confirm rejection"
+    "confirmReject": "Confirm rejection",
+    "navPractitioners": "Practitioner verification",
+    "navReviews": "Reported reviews",
+    "reviewsHeading": "Reported reviews",
+    "reviewsScopeNote": "A doctor can report a review of themselves; hiding it removes it from the public directory without deleting it — a moderation *mechanism*, not a policy on what's reportable (that's still an open product decision).",
+    "noReportedReviews": "Nothing reported right now.",
+    "reportedByLabel": "Reported",
+    "hide": "Hide from directory",
+    "hiddenReviewsHeading": "Hidden reviews",
+    "noHiddenReviews": "No hidden reviews.",
+    "unhide": "Restore to directory"
   }
 }

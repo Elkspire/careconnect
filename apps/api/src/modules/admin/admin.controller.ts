@@ -33,4 +33,24 @@ export class AdminController {
   reject(@Param('id') id: string, @Body() body: RejectPractitionerDto) {
     return this.adminService.reject(id, body.reason);
   }
+
+  @Get('reviews/reported')
+  listReportedReviews() {
+    return this.adminService.listReportedReviews();
+  }
+
+  @Get('reviews/hidden')
+  listHiddenReviews() {
+    return this.adminService.listHiddenReviews();
+  }
+
+  @Post('reviews/:id/hide')
+  hideReview(@Param('id') id: string) {
+    return this.adminService.hideReview(id);
+  }
+
+  @Post('reviews/:id/unhide')
+  unhideReview(@Param('id') id: string) {
+    return this.adminService.unhideReview(id);
+  }
 }

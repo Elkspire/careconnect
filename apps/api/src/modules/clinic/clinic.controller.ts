@@ -238,6 +238,18 @@ export class ClinicController {
     );
   }
 
+  /**
+   * Owner-only, deliberately no @RequireStaffPermission ceiling to narrow
+   * it by — visit counts and estimated revenue are practice-level
+   * business data, not something any staff permission grants a
+   * receptionist/junior_doctor/assistant access to.
+   */
+  @Get(':clinicId/analytics')
+  @RequireClinicRole('owner')
+  getAnalytics(@Param('clinicId') clinicId: string) {
+    return this.clinicService.getAnalytics(clinicId);
+  }
+
   /** Default landing screen for the clinic dashboard. */
   @Get(':clinicId/today')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor', 'assistant')

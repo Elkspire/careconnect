@@ -25,6 +25,7 @@ import {
   savePrescription,
   updateClinicalNote,
 } from "@/lib/api/clinical";
+import { reportReview } from "@/lib/api/reviews";
 
 /** One item per non-empty line — how the medical summary form's textareas encode a string list. */
 function linesToList(raw: FormDataEntryValue | null): string[] {
@@ -67,6 +68,18 @@ export async function recordVitalsAction(
     temperatureF: optionalNumber(formData.get("temperatureF")),
   });
   revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+}
+
+export async function reportReviewAction(
+  locale: string,
+  clinicSlug: string,
+  practitionerId: string,
+  formData: FormData,
+): Promise<void> {
+  await reportReview(practitionerId, String(formData.get("reviewId")), {
+    reason: String(formData.get("reason") ?? ""),
+  });
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/reviews`);
 }
 
 export async function inviteStaffAction(

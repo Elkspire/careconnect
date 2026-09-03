@@ -1,7 +1,12 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
-import { authUsers, practitioners } from '../../common/database/schema';
+import {
+  authUsers,
+  practitionerReviews,
+  practitioners,
+  reviewReports,
+} from '../../common/database/schema';
 
 /**
  * Practitioner verification review — the product doc's own first "open
@@ -80,6 +85,81 @@ export class AdminService {
       throw new NotFoundException(
         'Practitioner not found, or already verified — use a separate revoke action for that',
       );
+    }
+    return row;
+  }
+
+  /**
+   * Every open (unresolved) report, newest first — a review with multiple
+   * reports appears once per report, so a repeatedly-flagged review sorts
+   * to the top and an admin sees every reason it was reported. "Open" is
+   * simply "the review isn't hidden yet"; once hidden, its reports drop
+   * out of this queue since there's nothing left to action.
+   */
+  listReportedReviews() {
+    return this.db
+      .select({
+        reportId: reviewReports.id,
+        reviewId: practitionerReviews.id,
+        reason: reviewReports.reason,
+        reportedAt: reviewReports.createdAt,
+        rating: practitionerReviews.rating,
+        comment: practitionerReviews.comment,
+        practitionerId: practitionerReviews.practitionerId,
+        practitionerFullName: practitioners.fullName,
+      })
+      .from(reviewReports)
+      .innerJoin(
+        practitionerReviews,
+        eq(practitionerReviews.id, reviewReports.reviewId),
+      )
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, practitionerReviews.practitionerId),
+      )
+      .where(eq(practitionerReviews.hidden, false))
+      .orderBy(desc(reviewReports.createdAt));
+  }
+
+  /** Hiding is never a delete (see 0019_review_moderation.sql) — this is the undo list. */
+  listHiddenReviews() {
+    return this.db
+      .select({
+        id: practitionerReviews.id,
+        rating: practitionerReviews.rating,
+        comment: practitionerReviews.comment,
+        practitionerId: practitionerReviews.practitionerId,
+        practitionerFullName: practitioners.fullName,
+      })
+      .from(practitionerReviews)
+      .innerJoin(
+        practitioners,
+        eq(practitioners.id, practitionerReviews.practitionerId),
+      )
+      .where(eq(practitionerReviews.hidden, true))
+      .orderBy(desc(practitionerReviews.updatedAt));
+  }
+
+  async hideReview(reviewId: string) {
+    const [row] = await this.db
+      .update(practitionerReviews)
+      .set({ hidden: true })
+      .where(eq(practitionerReviews.id, reviewId))
+      .returning();
+    if (!row) {
+      throw new NotFoundException('Review not found');
+    }
+    return row;
+  }
+
+  async unhideReview(reviewId: string) {
+    const [row] = await this.db
+      .update(practitionerReviews)
+      .set({ hidden: false })
+      .where(eq(practitionerReviews.id, reviewId))
+      .returning();
+    if (!row) {
+      throw new NotFoundException('Review not found');
     }
     return row;
   }

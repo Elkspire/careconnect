@@ -118,6 +118,27 @@ export interface PatientAssignment {
   createdAt: string;
 }
 
+export interface ClinicAnalyticsDay {
+  day: string;
+  visits: number;
+  cancelled: number;
+  noShows: number;
+  estimatedRevenue: string;
+}
+
+export interface ClinicAnalytics {
+  windowDays: number;
+  daily: ClinicAnalyticsDay[];
+  totals: {
+    visits: number;
+    cancelled: number;
+    noShows: number;
+    estimatedRevenue: number;
+    uniquePatients: number;
+  };
+  byPractitioner: Array<{ practitionerId: string; practitionerFullName: string; visits: number }>;
+}
+
 export interface Vitals {
   id: string;
   appointmentId: string;
@@ -314,4 +335,9 @@ export async function recordVitals(
 export async function getVitals(clinicId: string, appointmentId: string): Promise<Vitals | null> {
   const res = await authedFetch(`/clinics/${clinicId}/appointments/${appointmentId}/vitals`);
   return parseJsonOrThrow(res, "Get vitals");
+}
+
+export async function getClinicAnalytics(clinicId: string): Promise<ClinicAnalytics> {
+  const res = await authedFetch(`/clinics/${clinicId}/analytics`);
+  return parseJsonOrThrow(res, "Get clinic analytics");
 }

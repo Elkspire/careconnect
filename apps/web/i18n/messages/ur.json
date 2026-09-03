@@ -219,7 +219,32 @@
     "allergyWarningTitle": "ممکنہ الرجی مماثلت",
     "allergyWarningBody": "{drugs} اس مریض کی درج شدہ الرجی فہرست سے مماثل ہو سکتی ہے — یہ صرف ایک لفظی مماثلت ہے، طبی تعامل کی جانچ نہیں، براہ کرم اپنی صوابدید استعمال کریں۔",
     "accessDenied": "آپ کو اس صفحہ تک رسائی نہیں ہے۔",
-    "nav": { "today": "آج", "patients": "مریض", "staff": "عملہ", "notifications": "اطلاعات" }
+    "analyticsHeading": "تجزیات",
+    "windowLabel": "گزشتہ 30 دن",
+    "totalVisitsLabel": "وزٹس",
+    "uniquePatientsLabel": "منفرد مریض",
+    "cancelledLabel": "منسوخ شدہ",
+    "noShowsLabel": "غیر حاضر",
+    "estimatedRevenueLabel": "تخمینی آمدنی",
+    "revenueDisclaimer": "وزٹس × ہر ڈاکٹر کی موجودہ کنسلٹیشن فیس — یہ اصل وصول شدہ رقم کا ریکارڈ نہیں ہے۔ CareConnect ادائیگیاں پراسیس نہیں کرتا۔",
+    "dailyBreakdownHeading": "روزانہ کی تفصیل",
+    "byPractitionerHeading": "معالج کے لحاظ سے",
+    "dateLabel": "تاریخ",
+    "noActivityYet": "اس مدت میں ابھی تک کوئی اپائنٹمنٹ سرگرمی نہیں ہے۔",
+    "reviewsHeading": "جائزے",
+    "reviewsPrompt": "آپ کے علاج کردہ مریضوں کے چھوڑے گئے جائزے۔ کسی ایسے جائزے کی اطلاع دیں جو ضوابط کی خلاف ورزی کرتا ہو تاکہ پلیٹ فارم ایڈمن اسے دیکھ سکے۔",
+    "noReviewsYet": "ابھی تک کوئی جائزہ نہیں۔",
+    "reportReview": "اطلاع دیں",
+    "reportReasonLabel": "آپ اس جائزے کی اطلاع کیوں دے رہے ہیں؟",
+    "submitReport": "اطلاع جمع کروائیں",
+    "nav": {
+      "today": "آج",
+      "patients": "مریض",
+      "staff": "عملہ",
+      "analytics": "تجزیات",
+      "reviews": "جائزے",
+      "notifications": "اطلاعات"
+    }
   },
   "notifications": {
     "heading": "اطلاعات",
@@ -299,6 +324,16 @@
     "verify": "تصدیق کریں",
     "reject": "مسترد کریں",
     "rejectReasonLabel": "وجہ",
-    "confirmReject": "مسترد کرنے کی تصدیق کریں"
+    "confirmReject": "مسترد کرنے کی تصدیق کریں",
+    "navPractitioners": "معالج کی تصدیق",
+    "navReviews": "رپورٹ شدہ جائزے",
+    "reviewsHeading": "رپورٹ شدہ جائزے",
+    "reviewsScopeNote": "ایک ڈاکٹر اپنے بارے میں کسی جائزے کی اطلاع دے سکتا ہے؛ اسے چھپانا اسے حذف کیے بغیر پبلک ڈائریکٹری سے ہٹا دیتا ہے — یہ ایک نظم و ضبط کا *طریقہ کار* ہے، یہ پالیسی نہیں کہ کیا قابلِ اطلاع ہے (وہ اب بھی ایک کھلا کاروباری فیصلہ ہے)۔",
+    "noReportedReviews": "ابھی کچھ رپورٹ نہیں ہوا۔",
+    "reportedByLabel": "اطلاع دی گئی",
+    "hide": "ڈائریکٹری سے چھپائیں",
+    "hiddenReviewsHeading": "چھپائے گئے جائزے",
+    "noHiddenReviews": "کوئی چھپایا گیا جائزہ نہیں۔",
+    "unhide": "ڈائریکٹری میں بحال کریں"
   }
 }

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { listPendingPractitioners } from "@/lib/api/admin";
 import { formatClinicDate } from "@/lib/format-time";
 import { rejectPractitionerAction, verifyPractitionerAction } from "../actions";
@@ -30,6 +31,12 @@ export default async function AdminPractitionersPage(
       <p className="kicker" style={{ color: "var(--color-verified)" }}>
         CareConnect
       </p>
+      <nav className="mt-2 flex gap-4 text-sm">
+        <span style={{ color: "var(--color-verified)" }}>{t("navPractitioners")}</span>
+        <Link href="/admin/reviews" locale={locale} style={{ color: "var(--color-ink-soft)" }}>
+          {t("navReviews")}
+        </Link>
+      </nav>
       <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
       <p className="mt-2 text-sm" style={{ color: "var(--color-ink-soft)" }}>
         {t("scopeNote")}

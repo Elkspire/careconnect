@@ -1,4 +1,4 @@
-import type { SubmitReviewInput } from "@careconnect/validation";
+import type { ReportReviewInput, SubmitReviewInput } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 import { API_URL } from "./config";
 
@@ -36,4 +36,19 @@ export async function submitReview(
     body: JSON.stringify(input),
   });
   return parseJsonOrThrow(res, "Submit review");
+}
+
+/** The :practitionerId in the URL is a formality — the API always acts as the caller's own practitioner id, ignoring it. */
+export async function reportReview(
+  practitionerId: string,
+  reviewId: string,
+  input: ReportReviewInput,
+): Promise<void> {
+  const res = await authedFetch(`/practitioners/${practitionerId}/reviews/${reviewId}/report`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error(`Report review failed: ${res.status}`);
+  }
 }

@@ -215,6 +215,9 @@ export const practitionerReviews = pgTable(
       .references(() => patients.id, { onDelete: 'cascade' }),
     rating: smallint('rating').notNull(),
     comment: text('comment'),
+    // Reversible moderation, never a delete — see review_reports below and
+    // 0019_review_moderation.sql.
+    hidden: boolean('hidden').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -226,6 +229,30 @@ export const practitionerReviews = pgTable(
     index('practitioner_reviews_practitioner_idx').on(t.practitionerId),
     unique().on(t.practitionerId, t.patientId),
   ],
+);
+
+/**
+ * A practitioner reporting a review of themselves — the mechanism a real
+ * moderation *policy* (what's reportable, who moderates, SLA — an open
+ * business question per the product doc, not decided here) would need
+ * either way. Reviewed by a platform admin via AdminModule.
+ */
+export const reviewReports = pgTable(
+  'review_reports',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    reviewId: uuid('review_id')
+      .notNull()
+      .references(() => practitionerReviews.id, { onDelete: 'cascade' }),
+    reportedBy: uuid('reported_by')
+      .notNull()
+      .references(() => practitioners.id, { onDelete: 'cascade' }),
+    reason: text('reason').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('review_reports_review_idx').on(t.reviewId)],
 );
 
 export const familyMembers = pgTable(

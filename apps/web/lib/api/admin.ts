@@ -34,3 +34,47 @@ export async function rejectPractitioner(
   });
   return parseJsonOrThrow(res, "Reject practitioner");
 }
+
+export interface ReportedReview {
+  reportId: string;
+  reviewId: string;
+  reason: string;
+  reportedAt: string;
+  rating: number;
+  comment: string | null;
+  practitionerId: string;
+  practitionerFullName: string;
+}
+
+/** Throws on a 403 (not an admin) — same pattern as listPendingPractitioners. */
+export async function listReportedReviews(): Promise<ReportedReview[]> {
+  const res = await authedFetch("/admin/reviews/reported");
+  return parseJsonOrThrow(res, "List reported reviews");
+}
+
+export async function hideReview(reviewId: string): Promise<void> {
+  const res = await authedFetch(`/admin/reviews/${reviewId}/hide`, { method: "POST" });
+  if (!res.ok) {
+    throw new Error(`Hide review failed: ${res.status}`);
+  }
+}
+
+export interface HiddenReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  practitionerId: string;
+  practitionerFullName: string;
+}
+
+export async function listHiddenReviews(): Promise<HiddenReview[]> {
+  const res = await authedFetch("/admin/reviews/hidden");
+  return parseJsonOrThrow(res, "List hidden reviews");
+}
+
+export async function unhideReview(reviewId: string): Promise<void> {
+  const res = await authedFetch(`/admin/reviews/${reviewId}/unhide`, { method: "POST" });
+  if (!res.ok) {
+    throw new Error(`Unhide review failed: ${res.status}`);
+  }
+}

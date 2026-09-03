@@ -4,13 +4,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { SubmitReviewInput } from '@careconnect/validation';
+import type {
+  ReportReviewInput,
+  SubmitReviewInput,
+} from '@careconnect/validation';
 import { and, avg, count, desc, eq, inArray } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
   practitionerReviews,
   practitioners,
+  reviewReports,
 } from '../../common/database/schema';
 
 export interface ReviewSummary {
@@ -32,7 +36,12 @@ export class ReviewsService {
         reviewCount: count(practitionerReviews.id),
       })
       .from(practitionerReviews)
-      .where(eq(practitionerReviews.practitionerId, practitionerId));
+      .where(
+        and(
+          eq(practitionerReviews.practitionerId, practitionerId),
+          eq(practitionerReviews.hidden, false),
+        ),
+      );
     return {
       averageRating: row?.averageRating ? Number(row.averageRating) : null,
       reviewCount: row?.reviewCount ?? 0,
@@ -54,7 +63,12 @@ export class ReviewsService {
         reviewCount: count(practitionerReviews.id),
       })
       .from(practitionerReviews)
-      .where(inArray(practitionerReviews.practitionerId, practitionerIds))
+      .where(
+        and(
+          inArray(practitionerReviews.practitionerId, practitionerIds),
+          eq(practitionerReviews.hidden, false),
+        ),
+      )
       .groupBy(practitionerReviews.practitionerId);
     for (const row of rows) {
       map.set(row.practitionerId, {
@@ -74,9 +88,40 @@ export class ReviewsService {
         createdAt: practitionerReviews.createdAt,
       })
       .from(practitionerReviews)
-      .where(eq(practitionerReviews.practitionerId, practitionerId))
+      .where(
+        and(
+          eq(practitionerReviews.practitionerId, practitionerId),
+          eq(practitionerReviews.hidden, false),
+        ),
+      )
       .orderBy(desc(practitionerReviews.createdAt))
       .limit(50);
+  }
+
+  /** A practitioner reporting a review of themselves — see reviewReports' own doc comment. */
+  async report(
+    practitionerId: string,
+    reviewId: string,
+    input: ReportReviewInput,
+  ) {
+    const [review] = await this.db
+      .select({ id: practitionerReviews.id })
+      .from(practitionerReviews)
+      .where(
+        and(
+          eq(practitionerReviews.id, reviewId),
+          eq(practitionerReviews.practitionerId, practitionerId),
+        ),
+      )
+      .limit(1);
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+    const [row] = await this.db
+      .insert(reviewReports)
+      .values({ reviewId, reportedBy: practitionerId, reason: input.reason })
+      .returning();
+    return row;
   }
 
   async submit(

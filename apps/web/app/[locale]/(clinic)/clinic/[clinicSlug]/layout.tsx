@@ -20,7 +20,11 @@ export default async function ClinicLayout(
     { href: `/clinic/${clinicSlug}/today`, label: t("nav.today") },
     { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients") },
     ...(!staffCtx || staffCtx.role === "owner"
-      ? [{ href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff") }]
+      ? [
+          { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff") },
+          { href: `/clinic/${clinicSlug}/analytics`, label: t("nav.analytics") },
+          { href: `/clinic/${clinicSlug}/reviews`, label: t("nav.reviews") },
+        ]
       : []),
     { href: `/clinic/${clinicSlug}/notifications`, label: t("nav.notifications") },
   ];
