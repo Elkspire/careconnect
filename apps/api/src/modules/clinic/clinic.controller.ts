@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,15 +7,20 @@ import {
   Param,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import {
   RequireClinicRole,
   RequireStaffPermission,
 } from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
+import type { UploadedFile as ClinicUploadedFile } from '../vault/vault.service';
 import {
   AssignPatientDto,
+  AttachVaultRecordDto,
   CheckInAppointmentDto,
   CreateClinicDto,
   CreatePractitionerLeaveDto,
@@ -341,5 +347,45 @@ export class ClinicController {
     @Param('appointmentId') appointmentId: string,
   ) {
     return this.clinicService.getVitals(clinicId, user.id, appointmentId);
+  }
+
+  /**
+   * The picker for attachRecord below — recent visits, not a patient
+   * search box, so staff match a report to "the pending order."
+   */
+  @Get(':clinicId/appointments/recent')
+  @RequireClinicRole('owner', 'assistant')
+  @RequireStaffPermission('attachRecords')
+  listAppointmentsForAttach(@Param('clinicId') clinicId: string) {
+    return this.clinicService.listAppointmentsForAttach(clinicId);
+  }
+
+  /**
+   * "A lab report came in" (journeys.html, Assistant · Step 02) —
+   * appointmentId is the match, there's no patient-name field to
+   * misattach against a same-named patient.
+   */
+  @Post(':clinicId/records')
+  @RequireClinicRole('owner', 'assistant')
+  @RequireStaffPermission('attachRecords')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),
+  )
+  attachRecord(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+    @Body() body: AttachVaultRecordDto,
+    @UploadedFile() file: ClinicUploadedFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.clinicService.attachRecord(
+      clinicId,
+      user.id,
+      body.appointmentId,
+      body.recordType,
+      file,
+    );
   }
 }

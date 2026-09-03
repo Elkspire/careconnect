@@ -11,6 +11,7 @@ import {
 } from "@careconnect/shared-types";
 import {
   assignPatient,
+  attachRecord,
   checkIn,
   getClinicRecordSignedUrl,
   inviteStaff,
@@ -26,6 +27,7 @@ import {
   updateClinicalNote,
 } from "@/lib/api/clinical";
 import { reportReview } from "@/lib/api/reviews";
+import { deleteVerificationDocument, uploadVerificationDocument } from "@/lib/api/verification";
 
 /** One item per non-empty line — how the medical summary form's textareas encode a string list. */
 function linesToList(raw: FormDataEntryValue | null): string[] {
@@ -67,6 +69,16 @@ export async function recordVitalsAction(
     weightKg: optionalNumber(formData.get("weightKg")),
     temperatureF: optionalNumber(formData.get("temperatureF")),
   });
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+}
+
+export async function attachRecordAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  await attachRecord(clinicId, formData);
   revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
 }
 
@@ -228,4 +240,22 @@ export async function saveClinicalPrescriptionAction(
       ? `${basePath}?warned=${encodeURIComponent(allergyWarnings.join(","))}`
       : basePath,
   );
+}
+
+export async function uploadVerificationDocumentAction(
+  locale: string,
+  clinicSlug: string,
+  formData: FormData,
+): Promise<void> {
+  await uploadVerificationDocument(formData);
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/verification`);
+}
+
+export async function deleteVerificationDocumentAction(
+  locale: string,
+  clinicSlug: string,
+  formData: FormData,
+): Promise<void> {
+  await deleteVerificationDocument(String(formData.get("documentId")));
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/verification`);
 }

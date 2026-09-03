@@ -341,3 +341,28 @@ export async function getClinicAnalytics(clinicId: string): Promise<ClinicAnalyt
   const res = await authedFetch(`/clinics/${clinicId}/analytics`);
   return parseJsonOrThrow(res, "Get clinic analytics");
 }
+
+export interface AttachableAppointment {
+  appointmentId: string;
+  scheduledStart: string;
+  patientFullName: string;
+  familyMemberFullName: string | null;
+}
+
+export async function listAppointmentsForAttach(
+  clinicId: string,
+): Promise<AttachableAppointment[]> {
+  const res = await authedFetch(`/clinics/${clinicId}/appointments/recent`);
+  return parseJsonOrThrow(res, "List recent appointments");
+}
+
+export async function attachRecord(
+  clinicId: string,
+  formData: FormData,
+): Promise<ClinicRecord> {
+  const res = await authedFetch(`/clinics/${clinicId}/records`, {
+    method: "POST",
+    body: formData,
+  });
+  return parseJsonOrThrow(res, "Attach record");
+}

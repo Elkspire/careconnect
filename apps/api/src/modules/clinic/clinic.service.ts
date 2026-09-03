@@ -15,6 +15,7 @@ import type {
   UpsertMedicalSummaryInput,
   UpsertPractitionerClinicInput,
 } from '@careconnect/validation';
+import type { RecordType } from '@careconnect/shared-types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { and, desc, eq, gte, inArray, isNull, lt, max, sql } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
@@ -39,7 +40,7 @@ import {
 } from '../notifications/events';
 import { slugify } from '../../common/util/slug';
 import { MedicalSummaryService } from '../medical-summary/medical-summary.service';
-import { VaultService } from '../vault/vault.service';
+import { VaultService, type UploadedFile } from '../vault/vault.service';
 
 @Injectable()
 export class ClinicService {
@@ -1122,5 +1123,62 @@ export class ClinicService {
       totals: { ...totals, uniquePatients: uniquePatientsRow[0]?.count ?? 0 },
       byPractitioner,
     };
+  }
+
+  /**
+   * The picker for attachRecord below — recent visits at this clinic, so
+   * staff select "the pending order," not a free-text patient name (see
+   * journeys.html, Assistant · Step 02: "matched by the pending echo
+   * order, not the name... two similar names, confirm before saving").
+   * Same 30-day window as getAnalytics, for no reason other than
+   * consistency — a report almost always follows a recent visit.
+   */
+  listAppointmentsForAttach(clinicId: string) {
+    const since = sql<Date>`date_trunc('day', now()) - interval '30 days'`;
+    return this.db
+      .select({
+        appointmentId: appointments.id,
+        scheduledStart: appointments.scheduledStart,
+        patientFullName: patients.fullName,
+        familyMemberFullName: familyMembers.fullName,
+      })
+      .from(appointments)
+      .innerJoin(patients, eq(patients.id, appointments.patientId))
+      .leftJoin(
+        familyMembers,
+        eq(familyMembers.id, appointments.familyMemberId),
+      )
+      .where(
+        and(
+          eq(appointments.clinicId, clinicId),
+          gte(appointments.scheduledStart, since),
+          inArray(appointments.status, ['checked_in', 'completed']),
+        ),
+      )
+      .orderBy(desc(appointments.scheduledStart));
+  }
+
+  /** Verifies the appointment is this clinic's before handing off to VaultService — the actual attribution/storage logic lives there, shared with nothing else here. */
+  async attachRecord(
+    clinicId: string,
+    attachedBy: string,
+    appointmentId: string,
+    recordType: RecordType,
+    file: UploadedFile,
+  ) {
+    const [appointment] = await this.db
+      .select({ clinicId: appointments.clinicId })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+    if (!appointment || appointment.clinicId !== clinicId) {
+      throw new NotFoundException('Appointment not found at this clinic');
+    }
+    return this.vaultService.attachRecord(
+      appointmentId,
+      attachedBy,
+      recordType,
+      file,
+    );
   }
 }

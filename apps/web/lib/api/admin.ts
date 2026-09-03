@@ -78,3 +78,22 @@ export async function unhideReview(reviewId: string): Promise<void> {
     throw new Error(`Unhide review failed: ${res.status}`);
   }
 }
+
+export interface AdminVerificationDocument {
+  id: string;
+  documentType: string;
+  fileName: string;
+  uploadedAt: string;
+}
+
+export async function listPractitionerDocuments(
+  practitionerId: string,
+): Promise<AdminVerificationDocument[]> {
+  const res = await authedFetch(`/admin/practitioners/${practitionerId}/verification-documents`);
+  return parseJsonOrThrow(res, "List practitioner verification documents");
+}
+
+export async function getDocumentSignedUrl(documentId: string): Promise<{ url: string }> {
+  const res = await authedFetch(`/admin/verification-documents/${documentId}/signed-url`);
+  return parseJsonOrThrow(res, "Get verification document link");
+}

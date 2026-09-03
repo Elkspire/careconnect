@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import {
+  getDocumentSignedUrl,
   hideReview,
   rejectPractitioner,
   unhideReview,
@@ -27,4 +29,9 @@ export async function hideReviewAction(locale: string, formData: FormData): Prom
 export async function unhideReviewAction(locale: string, formData: FormData): Promise<void> {
   await unhideReview(String(formData.get("reviewId")));
   revalidatePath(`/${locale}/admin/reviews`);
+}
+
+export async function viewVerificationDocumentAction(formData: FormData): Promise<void> {
+  const { url } = await getDocumentSignedUrl(String(formData.get("documentId")));
+  redirect(url);
 }

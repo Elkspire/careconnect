@@ -120,6 +120,10 @@ export const recordSourceEnum = pgEnum('record_source', [
   'patient_upload',
   'clinic_push',
 ]);
+export const verificationDocumentTypeEnum = pgEnum(
+  'verification_document_type',
+  ['cnic', 'degree', 'council_registration', 'other'],
+);
 export const auditActionEnum = pgEnum('audit_action', [
   'view',
   'create',
@@ -181,6 +185,33 @@ export const practitioners = pgTable('practitioners', {
     .notNull()
     .defaultNow(),
 });
+
+/**
+ * What admin verification actually checks against — see
+ * 0020_verification_documents.sql's own doc comment. A signed URL, same
+ * pattern as the patient vault, not a public bucket.
+ */
+export const practitionerVerificationDocuments = pgTable(
+  'practitioner_verification_documents',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    practitionerId: uuid('practitioner_id')
+      .notNull()
+      .references(() => practitioners.id, { onDelete: 'cascade' }),
+    documentType: verificationDocumentTypeEnum('document_type').notNull(),
+    filePath: text('file_path').notNull(),
+    fileName: text('file_name').notNull(),
+    mimeType: text('mime_type').notNull(),
+    uploadedAt: timestamp('uploaded_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('practitioner_verification_documents_practitioner_idx').on(
+      t.practitionerId,
+    ),
+  ],
+);
 
 /**
  * Platform-operator allowlist — deliberately not a clinic_staff role or a

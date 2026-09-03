@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { listClinicWaitlist, listToday } from "@/lib/api/clinic";
+import { listAppointmentsForAttach, listClinicWaitlist, listToday } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
-import { checkInAction, recordVitalsAction } from "../../../actions";
+import { attachRecordAction, checkInAction, recordVitalsAction } from "../../../actions";
 
 export default async function ClinicTodayPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/today">,
@@ -24,13 +24,18 @@ export default async function ClinicTodayPage(
   // Vitals are the assistant's actual job (journeys.html's Assistant
   // track) — recorded after check-in, before the doctor's consultation.
   const canRecordVitals = staffCtx.role === "owner" || staffCtx.role === "assistant";
+  // Same role set today as canRecordVitals, but a distinct permission
+  // (attachRecords) — kept as its own check since they could diverge.
+  const canAttachRecords = staffCtx.role === "owner" || staffCtx.role === "assistant";
 
-  const [appointments, waitlist] = await Promise.all([
+  const [appointments, waitlist, attachableAppointments] = await Promise.all([
     listToday(clinicId),
     listClinicWaitlist(clinicId),
+    canAttachRecords ? listAppointmentsForAttach(clinicId) : Promise.resolve([]),
   ]);
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
   const vitalsAction = recordVitalsAction.bind(null, locale, clinicSlug, clinicId);
+  const attachAction = attachRecordAction.bind(null, locale, clinicSlug, clinicId);
   const checkedInCount = appointments.filter((a) => a.status === "checked_in").length;
   const waitingCount = appointments.length - checkedInCount;
 
@@ -153,6 +158,52 @@ export default async function ClinicTodayPage(
           ))
         )}
       </div>
+
+      {canAttachRecords && attachableAppointments.length > 0 && (
+        <div className="slip mt-8">
+          <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
+            {t("attachRecordHeading")}
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--color-ink-soft)" }}>
+            {t("attachRecordPrompt")}
+          </p>
+          <form action={attachAction} className="mt-3 flex flex-wrap items-end gap-3">
+            <label>
+              <span className="lbl">{t("attachRecordPatientLabel")}</span>
+              <select name="appointmentId" required className="field tap-target">
+                {attachableAppointments.map((appt) => (
+                  <option key={appt.appointmentId} value={appt.appointmentId}>
+                    {appt.familyMemberFullName ?? appt.patientFullName} ·{" "}
+                    {formatClinicDate(appt.scheduledStart, locale)}
+                    {appt.familyMemberFullName ? ` (${appt.patientFullName})` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="lbl">{t("recordTypeLabel")}</span>
+              <select name="recordType" className="field tap-target">
+                <option value="lab_report">{t("types.lab_report")}</option>
+                <option value="prescription_photo">{t("types.prescription_photo")}</option>
+                <option value="other_document">{t("types.other_document")}</option>
+              </select>
+            </label>
+            <label>
+              <span className="lbl">{t("fileLabel")}</span>
+              <input
+                type="file"
+                name="file"
+                required
+                accept="application/pdf,image/jpeg,image/png,image/heic"
+                className="tap-target"
+              />
+            </label>
+            <button type="submit" className="btn tap-target">
+              {t("attachRecord")}
+            </button>
+          </form>
+        </div>
+      )}
 
       {waitlist.length > 0 && (
         <>

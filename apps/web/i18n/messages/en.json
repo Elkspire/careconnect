@@ -237,12 +237,37 @@
     "reportReview": "Report",
     "reportReasonLabel": "Why are you reporting this review?",
     "submitReport": "Submit report",
+    "attachRecordHeading": "Attach a report",
+    "attachRecordPrompt": "Match it to the visit it belongs to, not just a name — safer when two patients share one.",
+    "attachRecordPatientLabel": "Visit",
+    "attachRecord": "Attach",
+    "recordTypeLabel": "Record type",
+    "fileLabel": "File",
+    "types": {
+      "prescription_photo": "Prescription",
+      "lab_report": "Lab report",
+      "other_document": "Other document"
+    },
+    "verificationHeading": "Verification",
+    "verificationStatusLabel": "Status",
+    "verificationScopeNote": "Upload the documents an admin needs to verify you — your CNIC, degree, and council registration certificate.",
+    "documentTypeLabel": "Document type",
+    "documentTypes": {
+      "cnic": "CNIC",
+      "degree": "Degree certificate",
+      "council_registration": "Council registration certificate",
+      "other": "Other"
+    },
+    "uploadDocument": "Upload",
+    "noDocumentsYet": "No documents uploaded yet.",
+    "removeDocument": "Remove",
     "nav": {
       "today": "Today",
       "patients": "Patients",
       "staff": "Staff",
       "analytics": "Analytics",
       "reviews": "Reviews",
+      "verification": "Verification",
       "notifications": "Notifications"
     }
   },
@@ -313,7 +338,7 @@
   },
   "admin": {
     "heading": "Practitioner verification",
-    "scopeNote": "Reviews the registration number and details a practitioner submitted — there's no document upload (CNIC, degree, registration certificate) to check yet.",
+    "scopeNote": "Reviews the registration number and details a practitioner submitted, plus any CNIC/degree/registration-certificate documents they've uploaded below.",
     "accessDenied": "You don't have access to this page.",
     "empty": "Nothing waiting for review.",
     "joinedLabel": "Joined",
@@ -321,6 +346,14 @@
     "phoneLabel": "Phone",
     "statusLabel": "Status",
     "lastNoteLabel": "Last note",
+    "documentsLabel": "Documents",
+    "noDocuments": "No documents uploaded yet.",
+    "documentTypes": {
+      "cnic": "CNIC",
+      "degree": "Degree certificate",
+      "council_registration": "Council registration certificate",
+      "other": "Other"
+    },
     "verify": "Verify",
     "reject": "Reject",
     "rejectReasonLabel": "Reason",

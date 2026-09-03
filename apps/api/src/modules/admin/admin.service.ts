@@ -7,18 +7,22 @@ import {
   practitioners,
   reviewReports,
 } from '../../common/database/schema';
+import { VerificationService } from '../verification/verification.service';
 
 /**
  * Practitioner verification review — the product doc's own first "open
  * question," previously unresolved (verification_status gated directory
- * visibility but nothing let anyone actually flip it). Reviews what the
- * platform actually captures today: name, registration number,
- * practitioner type. No document upload/review — that's a real, separate
- * gap, not solved here (see 0014_admin_verification.sql).
+ * visibility but nothing let anyone actually flip it). Reviews name,
+ * registration number, practitioner type, and now (VerificationService)
+ * the CNIC/degree/registration-certificate documents a practitioner has
+ * uploaded — see 0020_verification_documents.sql.
  */
 @Injectable()
 export class AdminService {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: Database,
+    private readonly verificationService: VerificationService,
+  ) {}
 
   listPractitioners(status?: 'unverified' | 'pending' | 'verified') {
     return this.db
@@ -162,5 +166,13 @@ export class AdminService {
       throw new NotFoundException('Review not found');
     }
     return row;
+  }
+
+  listPractitionerDocuments(practitionerId: string) {
+    return this.verificationService.listForPractitioner(practitionerId);
+  }
+
+  getDocumentSignedUrl(documentId: string) {
+    return this.verificationService.getSignedUrlUnchecked(documentId);
   }
 }

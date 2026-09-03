@@ -21,6 +21,7 @@ import { PatientsModule } from './modules/patients/patients.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SharesModule } from './modules/shares/shares.module';
 import { VaultModule } from './modules/vault/vault.module';
+import { VerificationModule } from './modules/verification/verification.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { VaultModule } from './modules/vault/vault.module';
     ClinicalModule,
     VaultModule,
     SharesModule,
+    VerificationModule,
     NotificationsModule,
     AdminModule,
   ],

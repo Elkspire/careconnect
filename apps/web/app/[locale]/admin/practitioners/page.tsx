@@ -1,8 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { listPendingPractitioners } from "@/lib/api/admin";
+import { listPendingPractitioners, listPractitionerDocuments } from "@/lib/api/admin";
 import { formatClinicDate } from "@/lib/format-time";
-import { rejectPractitionerAction, verifyPractitionerAction } from "../actions";
+import {
+  rejectPractitionerAction,
+  verifyPractitionerAction,
+  viewVerificationDocumentAction,
+} from "../actions";
 
 export default async function AdminPractitionersPage(
   props: PageProps<"/[locale]/admin/practitioners">,
@@ -25,6 +29,14 @@ export default async function AdminPractitionersPage(
       </main>
     );
   }
+
+  const documentsByPractitioner = new Map(
+    await Promise.all(
+      practitioners.map(
+        async (p) => [p.id, await listPractitionerDocuments(p.id)] as const,
+      ),
+    ),
+  );
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
@@ -75,6 +87,33 @@ export default async function AdminPractitionersPage(
                   {t("lastNoteLabel")}: {p.verificationNote}
                 </p>
               )}
+
+              <div className="mt-3">
+                <span className="lbl">{t("documentsLabel")}</span>
+                {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
+                  <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
+                    {t("noDocuments")}
+                  </p>
+                ) : (
+                  <ul className="mt-1 flex flex-col gap-1">
+                    {documentsByPractitioner.get(p.id)!.map((doc) => (
+                      <li key={doc.id}>
+                        <form action={viewVerificationDocumentAction} className="inline">
+                          <input type="hidden" name="documentId" value={doc.id} />
+                          <button
+                            type="submit"
+                            className="mono text-xs tap-target"
+                            style={{ color: "var(--color-verified)" }}
+                          >
+                            {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
+                            {doc.fileName}
+                          </button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <form action={verify}>

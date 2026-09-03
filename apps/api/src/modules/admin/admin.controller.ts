@@ -34,6 +34,16 @@ export class AdminController {
     return this.adminService.reject(id, body.reason);
   }
 
+  @Get('practitioners/:id/verification-documents')
+  listPractitionerDocuments(@Param('id') id: string) {
+    return this.adminService.listPractitionerDocuments(id);
+  }
+
+  @Get('verification-documents/:id/signed-url')
+  getDocumentSignedUrl(@Param('id') id: string) {
+    return this.adminService.getDocumentSignedUrl(id);
+  }
+
   @Get('reviews/reported')
   listReportedReviews() {
     return this.adminService.listReportedReviews();

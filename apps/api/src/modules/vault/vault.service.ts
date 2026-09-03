@@ -78,27 +78,7 @@ export class VaultService {
       }
     }
 
-    // {patient_id}/{record_id}/{safe_file_name} — matches the storage RLS
-    // policy convention in 0001_init.sql (first path segment = owner's own
-    // id). The storage key deliberately does NOT carry the user's original
-    // filename verbatim (even encoded) — real-world names like "ChatGPT
-    // Image Aug 3, 2026, 09_30_41 PM.png" (spaces, commas, ...) produced
-    // Supabase Storage "InvalidKey" errors for some files. The original
-    // name is preserved separately in patientRecords.fileName for display;
-    // the storage key only needs to be a valid, unique object path.
-    const recordId = crypto.randomUUID();
-    const extensionMatch = /\.([a-zA-Z0-9]+)$/.exec(file.originalname);
-    const extension = extensionMatch?.[1]
-      ? `.${extensionMatch[1].toLowerCase()}`
-      : '';
-    const path = `${patientId}/${recordId}/file${extension}`;
-
-    const { error: uploadError } = await this.storage.storage
-      .from(BUCKET)
-      .upload(path, file.buffer, { contentType: file.mimetype });
-    if (uploadError) {
-      throw new BadRequestException(`Upload failed: ${uploadError.message}`);
-    }
+    const { recordId, path } = await this.storeFile(patientId, file);
 
     const [row] = await this.db
       .insert(patientRecords)
@@ -115,6 +95,93 @@ export class VaultService {
         mimeType: file.mimetype,
         linkedAppointmentId: input.linkedAppointmentId,
         uploadedBy: patientId,
+      })
+      .returning();
+    return row;
+  }
+
+  /**
+   * {patient_id}/{record_id}/{safe_file_name} — matches the storage RLS
+   * policy convention in 0001_init.sql (first path segment = the owning
+   * patient's own id, even when a clinic staff member is the one
+   * uploading via attachRecord below). The storage key deliberately does
+   * NOT carry the user's original filename verbatim (even encoded) —
+   * real-world names like "ChatGPT Image Aug 3, 2026, 09_30_41 PM.png"
+   * (spaces, commas, ...) produced Supabase Storage "InvalidKey" errors
+   * for some files. The original name is preserved separately in
+   * patientRecords.fileName for display; the storage key only needs to
+   * be a valid, unique object path.
+   */
+  private async storeFile(
+    patientId: string,
+    file: UploadedFile,
+  ): Promise<{ recordId: string; path: string }> {
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      throw new BadRequestException(`Unsupported file type: ${file.mimetype}`);
+    }
+    const recordId = crypto.randomUUID();
+    const extensionMatch = /\.([a-zA-Z0-9]+)$/.exec(file.originalname);
+    const extension = extensionMatch?.[1]
+      ? `.${extensionMatch[1].toLowerCase()}`
+      : '';
+    const path = `${patientId}/${recordId}/file${extension}`;
+
+    const { error: uploadError } = await this.storage.storage
+      .from(BUCKET)
+      .upload(path, file.buffer, { contentType: file.mimetype });
+    if (uploadError) {
+      throw new BadRequestException(`Upload failed: ${uploadError.message}`);
+    }
+    return { recordId, path };
+  }
+
+  /**
+   * The clinic side of "a lab report came in" (journeys.html, Assistant ·
+   * Step 02): staff attach a report to a patient's own vault, matched by
+   * the pending appointment they picked — not by typing a name — so a
+   * report can't land on the wrong same-named patient. Caller (ClinicService)
+   * has already verified the appointment belongs to this clinic; this only
+   * derives the subject from it and writes the record with source
+   * 'clinic_push' and uploadedBy set to the staff member, not the patient,
+   * so "who attached this" is always visible on the patient's own side too.
+   */
+  async attachRecord(
+    appointmentId: string,
+    attachedBy: string,
+    recordType: UploadRecordMetadata['recordType'],
+    file: UploadedFile,
+  ) {
+    const [appointment] = await this.db
+      .select({
+        patientId: appointments.patientId,
+        subjectType: appointments.subjectType,
+        familyMemberId: appointments.familyMemberId,
+      })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    const { recordId, path } = await this.storeFile(
+      appointment.patientId,
+      file,
+    );
+    const [row] = await this.db
+      .insert(patientRecords)
+      .values({
+        id: recordId,
+        patientId: appointment.patientId,
+        subjectType: appointment.subjectType,
+        familyMemberId: appointment.familyMemberId,
+        recordType,
+        source: 'clinic_push',
+        filePath: path,
+        fileName: file.originalname,
+        mimeType: file.mimetype,
+        linkedAppointmentId: appointmentId,
+        uploadedBy: attachedBy,
       })
       .returning();
     return row;

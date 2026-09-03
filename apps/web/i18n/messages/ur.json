@@ -237,12 +237,37 @@
     "reportReview": "اطلاع دیں",
     "reportReasonLabel": "آپ اس جائزے کی اطلاع کیوں دے رہے ہیں؟",
     "submitReport": "اطلاع جمع کروائیں",
+    "attachRecordHeading": "رپورٹ منسلک کریں",
+    "attachRecordPrompt": "اسے صرف نام سے نہیں بلکہ متعلقہ وزٹ سے ملائیں — جب دو مریضوں کا نام ایک جیسا ہو تو یہ زیادہ محفوظ ہے۔",
+    "attachRecordPatientLabel": "وزٹ",
+    "attachRecord": "منسلک کریں",
+    "recordTypeLabel": "ریکارڈ کی قسم",
+    "fileLabel": "فائل",
+    "types": {
+      "prescription_photo": "نسخہ",
+      "lab_report": "لیب رپورٹ",
+      "other_document": "دیگر دستاویز"
+    },
+    "verificationHeading": "تصدیق",
+    "verificationStatusLabel": "حیثیت",
+    "verificationScopeNote": "وہ دستاویزات اپ لوڈ کریں جو ایڈمن کو آپ کی تصدیق کے لیے درکار ہیں — آپ کا شناختی کارڈ، ڈگری، اور کونسل رجسٹریشن سرٹیفکیٹ۔",
+    "documentTypeLabel": "دستاویز کی قسم",
+    "documentTypes": {
+      "cnic": "شناختی کارڈ",
+      "degree": "ڈگری سرٹیفکیٹ",
+      "council_registration": "کونسل رجسٹریشن سرٹیفکیٹ",
+      "other": "دیگر"
+    },
+    "uploadDocument": "اپ لوڈ کریں",
+    "noDocumentsYet": "ابھی تک کوئی دستاویز اپ لوڈ نہیں ہوئی۔",
+    "removeDocument": "ہٹائیں",
     "nav": {
       "today": "آج",
       "patients": "مریض",
       "staff": "عملہ",
       "analytics": "تجزیات",
       "reviews": "جائزے",
+      "verification": "تصدیق",
       "notifications": "اطلاعات"
     }
   },
@@ -313,7 +338,7 @@
   },
   "admin": {
     "heading": "معالج کی تصدیق",
-    "scopeNote": "معالج کی جمع کرائی گئی رجسٹریشن نمبر اور تفصیلات کا جائزہ لیتا ہے — ابھی دستاویزات (شناختی کارڈ، ڈگری، رجسٹریشن سرٹیفکیٹ) اپ لوڈ کرنے کا کوئی طریقہ نہیں ہے۔",
+    "scopeNote": "معالج کی جمع کرائی گئی رجسٹریشن نمبر اور تفصیلات کا جائزہ لیتا ہے، اور نیچے اپ لوڈ کردہ شناختی کارڈ/ڈگری/رجسٹریشن سرٹیفکیٹ دستاویزات بھی۔",
     "accessDenied": "آپ کو اس صفحہ تک رسائی نہیں ہے۔",
     "empty": "جائزے کے لیے کچھ باقی نہیں۔",
     "joinedLabel": "شمولیت",
@@ -321,6 +346,14 @@
     "phoneLabel": "فون نمبر",
     "statusLabel": "حیثیت",
     "lastNoteLabel": "آخری نوٹ",
+    "documentsLabel": "دستاویزات",
+    "noDocuments": "ابھی تک کوئی دستاویز اپ لوڈ نہیں ہوئی۔",
+    "documentTypes": {
+      "cnic": "شناختی کارڈ",
+      "degree": "ڈگری سرٹیفکیٹ",
+      "council_registration": "کونسل رجسٹریشن سرٹیفکیٹ",
+      "other": "دیگر"
+    },
     "verify": "تصدیق کریں",
     "reject": "مسترد کریں",
     "rejectReasonLabel": "وجہ",

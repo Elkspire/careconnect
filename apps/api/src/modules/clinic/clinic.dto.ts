@@ -1,5 +1,6 @@
 import {
   assignPatientSchema,
+  attachVaultRecordSchema,
   checkInAppointmentSchema,
   createClinicSchema,
   createPractitionerLeaveSchema,
@@ -26,3 +27,9 @@ export class UpsertMedicalSummaryDto extends createZodDto(
 ) {}
 export class AssignPatientDto extends createZodDto(assignPatientSchema) {}
 export class RecordVitalsDto extends createZodDto(recordVitalsSchema) {}
+// fileName/mimeType come from the uploaded file itself (multer), not a
+// separately-typed form field — see ClinicController.attachRecord and
+// VaultController.upload's identical pattern.
+export class AttachVaultRecordDto extends createZodDto(
+  attachVaultRecordSchema.omit({ fileName: true, mimeType: true }),
+) {}

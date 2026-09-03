@@ -99,6 +99,7 @@ export const STAFF_PERMISSION_KEY = [
   "manageStaff",
   "manageFeesSchedule",
   "recordVitals",
+  "attachRecords",
 ] as const;
 export type StaffPermissionKey = (typeof STAFF_PERMISSION_KEY)[number];
 
@@ -123,7 +124,10 @@ export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissio
     "clinicalNotes",
     "recordVitals",
   ],
-  assistant: ["viewTodayQueue", "recordVitals"],
+  // attachRecords is the assistant's other job (journeys.html, Assistant ·
+  // Step 02 — "a lab report came in"), not given to junior_doctor: they
+  // review records, they don't file the clinic's incoming paperwork.
+  assistant: ["viewTodayQueue", "recordVitals", "attachRecords"],
 };
 
 export const BLOOD_GROUP = [
@@ -141,9 +145,18 @@ export type BloodGroup = (typeof BLOOD_GROUP)[number];
 export const RECORD_TYPE = ["prescription_photo", "lab_report", "other_document"] as const;
 export type RecordType = (typeof RECORD_TYPE)[number];
 
-/** v1 only ever writes 'patient_upload'; 'clinic_push' is reserved for v2. */
+/** 'clinic_push' is now used by VaultService.attachRecord — clinic staff attaching a report to a patient's own vault, distinct from that patient's own patient_upload records. */
 export const RECORD_SOURCE = ["patient_upload", "clinic_push"] as const;
 export type RecordSource = (typeof RECORD_SOURCE)[number];
+
+/** What the admin verification queue actually reviews — see AdminModule. */
+export const VERIFICATION_DOCUMENT_TYPE = [
+  "cnic",
+  "degree",
+  "council_registration",
+  "other",
+] as const;
+export type VerificationDocumentType = (typeof VERIFICATION_DOCUMENT_TYPE)[number];
 
 export const AUDIT_ACTION = ["view", "create", "update", "delete", "export"] as const;
 export type AuditAction = (typeof AUDIT_ACTION)[number];
