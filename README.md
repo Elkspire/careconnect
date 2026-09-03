@@ -6,7 +6,7 @@ Doctor appointment booking and medical-records platform for Pakistan. Product co
 
 - **apps/web** — Next.js (patient directory/booking + clinic dashboard)
 - **apps/api** — NestJS (REST API, Supabase-backed)
-- **apps/mobile** — React Native (not yet scaffolded — planned for a later phase)
+- **apps/mobile** — Expo/React Native (patient-facing: directory, booking, family, vault — see `apps/mobile/README.md`)
 - **packages/shared-types** — domain enums + generated Supabase DB types
 - **packages/validation** — Zod schemas, the single source of truth for request/response shapes shared by `apps/api` and `apps/web`
 - **packages/config** — shared tsconfig bases and Tailwind design tokens
