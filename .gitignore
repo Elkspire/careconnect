@@ -45,3 +45,6 @@ supabase/.temp
 
 # drizzle-kit introspection output (scratch, not the schema source of truth)
 .drizzle/
+
+.vercel
+.env*

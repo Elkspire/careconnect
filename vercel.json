@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm turbo build --filter=@careconnect/web",
+  "outputDirectory": "apps/web/.next"
+}

@@ -1,0 +1,17 @@
+# Vercel installs dependencies fresh on its own build machine — never
+# upload node_modules (pnpm's store especially balloons this, and
+# apps/mobile's native/Hermes binaries blow past Vercel's 100MB
+# single-file upload limit).
+node_modules
+
+# This deployment only builds @careconnect/web (see vercel.json's
+# buildCommand) via turbo's own dependency graph (packages/shared-types,
+# packages/validation, packages/config) — apps/api and apps/mobile are
+# unrelated to that build and have no business being uploaded for it.
+apps/api
+apps/mobile
+
+# Build/cache output that gets regenerated, not needed as upload input.
+apps/web/.next
+apps/web/.turbo
+.turbo
