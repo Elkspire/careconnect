@@ -31,6 +31,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This app lives inside the `careconnect` pnpm/Turborepo monorepo, so the Vercel project's **Root Directory must be `apps/web`** (this is where `package.json` declares the `next` dependency Vercel's builder looks for). `apps/web/vercel.json` handles the rest:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `installCommand`/`buildCommand` `cd ../..` back to the workspace root so `pnpm install` and `pnpm turbo build --filter=@careconnect/web` can resolve the `workspace:*` deps in `packages/*`.
+- `outputDirectory` is `.next`, relative to Root Directory.
+- `framework: "nextjs"` is set explicitly — with Root Directory at a subfolder, Vercel's own auto-detect can otherwise fail to find the `next` dependency and silently fall back to serving the build output as static files.
+
+Required environment variables (Project Settings → Environment Variables): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`.
