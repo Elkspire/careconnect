@@ -4,14 +4,14 @@
 # single-file upload limit).
 node_modules
 
-# This deployment only builds @careconnect/web (see vercel.json's
-# buildCommand) via turbo's own dependency graph (packages/shared-types,
-# packages/validation, packages/config) — apps/api and apps/mobile are
-# unrelated to that build and have no business being uploaded for it.
-apps/api
+# Both apps/web and apps/api are deployed on Vercel now (as two separate
+# projects, each with its own Root Directory), so neither can be excluded
+# here — this file applies to the whole repo checkout regardless of which
+# project's build is running. Only apps/mobile is unrelated to both.
 apps/mobile
 
 # Build/cache output that gets regenerated, not needed as upload input.
 apps/web/.next
 apps/web/.turbo
+apps/api/dist
 .turbo
