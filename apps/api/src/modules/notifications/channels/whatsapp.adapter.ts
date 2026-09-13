@@ -7,6 +7,17 @@ import type {
   NotificationRecipient,
 } from './channel-adapter.interface';
 
+// The monorepo's two apps pin different @types/node majors (apps/web ^20,
+// apps/api ^24); some build environments resolve the ambient global
+// `Response` type inconsistently across that split, dropping the fetch API
+// members entirely. Naming the exact shape used here sidesteps relying on
+// whichever `Response` declaration wins.
+interface FetchResponse {
+  readonly ok: boolean;
+  readonly status: number;
+  json(): Promise<unknown>;
+}
+
 /**
  * Sends via the WhatsApp Business Cloud API (Meta Graph API) directly. This
  * is treated as a primary channel per the product doc, not a fallback —
@@ -38,7 +49,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
 
     const body = renderTemplate(templateKey as TemplateKey, locale, payload);
     try {
-      const res = await fetch(
+      const res = (await fetch(
         `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
         {
           method: 'POST',
@@ -53,7 +64,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
             text: { body },
           }),
         },
-      );
+      )) as unknown as FetchResponse;
       if (!res.ok) {
         return { status: 'failed', error: `whatsapp_http_${res.status}` };
       }

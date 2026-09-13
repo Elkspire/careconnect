@@ -7,6 +7,14 @@ import type {
   NotificationRecipient,
 } from './channel-adapter.interface';
 
+// See whatsapp.adapter.ts's FetchResponse comment — same ambient `Response`
+// type inconsistency across this monorepo's split @types/node majors.
+interface FetchResponse {
+  readonly ok: boolean;
+  readonly status: number;
+  json(): Promise<unknown>;
+}
+
 /** Sends via Twilio's REST API directly (no SDK) — see .env.example for required config. */
 @Injectable()
 export class SmsAdapter implements ChannelAdapter {
@@ -37,7 +45,7 @@ export class SmsAdapter implements ChannelAdapter {
 
     const body = renderTemplate(templateKey as TemplateKey, locale, payload);
     try {
-      const res = await fetch(
+      const res = (await fetch(
         `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
         {
           method: 'POST',
@@ -51,7 +59,7 @@ export class SmsAdapter implements ChannelAdapter {
             Body: body,
           }),
         },
-      );
+      )) as unknown as FetchResponse;
       if (!res.ok) {
         return { status: 'failed', error: `twilio_http_${res.status}` };
       }
