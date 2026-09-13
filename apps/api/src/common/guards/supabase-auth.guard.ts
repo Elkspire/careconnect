@@ -7,13 +7,19 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  type JWTPayload,
-  type JWTVerifyGetKey,
-} from 'jose';
+import type { JWTPayload, JWTVerifyGetKey } from 'jose';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+// jose v6 ships ESM-only. This file compiles to CommonJS (no "type": "module"
+// in apps/api/package.json), and Node refuses a require() of a pure-ESM
+// package — confirmed failing at runtime with ERR_REQUIRE_ESM even though
+// `nest build`/tsc compiled it without error. Dynamic import() is Node's
+// supported interop path from CommonJS to ESM.
+let josePromise: Promise<typeof import('jose')> | undefined;
+function loadJose(): Promise<typeof import('jose')> {
+  josePromise ??= import('jose');
+  return josePromise;
+}
 
 /**
  * Shape of the decoded Supabase access token this app relies on.
@@ -76,7 +82,8 @@ export class SupabaseAuthGuard implements CanActivate {
 
     let payload: SupabaseJwtPayload;
     try {
-      const result = await jwtVerify(token, this.getJwks());
+      const jose = await loadJose();
+      const result = await jose.jwtVerify(token, await this.getJwks());
       payload = result.payload as SupabaseJwtPayload;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
@@ -96,10 +103,11 @@ export class SupabaseAuthGuard implements CanActivate {
     return true;
   }
 
-  private getJwks(): JWTVerifyGetKey {
+  private async getJwks(): Promise<JWTVerifyGetKey> {
     if (!this.jwks) {
+      const jose = await loadJose();
       const supabaseUrl = this.config.getOrThrow<string>('SUPABASE_URL');
-      this.jwks = createRemoteJWKSet(
+      this.jwks = jose.createRemoteJWKSet(
         new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`),
       );
     }
