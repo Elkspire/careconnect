@@ -888,3 +888,19 @@ export const pushSubscriptions = pgTable(
   },
   (t) => [index('push_subscriptions_user_idx').on(t.userId)],
 );
+
+// Added in 0021_expo_push_tokens.sql.
+export const expoPushTokens = pgTable(
+  'expo_push_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index('expo_push_tokens_user_idx').on(t.userId)],
+);

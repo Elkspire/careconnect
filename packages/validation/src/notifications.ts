@@ -14,3 +14,14 @@ export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url(),
 });
 export type PushUnsubscribeInput = z.infer<typeof pushUnsubscribeSchema>;
+
+/** Expo push tokens look like "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]". */
+export const expoPushRegisterSchema = z.object({
+  token: z.string().min(1),
+});
+export type ExpoPushRegisterInput = z.infer<typeof expoPushRegisterSchema>;
+
+export const expoPushUnregisterSchema = z.object({
+  token: z.string().min(1),
+});
+export type ExpoPushUnregisterInput = z.infer<typeof expoPushUnregisterSchema>;

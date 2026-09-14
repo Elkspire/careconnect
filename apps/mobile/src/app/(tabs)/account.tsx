@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { getMyProfile, upsertMyProfile, type PatientProfile } from "@/lib/api/patients";
+import { unregisterExpoPushToken } from "@/lib/api/push";
 import { useAuth } from "@/lib/auth-context";
+import { getExpoPushToken } from "@/lib/push-notifications";
 import { supabase } from "@/lib/supabase";
 import { ThemedText } from "@/components/themed-text";
 import { Card } from "@/components/ui/card";
@@ -50,6 +52,14 @@ export default function AccountScreen() {
   }
 
   async function signOut() {
+    // Unregister this device's push token before the session is gone —
+    // authedFetch needs it. Best-effort: a stale token just gets overwritten
+    // with the next user who signs in on this device (see the controller's
+    // onConflictDoUpdate), so a failure here isn't worth blocking sign-out.
+    const token = await getExpoPushToken();
+    if (token) {
+      await unregisterExpoPushToken(token).catch(() => {});
+    }
     await supabase.auth.signOut();
   }
 
@@ -67,10 +77,16 @@ export default function AccountScreen() {
       </Card>
 
       <Button
+        label="Notifications"
+        variant="ghost"
+        onPress={() => router.push("/notifications")}
+        style={{ marginTop: Spacing.four }}
+      />
+      <Button
         label="Sign out"
         variant="ghost"
         onPress={signOut}
-        style={{ marginTop: Spacing.four }}
+        style={{ marginTop: Spacing.three }}
       />
     </Screen>
   );
