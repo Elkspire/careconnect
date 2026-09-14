@@ -38,7 +38,15 @@ export default function LoginPage() {
     const { error: sendError } =
       method === "phone"
         ? await supabase.auth.signInWithOtp({ phone })
-        : await supabase.auth.signInWithOtp({ email });
+        : await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              // The typed-code flow below never uses this — only a clicked
+              // link does, landing on the callback route to exchange its
+              // PKCE code for a session server-side.
+              emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(next)}`,
+            },
+          });
     setPending(false);
     if (sendError) {
       setError(t("error"));
