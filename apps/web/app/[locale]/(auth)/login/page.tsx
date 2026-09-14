@@ -5,24 +5,40 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+type Method = "phone" | "email";
+
 export default function LoginPage() {
   const t = useTranslations("auth");
   const locale = useLocale();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/post-login";
 
-  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [method, setMethod] = useState<Method>("phone");
+  const [step, setStep] = useState<"input" | "otp">("input");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const identifier = method === "phone" ? phone : email;
+
+  function switchMethod(next: Method) {
+    setMethod(next);
+    setStep("input");
+    setError(null);
+    setCode("");
+  }
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setPending(true);
     const supabase = createClient();
-    const { error: sendError } = await supabase.auth.signInWithOtp({ phone });
+    const { error: sendError } =
+      method === "phone"
+        ? await supabase.auth.signInWithOtp({ phone })
+        : await supabase.auth.signInWithOtp({ email });
     setPending(false);
     if (sendError) {
       setError(t("error"));
@@ -36,11 +52,10 @@ export default function LoginPage() {
     setError(null);
     setPending(true);
     const supabase = createClient();
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      phone,
-      token: code,
-      type: "sms",
-    });
+    const { error: verifyError } =
+      method === "phone"
+        ? await supabase.auth.verifyOtp({ phone, token: code, type: "sms" })
+        : await supabase.auth.verifyOtp({ email, token: code, type: "email" });
     setPending(false);
     if (verifyError) {
       setError(t("invalidCode"));
@@ -63,6 +78,29 @@ export default function LoginPage() {
         <p className="slip-no mono">CC / AUTH-01</p>
         <h1>{t("heading")}</h1>
 
+        {step === "input" && (
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => switchMethod("phone")}
+              className="btn gh sm tap-target"
+              aria-pressed={method === "phone"}
+              style={method === "phone" ? { borderColor: "var(--color-stamp)" } : undefined}
+            >
+              {t("methodPhone")}
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMethod("email")}
+              className="btn gh sm tap-target"
+              aria-pressed={method === "email"}
+              style={method === "email" ? { borderColor: "var(--color-stamp)" } : undefined}
+            >
+              {t("methodEmail")}
+            </button>
+          </div>
+        )}
+
         {error && (
           <div className="alert mt-4">
             <div>
@@ -71,19 +109,33 @@ export default function LoginPage() {
           </div>
         )}
 
-        {step === "phone" ? (
+        {step === "input" ? (
           <form onSubmit={handleSendCode} className="mt-6 flex flex-col gap-4">
-            <label>
-              <span className="lbl">{t("phoneLabel")}</span>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={t("phonePlaceholder")}
-                className="field tap-target"
-              />
-            </label>
+            {method === "phone" ? (
+              <label>
+                <span className="lbl">{t("phoneLabel")}</span>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("phonePlaceholder")}
+                  className="field tap-target"
+                />
+              </label>
+            ) : (
+              <label>
+                <span className="lbl">{t("emailLabel")}</span>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("emailPlaceholder")}
+                  className="field tap-target"
+                />
+              </label>
+            )}
             <button type="submit" disabled={pending} className="btn tap-target">
               {t("sendCode")}
             </button>
@@ -91,7 +143,7 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleVerify} className="mt-6 flex flex-col gap-4">
             <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
-              {t("sentCodeTo", { phone })}
+              {t("sentCodeTo", { identifier })}
             </p>
             <label>
               <span className="lbl">{t("codeLabel")}</span>
@@ -110,11 +162,11 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => setStep("phone")}
+              onClick={() => switchMethod(method)}
               className="mono text-xs"
               style={{ color: "var(--color-ink-soft)", letterSpacing: "0.08em" }}
             >
-              {t("changeNumber")}
+              {method === "phone" ? t("changeNumber") : t("changeEmail")}
             </button>
           </form>
         )}
