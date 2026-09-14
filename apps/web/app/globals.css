@@ -773,6 +773,15 @@ a.card:hover {
   color: var(--color-ink);
   font-size: 13.5px;
 }
+/* Flex children default to min-width:auto, which refuses to shrink below
+   their own content's width — a long patient/staff name or file name (six
+   usages of .prow, from staff lists to vault shares) would push the row
+   wider than the viewport instead of wrapping. This is safe on the
+   action/button child too: it has no long unwrapping content, so
+   min-width:0 never visibly shrinks it. */
+.prow > * {
+  min-width: 0;
+}
 .prow em {
   margin-left: auto;
   font-style: normal;

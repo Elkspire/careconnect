@@ -31,8 +31,12 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
               <p className="kicker">{t("heading")}</p>
             </div>
             <h1 className="disp mt-4 text-[clamp(1.6rem,4.8vw,4rem)] leading-[1.08] font-extrabold tracking-tight text-paper">
-              <span className="block whitespace-nowrap">{t("heroHeadlineLine1")}</span>
-              <span className="block whitespace-nowrap">{t("heroHeadlineLine2")}</span>
+              {/* No whitespace-nowrap: at the clamp's floor size, the Urdu
+                  headline especially can still be wider than a narrow phone
+                  screen (~320-360px) — letting a `block` line wrap onto a
+                  second visual line beats clipping it off-screen. */}
+              <span className="block">{t("heroHeadlineLine1")}</span>
+              <span className="block">{t("heroHeadlineLine2")}</span>
             </h1>
             <p
               className="mt-5 max-w-xl text-base md:text-lg"
