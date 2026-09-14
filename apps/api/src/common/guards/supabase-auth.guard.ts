@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -58,6 +59,7 @@ declare module 'express' {
  */
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
+  private readonly logger = new Logger(SupabaseAuthGuard.name);
   private jwks: JWTVerifyGetKey | undefined;
 
   constructor(
@@ -85,7 +87,13 @@ export class SupabaseAuthGuard implements CanActivate {
       const jose = await loadJose();
       const result = await jose.jwtVerify(token, await this.getJwks());
       payload = result.payload as SupabaseJwtPayload;
-    } catch {
+    } catch (err) {
+      // The client only ever sees the generic message below — this is the
+      // only place the *actual* reason (expired, bad signature, wrong
+      // issuer, JWKS endpoint unreachable, ...) is visible at all.
+      this.logger.warn(
+        `Token verification failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       throw new UnauthorizedException('Invalid or expired token');
     }
 
