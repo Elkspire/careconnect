@@ -90,9 +90,14 @@ export class SupabaseAuthGuard implements CanActivate {
     } catch (err) {
       // The client only ever sees the generic message below — this is the
       // only place the *actual* reason (expired, bad signature, wrong
-      // issuer, JWKS endpoint unreachable, ...) is visible at all.
+      // issuer, JWKS endpoint unreachable, ...) is visible at all. A fetch
+      // failure's real reason (DNS, TLS, connection refused, ...) lives in
+      // `.cause`, not `.message` — Node's undici wraps it as a generic
+      // "fetch failed" otherwise.
+      const cause =
+        err instanceof Error && err.cause ? ` (cause: ${String(err.cause)})` : '';
       this.logger.warn(
-        `Token verification failed: ${err instanceof Error ? err.message : String(err)}`,
+        `Token verification failed against SUPABASE_URL=${this.config.get<string>('SUPABASE_URL')}: ${err instanceof Error ? err.message : String(err)}${cause}`,
       );
       throw new UnauthorizedException('Invalid or expired token');
     }
