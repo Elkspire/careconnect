@@ -1066,6 +1066,14 @@ a.card:hover {
 }
 .dash-navlink {
   display: block;
+  /* On mobile this row is a horizontal-scroll tab bar (.dash-sidebar's nav
+     is flex-row + overflow-x-auto below md). Flex items shrink by default
+     (flex-shrink:1) — without this, the browser squeezes every tab to fit
+     the viewport instead of letting the row overflow and scroll, and since
+     the label text is nowrap, the shrunk boxes' text visually overlaps its
+     neighbors instead of wrapping or eliding. flex-shrink:0 forces the row
+     to actually overflow, which is what makes overflow-x-auto do anything. */
+  flex-shrink: 0;
   padding: 12px 18px;
   font-family: var(--font-mono);
   font-size: 11px;
