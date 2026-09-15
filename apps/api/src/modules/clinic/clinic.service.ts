@@ -129,12 +129,29 @@ export class ClinicService {
     }
   }
 
+  /**
+   * Also seats the owner as clinic_staff — every /clinic/:clinicSlug/* page
+   * and endpoint gates on a clinic_staff row (see resolveClinicStaffBySlug),
+   * not on clinics.ownerPractitionerId, so without this an owner could
+   * create a clinic and then immediately fail to reach its own dashboard.
+   */
   async createClinic(ownerPractitionerId: string, input: CreateClinicInput) {
-    const [row] = await this.db
-      .insert(clinics)
-      .values({ ownerPractitionerId, slug: slugify(input.name), ...input })
-      .returning();
-    return row;
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(clinics)
+        .values({ ownerPractitionerId, slug: slugify(input.name), ...input })
+        .returning();
+      if (!row) {
+        throw new Error('Clinic insert returned no row');
+      }
+      await tx.insert(clinicStaff).values({
+        clinicId: row.id,
+        userId: ownerPractitionerId,
+        role: 'owner',
+        status: 'active',
+      });
+      return row;
+    });
   }
 
   listMyClinics(ownerPractitionerId: string) {

@@ -18,6 +18,7 @@ import { ClinicalModule } from './modules/clinical/clinical.module';
 import { DirectoryModule } from './modules/directory/directory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PatientsModule } from './modules/patients/patients.module';
+import { PractitionersModule } from './modules/practitioners/practitioners.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SharesModule } from './modules/shares/shares.module';
 import { VaultModule } from './modules/vault/vault.module';
@@ -35,6 +36,7 @@ import { VerificationModule } from './modules/verification/verification.module';
     DirectoryModule,
     ReviewsModule,
     PatientsModule,
+    PractitionersModule,
     BookingModule,
     ClinicModule,
     ClinicalModule,

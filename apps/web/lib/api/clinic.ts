@@ -1,4 +1,5 @@
 import type {
+  CreateClinicInput,
   InviteStaffInput,
   RecordVitalsInput,
   UpsertMedicalSummaryInput,
@@ -8,12 +9,21 @@ import type { MedicalSummary } from "./medical-summary";
 
 export interface Clinic {
   id: string;
+  slug: string;
   ownerPractitionerId: string;
   name: string;
   city: string;
   area: string;
   address: string;
   phone: string | null;
+}
+
+export async function createClinic(input: CreateClinicInput): Promise<Clinic> {
+  const res = await authedFetch("/clinics", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Create clinic");
 }
 
 export interface TodayAppointment {

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { DirectorySearchQuery } from '@careconnect/validation';
+import type { PractitionerType } from '@careconnect/shared-types';
 import { and, asc, eq, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
@@ -71,6 +72,24 @@ export class DirectoryService {
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly reviewsService: ReviewsService,
   ) {}
+
+  /** Feeds the practitioner-registration specialty picker (see PractitionersModule) as well as any future directory filter-by-specialty UI. */
+  listSpecialties(practitionerType?: PractitionerType) {
+    return this.db
+      .select({
+        id: specialties.id,
+        nameEn: specialties.nameEn,
+        nameUr: specialties.nameUr,
+        practitionerType: specialties.practitionerType,
+      })
+      .from(specialties)
+      .where(
+        practitionerType
+          ? eq(specialties.practitionerType, practitionerType)
+          : undefined,
+      )
+      .orderBy(asc(specialties.nameEn));
+  }
 
   async search(query: DirectorySearchQuery): Promise<DirectorySearchResult> {
     const conditions = [

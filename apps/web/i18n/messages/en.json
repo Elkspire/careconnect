@@ -373,5 +373,45 @@
     "hiddenReviewsHeading": "Hidden reviews",
     "noHiddenReviews": "No hidden reviews.",
     "unhide": "Restore to directory"
+  },
+  "onboarding": {
+    "roleHeading": "How would you like to use CareConnect?",
+    "patientOption": "I'm looking for a doctor",
+    "patientOptionDesc": "Book appointments, manage your family's health records, and more.",
+    "practitionerOption": "I'm a healthcare provider",
+    "practitionerOptionDesc": "Register your practice and get discovered by patients near you.",
+    "practitionerHeading": "Register as a healthcare provider",
+    "fullNameLabel": "Full name",
+    "genderLabel": "Gender",
+    "practitionerTypeLabel": "Practice type",
+    "councilRegistrationNoLabel": "Council registration number",
+    "bioLabel": "Short bio (optional)",
+    "languagesLabel": "Languages spoken (comma-separated)",
+    "languagesPlaceholder": "English, Urdu",
+    "specialtiesLabel": "Specialties",
+    "specialtiesHint": "Pick at least one",
+    "clinicSectionHeading": "Your clinic",
+    "clinicNameLabel": "Clinic name",
+    "clinicCityLabel": "City",
+    "clinicAreaLabel": "Area",
+    "clinicAddressLabel": "Address",
+    "clinicPhoneLabel": "Clinic phone (optional)",
+    "submit": "Register",
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "practitionerTypes": {
+      "doctor": "Doctor",
+      "dentist": "Dentist",
+      "physiotherapist": "Physiotherapist",
+      "psychologist": "Psychologist",
+      "nutritionist": "Nutritionist",
+      "homeopath": "Homeopath",
+      "lab_diagnostic": "Lab / Diagnostic Center"
+    },
+    "error": "Something went wrong. Please try again.",
+    "becomeProviderLink": "Register as a healthcare provider instead"
   }
 }

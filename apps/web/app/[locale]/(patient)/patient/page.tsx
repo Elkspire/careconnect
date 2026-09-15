@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
 import { getMyProfile, listFamilyMembers } from "@/lib/api/patients";
 import { listMyAppointments } from "@/lib/api/booking";
 import { listVaultRecords } from "@/lib/api/vault";
@@ -7,8 +9,9 @@ import { saveProfileAction } from "../actions";
 
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
   const { locale } = await props.params;
-  const [t, profile, familyMembers, appointments, records] = await Promise.all([
+  const [t, tOnboarding, profile, familyMembers, appointments, records] = await Promise.all([
     getTranslations("patient"),
+    getTranslations("onboarding"),
     getMyProfile(),
     listFamilyMembers(),
     listMyAppointments(),
@@ -82,6 +85,15 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
           <PushNotifications />
         </div>
       </div>
+
+      <Link
+        href="/onboarding/practitioner"
+        locale={locale as AppLocale}
+        className="mono mt-6 inline-block text-xs"
+        style={{ color: "var(--color-ink-soft)" }}
+      >
+        {tOnboarding("becomeProviderLink")}
+      </Link>
     </div>
   );
 }

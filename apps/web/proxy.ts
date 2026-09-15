@@ -9,7 +9,7 @@ import { getSupabaseEnv } from "./lib/supabase/env";
 const intlMiddleware = createMiddleware(routing);
 
 /** Locale-stripped path prefixes that require a signed-in session. */
-const PROTECTED_PREFIXES = ["/patient", "/clinic", "/post-login"];
+const PROTECTED_PREFIXES = ["/patient", "/clinic", "/post-login", "/onboarding"];
 
 export async function proxy(request: NextRequest) {
   const response = intlMiddleware(request);

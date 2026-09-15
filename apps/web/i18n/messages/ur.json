@@ -373,5 +373,45 @@
     "hiddenReviewsHeading": "چھپائے گئے جائزے",
     "noHiddenReviews": "کوئی چھپایا گیا جائزہ نہیں۔",
     "unhide": "ڈائریکٹری میں بحال کریں"
+  },
+  "onboarding": {
+    "roleHeading": "آپ کیئر کنیکٹ کو کس طرح استعمال کرنا چاہیں گے؟",
+    "patientOption": "مجھے ڈاکٹر کی تلاش ہے",
+    "patientOptionDesc": "اپائنٹمنٹس بک کریں، اپنے خاندان کے صحت کے ریکارڈز کا انتظام کریں، اور مزید۔",
+    "practitionerOption": "میں ایک ہیلتھ کیئر پروائیڈر ہوں",
+    "practitionerOptionDesc": "اپنی پریکٹس رجسٹر کریں اور اپنے قریب مریضوں تک پہنچیں۔",
+    "practitionerHeading": "ہیلتھ کیئر پروائیڈر کے طور پر رجسٹر کریں",
+    "fullNameLabel": "پورا نام",
+    "genderLabel": "جنس",
+    "practitionerTypeLabel": "پریکٹس کی قسم",
+    "councilRegistrationNoLabel": "کونسل رجسٹریشن نمبر",
+    "bioLabel": "مختصر تعارف (اختیاری)",
+    "languagesLabel": "بولی جانے والی زبانیں (کوما سے الگ کریں)",
+    "languagesPlaceholder": "انگریزی، اردو",
+    "specialtiesLabel": "شعبہ جات",
+    "specialtiesHint": "کم از کم ایک منتخب کریں",
+    "clinicSectionHeading": "آپ کا کلینک",
+    "clinicNameLabel": "کلینک کا نام",
+    "clinicCityLabel": "شہر",
+    "clinicAreaLabel": "علاقہ",
+    "clinicAddressLabel": "پتہ",
+    "clinicPhoneLabel": "کلینک کا فون نمبر (اختیاری)",
+    "submit": "رجسٹر کریں",
+    "genders": {
+      "male": "مرد",
+      "female": "عورت",
+      "other": "دیگر"
+    },
+    "practitionerTypes": {
+      "doctor": "ڈاکٹر",
+      "dentist": "ڈینٹسٹ",
+      "physiotherapist": "فزیوتھراپسٹ",
+      "psychologist": "ماہر نفسیات",
+      "nutritionist": "ماہر غذائیت",
+      "homeopath": "ہومیوپیتھ",
+      "lab_diagnostic": "لیب / تشخیصی مرکز"
+    },
+    "error": "کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔",
+    "becomeProviderLink": "بجائے اس کے ہیلتھ کیئر پروائیڈر کے طور پر رجسٹر کریں"
   }
 }
