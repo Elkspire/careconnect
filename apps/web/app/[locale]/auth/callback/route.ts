@@ -24,6 +24,19 @@ export async function GET(
     if (!error) {
       return NextResponse.redirect(`${origin}/${locale}${next}`);
     }
+
+    // iOS (Mail/Safari link prefetching) commonly hits this route twice for
+    // the same tap — the first request consumes the one-time code and
+    // creates a real session, the second reuses the now-dead code and lands
+    // here. Bouncing that second request to /login is wrong: the session
+    // from the first request already exists in this same browser. Only
+    // send them to /login if there's genuinely no session either way.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      return NextResponse.redirect(`${origin}/${locale}${next}`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/${locale}/login`);
