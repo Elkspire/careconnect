@@ -73,6 +73,7 @@
   },
   "patient": {
     "dashboardHeading": "میرا اکاؤنٹ",
+    "findDoctor": "ڈاکٹر تلاش کریں",
     "createProfilePrompt": "اپنا اکاؤنٹ مکمل کریں۔",
     "fullNameLabel": "پورا نام",
     "preferredLanguageLabel": "پسندیدہ زبان",

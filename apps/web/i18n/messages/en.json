@@ -73,6 +73,7 @@
   },
   "patient": {
     "dashboardHeading": "My account",
+    "findDoctor": "Find a doctor",
     "createProfilePrompt": "Finish setting up your account.",
     "fullNameLabel": "Full name",
     "preferredLanguageLabel": "Preferred language",
