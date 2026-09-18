@@ -335,23 +335,18 @@ function ShareSection({
             {t("shareIncludeClinicalHistory")}
             <small>{t("shareIncludeClinicalHistoryHint")}</small>
           </span>
-          <input
-            type="checkbox"
-            name="includeClinicalHistory"
-            defaultChecked
-            className="tap-target"
-          />
+          <input type="checkbox" name="includeClinicalHistory" defaultChecked />
         </label>
         <label className="trow items-center">
           <span>{t("shareIncludeLabReports")}</span>
-          <input type="checkbox" name="includeLabReports" defaultChecked className="tap-target" />
+          <input type="checkbox" name="includeLabReports" defaultChecked />
         </label>
         <label className="trow items-center">
           <span>
             {t("shareIncludeOtherRecords")}
             <small>{t("shareIncludeOtherRecordsHint")}</small>
           </span>
-          <input type="checkbox" name="includeOtherRecords" className="tap-target" />
+          <input type="checkbox" name="includeOtherRecords" />
         </label>
         <label>
           <span className="lbl">{t("shareDurationLabel")}</span>

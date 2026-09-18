@@ -221,7 +221,7 @@ export default async function ClinicalNotePage(
             ))}
 
             <label className="rxfoot flex items-start gap-2">
-              <input type="checkbox" required className="tap-target" style={{ marginTop: 3 }} />
+              <input type="checkbox" required style={{ marginTop: 3 }} />
               <span className="text-sm">
                 {allergies.length > 0
                   ? t("reviewedAllergiesLabel")
