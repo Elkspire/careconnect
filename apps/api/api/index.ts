@@ -10,6 +10,8 @@ import { ZodValidationPipe } from 'nestjs-zod';
 // already-compiled JS sidesteps that; see tsconfig.json's "api" exclude.
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 import { AppModule } from '../dist/app.module';
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+import { AllExceptionsFilter } from '../dist/common/filters/all-exceptions.filter';
 
 const server = express();
 let ready: Promise<void> | null = null;
@@ -22,6 +24,7 @@ function bootstrap(): Promise<void> {
         new ExpressAdapter(server),
       );
       app.useGlobalPipes(new ZodValidationPipe());
+      app.useGlobalFilters(new AllExceptionsFilter());
       app.enableCors({
         origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
         credentials: true,

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -9,6 +10,7 @@ async function bootstrap() {
   // against the identical schema, so there is one source of truth per
   // input boundary (see packages/validation).
   app.useGlobalPipes(new ZodValidationPipe());
+  app.useGlobalFilters(new AllExceptionsFilter());
   // Almost all of apps/web's data fetching runs server-side (Server
   // Components/Actions calling this API directly, Node-to-Node — CORS never
   // applies there), which is why this was missing entirely until now. The
