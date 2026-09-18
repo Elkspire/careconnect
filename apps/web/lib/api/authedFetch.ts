@@ -37,5 +37,18 @@ export async function parseJsonOrThrow<T>(res: Response, context: string): Promi
     const body = await res.text();
     throw new Error(`${context} failed: ${res.status} ${body}`);
   }
-  return res.json();
+  // res.json() on a genuinely empty body throws a bare, contextless
+  // "Unexpected end of JSON input" -- confirmed the actual cause of a real
+  // page crash (patient vault page) with no way to tell which of six
+  // parallel API calls it was. Reading as text first means a bad response
+  // says which endpoint and what it actually returned, instead of a native
+  // SyntaxError with a stack trace pointing at JSON.parse itself.
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(
+      `${context}: response was not valid JSON (status ${res.status}, body: ${JSON.stringify(text)})`,
+    );
+  }
 }
