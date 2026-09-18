@@ -37,16 +37,25 @@ export async function parseJsonOrThrow<T>(res: Response, context: string): Promi
     const body = await res.text();
     throw new Error(`${context} failed: ${res.status} ${body}`);
   }
-  // res.json() on a genuinely empty body throws a bare, contextless
-  // "Unexpected end of JSON input" -- confirmed the actual cause of a real
-  // page crash (patient vault page) with no way to tell which of six
-  // parallel API calls it was. Reading as text first means a bad response
-  // says which endpoint and what it actually returned, instead of a native
-  // SyntaxError with a stack trace pointing at JSON.parse itself.
   const text = await res.text();
+  // Confirmed root cause of a real page crash (patient vault page):
+  // Nest sends a genuinely empty body -- not the JSON literal "null" -- for
+  // a handler that returns null or undefined (see MedicalSummaryService.get,
+  // "null, not 404, an unset summary is a normal empty state"). Every
+  // caller of an endpoint with that shape already types its return as
+  // `T | null`, so treating "no body" as `null` matches what they expect
+  // instead of failing to parse it as JSON at all.
+  if (text === "") {
+    return null as T;
+  }
   try {
     return JSON.parse(text) as T;
   } catch {
+    // Reading as text first (rather than res.json()) means a genuinely
+    // malformed response says which endpoint and what it actually returned,
+    // instead of a native SyntaxError with a stack trace pointing at
+    // JSON.parse itself and nothing about which of several parallel calls
+    // it was.
     throw new Error(
       `${context}: response was not valid JSON (status ${res.status}, body: ${JSON.stringify(text)})`,
     );
