@@ -55,7 +55,13 @@ export default function LoginPage() {
           });
     setPending(false);
     if (sendError) {
-      setError(t("error"));
+      // Temporarily showing Supabase's actual message alongside the
+      // friendly one — this call started failing right after switching to
+      // custom SMTP, and the generic string alone gives no way to tell
+      // whether that's a bad host/port/credential, an unverified sender,
+      // or something else entirely. Revert to just t("error") once this is
+      // sorted.
+      setError(`${t("error")} (${sendError.message})`);
       return;
     }
     setStep("otp");
