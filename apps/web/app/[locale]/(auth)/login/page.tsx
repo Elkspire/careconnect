@@ -7,13 +7,19 @@ import { createClient } from "@/lib/supabase/client";
 
 type Method = "phone" | "email";
 
+// Temporarily off: phone OTP delivery has no reliable SMS provider
+// configured, so offering it just leads to a code that never arrives.
+// Flip back to true once that's sorted — nothing else needs to change,
+// the phone flow itself is untouched.
+const PHONE_LOGIN_ENABLED = false;
+
 export default function LoginPage() {
   const t = useTranslations("auth");
   const locale = useLocale();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/post-login";
 
-  const [method, setMethod] = useState<Method>("phone");
+  const [method, setMethod] = useState<Method>(PHONE_LOGIN_ENABLED ? "phone" : "email");
   const [step, setStep] = useState<"input" | "otp">("input");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -86,7 +92,7 @@ export default function LoginPage() {
         <p className="slip-no mono">CC / AUTH-01</p>
         <h1>{t("heading")}</h1>
 
-        {step === "input" && (
+        {step === "input" && PHONE_LOGIN_ENABLED && (
           <div className="mt-4 flex gap-2">
             <button
               type="button"
