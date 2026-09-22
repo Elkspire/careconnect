@@ -25,7 +25,7 @@ export default async function ClinicVerificationPage(
 
   // Every practitioner has their own verification status independent of
   // any one clinic — owner and junior_doctor both qualify (both are
-  // practitioners), receptionist/assistant aren't.
+  // practitioners), receptionist isn't.
   if (!me.practitioner || (staffCtx.role !== "owner" && staffCtx.role !== "junior_doctor")) {
     return (
       <div className="max-w-xl">

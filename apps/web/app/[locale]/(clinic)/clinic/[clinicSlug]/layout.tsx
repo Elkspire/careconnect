@@ -27,9 +27,8 @@ export default async function ClinicLayout(
         ]
       : []),
     // Every owner and junior doctor is a practitioner with their own
-    // verification status — receptionist/assistant aren't practitioners
-    // at all, so the page (and the API underneath it) has nothing to show
-    // them.
+    // verification status — receptionist isn't a practitioner at all, so
+    // the page (and the API underneath it) has nothing to show them.
     ...(!staffCtx || staffCtx.role === "owner" || staffCtx.role === "junior_doctor"
       ? [{ href: `/clinic/${clinicSlug}/verification`, label: t("nav.verification") }]
       : []),

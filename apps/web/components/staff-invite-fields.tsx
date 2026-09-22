@@ -8,7 +8,7 @@ import {
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
 
-const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor", "assistant"];
+const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
 
 /**
  * Role picker + per-permission toggles for the invite form. A toggle can
@@ -68,7 +68,7 @@ export function StaffInviteFields() {
                 <span>{t(`permissions.${key}`)}</span>
                 <button
                   type="button"
-                  className={`tg tap-target${allowed ? " on" : ""}`}
+                  className={`tg${allowed ? " on" : ""}`}
                   aria-pressed={allowed}
                   aria-label={t(`permissions.${key}`)}
                   onClick={() => toggle(key)}

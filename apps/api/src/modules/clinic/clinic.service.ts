@@ -17,7 +17,18 @@ import type {
 } from '@careconnect/validation';
 import type { RecordType } from '@careconnect/shared-types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { and, desc, eq, gte, inArray, isNull, lt, max, sql } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  exists,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  max,
+  sql,
+} from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   appointments,
@@ -71,12 +82,47 @@ export class ClinicService {
   }
 
   /**
+   * If the caller is an active junior doctor, require a patient_assignments
+   * row for this patient/family member — every junior-doctor-reachable
+   * action (notes, histories, vitals, attaching records) is scoped to
+   * explicitly assigned patients, per the product doc's assignment-scoped
+   * design (see 0015_patient_assignments.sql). Owner and receptionist
+   * callers never hit this check. Throws `onUnassigned` when scoped and
+   * not assigned.
+   */
+  private async assertJuniorDoctorAssigned(
+    clinicId: string,
+    callerId: string,
+    patientId: string,
+    familyMemberId: string | undefined | null,
+    onUnassigned: () => Error,
+  ): Promise<void> {
+    if (!(await this.isActiveJuniorDoctor(clinicId, callerId))) {
+      return;
+    }
+    const [assigned] = await this.db
+      .select({ id: patientAssignments.id })
+      .from(patientAssignments)
+      .where(
+        and(
+          eq(patientAssignments.clinicId, clinicId),
+          eq(patientAssignments.juniorDoctorUserId, callerId),
+          eq(patientAssignments.patientId, patientId),
+          familyMemberId
+            ? eq(patientAssignments.familyMemberId, familyMemberId)
+            : isNull(patientAssignments.familyMemberId),
+        ),
+      )
+      .limit(1);
+    if (!assigned) {
+      throw onUnassigned();
+    }
+  }
+
+  /**
    * Shared by every "has this clinic actually treated this patient/family
    * member, and — if the caller is a junior doctor — are they specifically
-   * assigned to this patient" gate. Owner and receptionist callers only
-   * ever hit the first check; a junior_doctor caller additionally needs a
-   * patient_assignments row, per the product doc's assignment-scoped
-   * design (see 0015_patient_assignments.sql).
+   * assigned to this patient" gate.
    */
   private async assertClinicHasTreated(
     clinicId: string,
@@ -108,25 +154,13 @@ export class ClinicService {
       throw notFound();
     }
 
-    if (await this.isActiveJuniorDoctor(clinicId, callerId)) {
-      const [assigned] = await this.db
-        .select({ id: patientAssignments.id })
-        .from(patientAssignments)
-        .where(
-          and(
-            eq(patientAssignments.clinicId, clinicId),
-            eq(patientAssignments.juniorDoctorUserId, callerId),
-            eq(patientAssignments.patientId, patientId),
-            familyMemberId
-              ? eq(patientAssignments.familyMemberId, familyMemberId)
-              : isNull(patientAssignments.familyMemberId),
-          ),
-        )
-        .limit(1);
-      if (!assigned) {
-        throw notFound();
-      }
-    }
+    await this.assertJuniorDoctorAssigned(
+      clinicId,
+      callerId,
+      patientId,
+      familyMemberId,
+      notFound,
+    );
   }
 
   /**
@@ -971,7 +1005,17 @@ export class ClinicService {
     recordedBy: string,
     input: RecordVitalsInput,
   ) {
-    await this.getAppointmentForVitals(clinicId, appointmentId);
+    const appointment = await this.getAppointmentForVitals(
+      clinicId,
+      appointmentId,
+    );
+    await this.assertJuniorDoctorAssigned(
+      clinicId,
+      recordedBy,
+      appointment.patientId,
+      appointment.familyMemberId,
+      () => new NotFoundException('Appointment not found at this clinic'),
+    );
     // Only the fields actually present in this save are written — a
     // partial re-save (e.g. correcting just the pulse) must not clear out
     // measurements taken earlier and already saved for this appointment.
@@ -1000,39 +1044,23 @@ export class ClinicService {
   /**
    * A junior doctor only sees vitals for a patient assigned to them —
    * same gate as everywhere else in this file (see assertClinicHasTreated).
-   * Owner and assistant are never scoped by it.
+   * Owner is never scoped by it.
    */
   async getVitals(clinicId: string, callerId: string, appointmentId: string) {
     const appointment = await this.getAppointmentForVitals(
       clinicId,
       appointmentId,
     );
-    if (await this.isActiveJuniorDoctor(clinicId, callerId)) {
-      const [assigned] = await this.db
-        .select({ id: patientAssignments.id })
-        .from(patientAssignments)
-        .where(
-          and(
-            eq(patientAssignments.clinicId, clinicId),
-            eq(patientAssignments.juniorDoctorUserId, callerId),
-            eq(patientAssignments.patientId, appointment.patientId),
-            appointment.familyMemberId
-              ? eq(
-                  patientAssignments.familyMemberId,
-                  appointment.familyMemberId,
-                )
-              : isNull(patientAssignments.familyMemberId),
-          ),
-        )
-        .limit(1);
-      if (!assigned) {
-        throw new NotFoundException('Appointment not found at this clinic');
-      }
-    }
+    await this.assertJuniorDoctorAssigned(
+      clinicId,
+      callerId,
+      appointment.patientId,
+      appointment.familyMemberId,
+      () => new NotFoundException('Appointment not found at this clinic'),
+    );
     // "Everything is attributed" (journeys.html) — a disputed reading has
-    // a name on it, not just a user id. Assistants don't have a
-    // practitioners row (only owner/junior_doctor require one), hence the
-    // left join and phone fallback, same as listStaff above.
+    // a name on it, not just a user id. Left join + phone fallback, same
+    // pattern as listStaff above.
     const [row] = await this.db
       .select({
         id: vitals.id,
@@ -1154,13 +1182,16 @@ export class ClinicService {
   /**
    * The picker for attachRecord below — recent visits at this clinic, so
    * staff select "the pending order," not a free-text patient name (see
-   * journeys.html, Assistant · Step 02: "matched by the pending echo
+   * journeys.html, "a lab report came in... matched by the pending echo
    * order, not the name... two similar names, confirm before saving").
    * Same 30-day window as getAnalytics, for no reason other than
-   * consistency — a report almost always follows a recent visit.
+   * consistency — a report almost always follows a recent visit. Scoped
+   * to assigned patients for a junior doctor caller, same as everywhere
+   * else (see assertJuniorDoctorAssigned).
    */
-  listAppointmentsForAttach(clinicId: string) {
+  async listAppointmentsForAttach(clinicId: string, callerId: string) {
     const since = sql<Date>`date_trunc('day', now()) - interval '30 days'`;
+    const scoped = await this.isActiveJuniorDoctor(clinicId, callerId);
     return this.db
       .select({
         appointmentId: appointments.id,
@@ -1179,12 +1210,27 @@ export class ClinicService {
           eq(appointments.clinicId, clinicId),
           gte(appointments.scheduledStart, since),
           inArray(appointments.status, ['checked_in', 'completed']),
+          scoped
+            ? exists(
+                this.db
+                  .select({ id: patientAssignments.id })
+                  .from(patientAssignments)
+                  .where(
+                    and(
+                      eq(patientAssignments.clinicId, clinicId),
+                      eq(patientAssignments.juniorDoctorUserId, callerId),
+                      eq(patientAssignments.patientId, appointments.patientId),
+                      sql`${patientAssignments.familyMemberId} is not distinct from ${appointments.familyMemberId}`,
+                    ),
+                  ),
+              )
+            : undefined,
         ),
       )
       .orderBy(desc(appointments.scheduledStart));
   }
 
-  /** Verifies the appointment is this clinic's before handing off to VaultService — the actual attribution/storage logic lives there, shared with nothing else here. */
+  /** Verifies the appointment is this clinic's, then applies the same assignment scoping as everywhere else, before handing off to VaultService — the actual attribution/storage logic lives there, shared with nothing else here. */
   async attachRecord(
     clinicId: string,
     attachedBy: string,
@@ -1193,13 +1239,24 @@ export class ClinicService {
     file: UploadedFile,
   ) {
     const [appointment] = await this.db
-      .select({ clinicId: appointments.clinicId })
+      .select({
+        clinicId: appointments.clinicId,
+        patientId: appointments.patientId,
+        familyMemberId: appointments.familyMemberId,
+      })
       .from(appointments)
       .where(eq(appointments.id, appointmentId))
       .limit(1);
     if (!appointment || appointment.clinicId !== clinicId) {
       throw new NotFoundException('Appointment not found at this clinic');
     }
+    await this.assertJuniorDoctorAssigned(
+      clinicId,
+      attachedBy,
+      appointment.patientId,
+      appointment.familyMemberId,
+      () => new NotFoundException('Appointment not found at this clinic'),
+    );
     return this.vaultService.attachRecord(
       appointmentId,
       attachedBy,

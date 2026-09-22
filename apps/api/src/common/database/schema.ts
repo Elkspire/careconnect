@@ -90,8 +90,12 @@ export const waitlistStatusEnum = pgEnum('waitlist_status', [
   'cancelled',
 ]);
 // See packages/shared-types CLINIC_STAFF_ROLE for the permission summary —
-// keep this list in sync with it, 0010_junior_doctor_role.sql, and
-// 0016_assistant_role_vitals.sql.
+// keep this list in sync with it and 0010_junior_doctor_role.sql. 'assistant'
+// was retired at the application level (folded into junior_doctor) but the
+// Postgres enum type still has that value from 0016_assistant_role.sql —
+// Postgres can't cheaply drop an enum value, and nothing ever assigns it
+// anymore, so it stays here unused rather than forcing a type-recreation
+// migration for zero benefit.
 export const clinicStaffRoleEnum = pgEnum('clinic_staff_role', [
   'owner',
   'receptionist',
@@ -635,13 +639,14 @@ export const patientAssignments = pgTable(
 );
 
 /**
- * The assistant role's actual job (journeys.html's "Assistant" track,
- * step 01): blood pressure/pulse/weight/temperature taken before the
- * doctor's consultation, attributed to whoever recorded them. One row per
- * appointment — 'save vitals' is a single action in the product doc, not
- * an editable log, so this is an upsert target, not an append-only series.
- * All four measurements are individually optional (a busy assistant may
- * not always get all four), but the API requires at least one.
+ * Pre-consult vitals (journeys.html's "Assistant" track, step 01): blood
+ * pressure/pulse/weight/temperature taken before the doctor's consultation,
+ * attributed to whoever recorded them (owner or an assigned junior_doctor).
+ * One row per appointment — 'save vitals' is a single action in the
+ * product doc, not an editable log, so this is an upsert target, not an
+ * append-only series. All four measurements are individually optional (a
+ * busy pre-consult check may not always get all four), but the API
+ * requires at least one.
  */
 export const vitals = pgTable('vitals', {
   id: uuid('id').primaryKey().defaultRandom(),

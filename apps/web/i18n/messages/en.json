@@ -174,15 +174,14 @@
     "guardianPhoneLabel": "Guardian's phone",
     "familyMemberOfLabel": "Family member of {name}",
     "staffHeading": "Staff",
-    "invitePrompt": "Invite a receptionist, assistant, or junior doctor by phone number or email. They must have signed in to CareConnect at least once — a junior doctor also needs a practitioner profile.",
+    "invitePrompt": "Invite a receptionist or junior doctor by phone number or email. They must have signed in to CareConnect at least once — a junior doctor also needs a practitioner profile.",
     "phoneLabel": "Phone number",
     "fullNameLabel": "Full name",
     "roleLabel": "Role",
     "roles": {
       "owner": "Owner",
       "receptionist": "Receptionist",
-      "junior_doctor": "Junior doctor",
-      "assistant": "Assistant"
+      "junior_doctor": "Junior doctor"
     },
     "permissionsHeading": "Pick a role to see exactly what it can reach",
     "permissionsToggleHeading": "Turn off anything they shouldn't be able to do",

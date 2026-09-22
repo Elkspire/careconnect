@@ -101,8 +101,7 @@ export async function inviteStaffAction(
   formData: FormData,
 ): Promise<void> {
   const roleRaw = formData.get("role");
-  const role: AssignableStaffRole =
-    roleRaw === "junior_doctor" || roleRaw === "assistant" ? roleRaw : "receptionist";
+  const role: AssignableStaffRole = roleRaw === "junior_doctor" ? roleRaw : "receptionist";
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   await inviteStaff(clinicId, {

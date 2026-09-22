@@ -66,18 +66,13 @@ export type WaitlistStatus = (typeof WAITLIST_STATUS)[number];
 /**
  * owner: full practice access (staff, fees, schedule, all clinical data).
  * receptionist: calendar/check-in/billing only — no clinical access, ever.
- * junior_doctor: patient histories + clinical notes (co-authored under the
- * owner's practice), but no staff/fee/schedule management. See product doc
- * section 3.5. assistant: records vitals and attaches reports before the
- * consult — never notes, prescriptions, or diagnosis (journeys.html's
- * "Assistant" track).
+ * junior_doctor: patient histories, clinical notes (co-authored under the
+ * owner's practice), and pre-consult vitals/report attachment — but no
+ * staff/fee/schedule management. See product doc section 3.5. All of it is
+ * scoped to patients explicitly assigned to them (see
+ * ROLE_PERMISSION_CEILING and patient_assignments).
  */
-export const CLINIC_STAFF_ROLE = [
-  "owner",
-  "receptionist",
-  "junior_doctor",
-  "assistant",
-] as const;
+export const CLINIC_STAFF_ROLE = ["owner", "receptionist", "junior_doctor"] as const;
 export type ClinicStaffRole = (typeof CLINIC_STAFF_ROLE)[number];
 
 export const CLINIC_STAFF_STATUS = ["invited", "active", "revoked"] as const;
@@ -109,11 +104,10 @@ export type StaffPermissionKey = (typeof STAFF_PERMISSION_KEY)[number];
  * doctor narrow a specific staff member below their role's ceiling —
  * never past it. manageStaff/manageFeesSchedule stay owner-only
  * structurally (their routes never list another role), so they never
- * appear here. junior_doctor gets recordVitals too — read-only in
- * practice, since ClinicController's write route only ever lists
- * owner/assistant regardless of this ceiling — so a doctor sees vitals
- * taken before their consult (journeys.html: "she opens the consultation
- * knowing... today's blood pressure").
+ * appear here. junior_doctor gets recordVitals and attachRecords too —
+ * pre-consult vitals and lab reports for their assigned patients
+ * (journeys.html: "she opens the consultation knowing... today's blood
+ * pressure"), scoped the same way as clinicalNotes/viewRecords.
  */
 export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissionKey[]> = {
   receptionist: ["viewPatientList", "viewTodayQueue", "checkInPatients"],
@@ -123,11 +117,8 @@ export const ROLE_PERMISSION_CEILING: Record<AssignableStaffRole, StaffPermissio
     "viewRecords",
     "clinicalNotes",
     "recordVitals",
+    "attachRecords",
   ],
-  // attachRecords is the assistant's other job (journeys.html, Assistant ·
-  // Step 02 — "a lab report came in"), not given to junior_doctor: they
-  // review records, they don't file the clinic's incoming paperwork.
-  assistant: ["viewTodayQueue", "recordVitals", "attachRecords"],
 };
 
 export const BLOOD_GROUP = [

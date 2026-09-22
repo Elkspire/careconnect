@@ -248,7 +248,7 @@ export class ClinicController {
    * Owner-only, deliberately no @RequireStaffPermission ceiling to narrow
    * it by — visit counts and estimated revenue are practice-level
    * business data, not something any staff permission grants a
-   * receptionist/junior_doctor/assistant access to.
+   * receptionist/junior_doctor access to.
    */
   @Get(':clinicId/analytics')
   @RequireClinicRole('owner')
@@ -258,7 +258,7 @@ export class ClinicController {
 
   /** Default landing screen for the clinic dashboard. */
   @Get(':clinicId/today')
-  @RequireClinicRole('owner', 'receptionist', 'junior_doctor', 'assistant')
+  @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewTodayQueue')
   listToday(@Param('clinicId') clinicId: string) {
     return this.clinicService.listToday(clinicId);
@@ -317,12 +317,13 @@ export class ClinicController {
   }
 
   /**
-   * "Not part of your role: prescription pad" — the write side is
-   * owner/assistant only, structurally excluding junior_doctor the same
-   * way receptionist is excluded from clinical-notes routes.
+   * "Not part of your role: prescription pad" — owner/junior_doctor only,
+   * same way receptionist is excluded from clinical-notes routes. A
+   * junior_doctor caller is further scoped to their assigned patients by
+   * ClinicService.recordVitals.
    */
   @Put(':clinicId/appointments/:appointmentId/vitals')
-  @RequireClinicRole('owner', 'assistant')
+  @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('recordVitals')
   recordVitals(
     @CurrentUser() user: AuthenticatedUser,
@@ -339,7 +340,7 @@ export class ClinicController {
   }
 
   @Get(':clinicId/appointments/:appointmentId/vitals')
-  @RequireClinicRole('owner', 'junior_doctor', 'assistant')
+  @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('recordVitals')
   getVitals(
     @CurrentUser() user: AuthenticatedUser,
@@ -354,19 +355,22 @@ export class ClinicController {
    * search box, so staff match a report to "the pending order."
    */
   @Get(':clinicId/appointments/recent')
-  @RequireClinicRole('owner', 'assistant')
+  @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('attachRecords')
-  listAppointmentsForAttach(@Param('clinicId') clinicId: string) {
-    return this.clinicService.listAppointmentsForAttach(clinicId);
+  listAppointmentsForAttach(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.listAppointmentsForAttach(clinicId, user.id);
   }
 
   /**
-   * "A lab report came in" (journeys.html, Assistant · Step 02) —
-   * appointmentId is the match, there's no patient-name field to
-   * misattach against a same-named patient.
+   * "A lab report came in" (journeys.html) — appointmentId is the match,
+   * there's no patient-name field to misattach against a same-named
+   * patient.
    */
   @Post(':clinicId/records')
-  @RequireClinicRole('owner', 'assistant')
+  @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('attachRecords')
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),

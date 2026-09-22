@@ -21,12 +21,13 @@ export default async function ClinicTodayPage(
   // doc's role matrix) — a junior doctor sees today's queue for context but
   // doesn't run it.
   const canCheckIn = staffCtx.role === "owner" || staffCtx.role === "receptionist";
-  // Vitals are the assistant's actual job (journeys.html's Assistant
-  // track) — recorded after check-in, before the doctor's consultation.
-  const canRecordVitals = staffCtx.role === "owner" || staffCtx.role === "assistant";
+  // Vitals are pre-consult, recorded after check-in and before the
+  // doctor's own consultation — owner or an assigned junior doctor
+  // (journeys.html's "Assistant" track, folded into junior_doctor).
+  const canRecordVitals = staffCtx.role === "owner" || staffCtx.role === "junior_doctor";
   // Same role set today as canRecordVitals, but a distinct permission
   // (attachRecords) — kept as its own check since they could diverge.
-  const canAttachRecords = staffCtx.role === "owner" || staffCtx.role === "assistant";
+  const canAttachRecords = staffCtx.role === "owner" || staffCtx.role === "junior_doctor";
 
   const [appointments, waitlist, attachableAppointments] = await Promise.all([
     listToday(clinicId),
