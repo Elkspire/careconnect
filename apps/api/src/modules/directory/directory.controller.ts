@@ -6,7 +6,10 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { PRACTITIONER_TYPE, type PractitionerType } from '@careconnect/shared-types';
+import {
+  PRACTITIONER_TYPE,
+  type PractitionerType,
+} from '@careconnect/shared-types';
 import { Public } from '../../common/decorators/public.decorator';
 import { DirectorySearchQueryDto } from './directory.dto';
 import {

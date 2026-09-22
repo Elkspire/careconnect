@@ -194,28 +194,36 @@ export class ClinicService {
   }
 
   /**
-   * Staff must already have a Supabase account (found by phone) — this app
-   * has no server-side user-creation flow yet, so a clinic can only invite
-   * someone who has signed in to CareConnect at least once. A real
-   * pending-invite/SMS flow is future work tied to the M7 notifications module.
+   * Staff must already have a Supabase account (found by phone or email) —
+   * this app has no server-side user-creation flow yet, so a clinic can only
+   * invite someone who has signed in to CareConnect at least once. A real
+   * pending-invite flow is future work tied to the M7 notifications module.
    */
   async inviteStaff(
     clinicId: string,
     invitedBy: string,
     input: InviteStaffInput,
   ) {
-    // input.phone is validated E.164 (leading '+'), but Supabase Auth
-    // stores auth.users.phone without it — this lookup was never actually
-    // matching anything until this normalization was added.
-    const normalizedPhone = input.phone.replace(/^\+/, '');
-    const [user] = await this.db
-      .select({ id: authUsers.id })
-      .from(authUsers)
-      .where(eq(authUsers.phone, normalizedPhone))
-      .limit(1);
+    // inviteStaffSchema guarantees at least one of phone/email is present.
+    // input.phone, when given, is validated E.164 (leading '+'), but
+    // Supabase Auth stores auth.users.phone without it. Email lookups use
+    // lowercase since Supabase normalizes emails to lowercase on signup.
+    const [user] = input.phone
+      ? await this.db
+          .select({ id: authUsers.id })
+          .from(authUsers)
+          .where(eq(authUsers.phone, input.phone.replace(/^\+/, '')))
+          .limit(1)
+      : await this.db
+          .select({ id: authUsers.id })
+          .from(authUsers)
+          .where(eq(authUsers.email, input.email!.toLowerCase()))
+          .limit(1);
     if (!user) {
       throw new NotFoundException(
-        'No CareConnect account found for this phone number yet — ask them to sign in to the app first',
+        input.phone
+          ? 'No CareConnect account found for this phone number yet — ask them to sign in to the app first'
+          : 'No CareConnect account found for this email yet — ask them to sign in to the app first',
       );
     }
 
@@ -277,6 +285,7 @@ export class ClinicService {
         revokedPermissions: clinicStaff.revokedPermissions,
         fullName: practitioners.fullName,
         phone: authUsers.phone,
+        email: authUsers.email,
       })
       .from(clinicStaff)
       .leftJoin(practitioners, eq(practitioners.id, clinicStaff.userId))

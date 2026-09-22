@@ -95,7 +95,9 @@ export class SupabaseAuthGuard implements CanActivate {
       // `.cause`, not `.message` — Node's undici wraps it as a generic
       // "fetch failed" otherwise.
       const cause =
-        err instanceof Error && err.cause ? ` (cause: ${String(err.cause)})` : '';
+        err instanceof Error && err.cause
+          ? ` (cause: ${String(err.cause)})`
+          : '';
       this.logger.warn(
         `Token verification failed against SUPABASE_URL=${this.config.get<string>('SUPABASE_URL')}: ${err instanceof Error ? err.message : String(err)}${cause}`,
       );

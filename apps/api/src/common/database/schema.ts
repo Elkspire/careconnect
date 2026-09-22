@@ -32,9 +32,11 @@ import {
 const authSchema = pgSchema('auth');
 export const authUsers = authSchema.table('users', {
   id: uuid('id').primaryKey(),
-  // Used only to look up an existing user by phone when inviting clinic
-  // staff — see ClinicModule. Not a source of truth for anything else.
+  // Used only to look up an existing user by phone/email when inviting
+  // clinic staff — see ClinicModule. Not a source of truth for anything
+  // else.
   phone: text('phone'),
+  email: text('email'),
 });
 
 // ---- enums ----

@@ -67,6 +67,7 @@ export interface ClinicStaffMember {
   revokedPermissions: string[];
   fullName: string | null;
   phone: string | null;
+  email: string | null;
 }
 
 export interface ClinicAppointmentSummary {

@@ -36,14 +36,12 @@ export class PractitionersService {
         .insert(practitioners)
         .values({ id: userId, slug: slugify(input.fullName), ...profile })
         .returning();
-      await tx
-        .insert(practitionerSpecialties)
-        .values(
-          specialtyIds.map((specialtyId) => ({
-            practitionerId: userId,
-            specialtyId,
-          })),
-        );
+      await tx.insert(practitionerSpecialties).values(
+        specialtyIds.map((specialtyId) => ({
+          practitionerId: userId,
+          specialtyId,
+        })),
+      );
       return row;
     });
   }

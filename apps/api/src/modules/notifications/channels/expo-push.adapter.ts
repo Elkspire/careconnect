@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DRIZZLE, type Database } from '../../../common/database/database.module';
+import {
+  DRIZZLE,
+  type Database,
+} from '../../../common/database/database.module';
 import { expoPushTokens } from '../../../common/database/schema';
 import { renderTemplate, type TemplateKey } from '../templates';
 import type {
@@ -81,7 +84,9 @@ export class ExpoPushAdapter implements ChannelAdapter {
         .filter((_, i) => data[i]?.details?.error === 'DeviceNotRegistered')
         .map((t) => t.token);
       for (const token of staleTokens) {
-        await this.db.delete(expoPushTokens).where(eq(expoPushTokens.token, token));
+        await this.db
+          .delete(expoPushTokens)
+          .where(eq(expoPushTokens.token, token));
       }
 
       const anySent = data.some((ticket) => ticket.status === 'ok');

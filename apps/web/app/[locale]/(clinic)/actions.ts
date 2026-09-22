@@ -103,9 +103,12 @@ export async function inviteStaffAction(
   const roleRaw = formData.get("role");
   const role: AssignableStaffRole =
     roleRaw === "junior_doctor" || roleRaw === "assistant" ? roleRaw : "receptionist";
+  const phone = String(formData.get("phone") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
   await inviteStaff(clinicId, {
     clinicId,
-    phone: String(formData.get("phone")),
+    phone: phone || undefined,
+    email: email || undefined,
     fullName: String(formData.get("fullName") ?? ""),
     role,
     deniedPermissions: formData

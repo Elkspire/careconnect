@@ -99,7 +99,9 @@ export class NotificationsController {
   }
 
   @Delete('push/expo-tokens')
-  async unregisterExpoToken(@Body() body: ExpoPushUnregisterDto): Promise<void> {
+  async unregisterExpoToken(
+    @Body() body: ExpoPushUnregisterDto,
+  ): Promise<void> {
     await this.db
       .delete(expoPushTokens)
       .where(eq(expoPushTokens.token, body.token));

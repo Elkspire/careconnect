@@ -65,7 +65,7 @@ export default async function ClinicStaffPage(
           {staff.map((member) => (
             <div key={member.id} className="prow">
               <span>
-                {member.fullName ?? member.phone} —{" "}
+                {member.fullName ?? member.phone ?? member.email} —{" "}
                 {t(`roles.${member.role}` as "roles.owner")} — {member.status}
                 {member.revokedPermissions.length > 0 && (
                   <>
@@ -105,10 +105,13 @@ export default async function ClinicStaffPage(
             <input
               type="tel"
               name="phone"
-              required
               placeholder="+923001234567"
               className="field tap-target"
             />
+          </label>
+          <label>
+            <span className="lbl">{t("emailLabel")}</span>
+            <input type="email" name="email" className="field tap-target" />
           </label>
           <label>
             <span className="lbl">{t("fullNameLabel")}</span>
@@ -160,7 +163,7 @@ export default async function ClinicStaffPage(
               <select name="juniorDoctorUserId" required className="field tap-target">
                 {activeJuniorDoctors.map((doc) => (
                   <option key={doc.userId} value={doc.userId}>
-                    {doc.fullName ?? doc.phone}
+                    {doc.fullName ?? doc.phone ?? doc.email}
                   </option>
                 ))}
               </select>
