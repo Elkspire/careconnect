@@ -10,12 +10,23 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
   const sp = await props.searchParams;
   const city = typeof sp.city === "string" && sp.city ? sp.city : DEFAULT_CITY;
   const q = typeof sp.q === "string" ? sp.q : undefined;
+  const specialtyId = typeof sp.specialtyId === "string" ? sp.specialtyId : undefined;
 
   const t = await getTranslations("directory");
-  const { results, total } = await searchPractitioners({ city, q, page: 1, pageSize: 20 });
+  const { results, total } = await searchPractitioners({
+    city,
+    q,
+    specialtyId,
+    page: 1,
+    pageSize: 20,
+  });
 
   const clinicCount = new Set(results.map((r) => r.clinic.id)).size;
-  const specialtyNames = [...new Set(results.flatMap((r) => r.specialties.map((s) => s.nameEn)))];
+  // Keyed by id, not name — the chips below link by specialtyId (an exact
+  // filter the API applies via practitionerSpecialties), not by name, so a
+  // clicked chip has to carry the same id it was built from.
+  const specialtiesById = new Map(results.flatMap((r) => r.specialties).map((s) => [s.id, s]));
+  const specialtyList = [...specialtiesById.values()];
   const verifiedCount = results.filter((r) => r.verificationStatus === "verified").length;
 
   return (
@@ -62,9 +73,9 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
                   <em>{city}</em>
                 </div>
               )}
-              {specialtyNames.length > 0 && (
+              {specialtyList.length > 0 && (
                 <div className="hero-stat">
-                  <b>{specialtyNames.length}</b>
+                  <b>{specialtyList.length}</b>
                   <em>{t("specialtiesLabel")}</em>
                 </div>
               )}
@@ -92,16 +103,16 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
               </button>
             </div>
 
-            {specialtyNames.length > 0 && (
+            {specialtyList.length > 0 && (
               <div className="mt-1 flex w-full flex-wrap gap-2">
-                {specialtyNames.slice(0, 8).map((name) => (
+                {specialtyList.slice(0, 8).map((s) => (
                   <Link
-                    key={name}
-                    href={{ pathname: "/", query: { city, q: name } }}
+                    key={s.id}
+                    href={{ pathname: "/", query: { city, specialtyId: s.id } }}
                     locale={locale}
-                    className={`chip${q === name ? " on" : ""}`}
+                    className={`chip${specialtyId === s.id ? " on" : ""}`}
                   >
-                    {name}
+                    {s.nameEn}
                   </Link>
                 ))}
               </div>
