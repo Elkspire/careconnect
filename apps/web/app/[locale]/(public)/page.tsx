@@ -100,6 +100,10 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
                 className="field tap-target"
               />
             </label>
+            {/* Not a visible field — carries the active specialty chip
+                through a name/city search submit, which otherwise only
+                posts city+q and would silently drop it. */}
+            {specialty && <input type="hidden" name="specialty" value={specialty} />}
             <div className="rowend" style={{ minWidth: 140 }}>
               <button type="submit" className="btn tap-target">
                 {t("heading")}
@@ -111,7 +115,10 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
                 {specialtyList.slice(0, 8).map((s) => (
                   <Link
                     key={s.id}
-                    href={{ pathname: "/", query: { city, specialty: s.slug } }}
+                    href={{
+                      pathname: "/",
+                      query: q ? { city, q, specialty: s.slug } : { city, specialty: s.slug },
+                    }}
                     locale={locale}
                     className={`chip${specialty === s.slug ? " on" : ""}`}
                   >
