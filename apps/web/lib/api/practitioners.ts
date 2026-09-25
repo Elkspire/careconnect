@@ -26,6 +26,7 @@ export interface Specialty {
   nameEn: string;
   nameUr: string | null;
   practitionerType: PractitionerType;
+  slug: string;
 }
 
 // Public — no auth needed to see what specialties exist.

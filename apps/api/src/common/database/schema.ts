@@ -317,6 +317,11 @@ export const specialties = pgTable('specialties', {
   nameEn: text('name_en').notNull(),
   nameUr: text('name_ur'),
   practitionerType: practitionerTypeEnum('practitioner_type').notNull(),
+  // Human-readable public-directory URL identifier (0022_specialty_slug.sql)
+  // — plain lowercase-dashed name_en, no random suffix like
+  // practitioners/clinics get, since this is a small curated table rather
+  // than user-entered content.
+  slug: text('slug').notNull().unique(),
 });
 
 export const practitionerSpecialties = pgTable(

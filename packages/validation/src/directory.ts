@@ -4,7 +4,10 @@ import { GENDER, PRACTITIONER_TYPE } from "@careconnect/shared-types";
 export const directorySearchQuerySchema = z.object({
   city: z.string().min(1).max(80),
   area: z.string().min(1).max(80).optional(),
-  specialtyId: z.string().uuid().optional(),
+  // The specialty's slug (e.g. "dermatology"), not its id — keeps the
+  // public directory's URL human-readable/shareable. Resolved to an id
+  // server-side in DirectoryService.search.
+  specialty: z.string().max(80).optional(),
   practitionerType: z.enum(PRACTITIONER_TYPE).optional(),
   q: z.string().max(120).optional(),
   minFee: z.coerce.number().nonnegative().optional(),

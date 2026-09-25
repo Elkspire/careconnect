@@ -10,23 +10,26 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
   const sp = await props.searchParams;
   const city = typeof sp.city === "string" && sp.city ? sp.city : DEFAULT_CITY;
   const q = typeof sp.q === "string" ? sp.q : undefined;
-  const specialtyId = typeof sp.specialtyId === "string" ? sp.specialtyId : undefined;
+  const specialty = typeof sp.specialty === "string" ? sp.specialty : undefined;
 
   const t = await getTranslations("directory");
   const { results, total } = await searchPractitioners({
     city,
     q,
-    specialtyId,
+    specialty,
     page: 1,
     pageSize: 20,
   });
 
   const clinicCount = new Set(results.map((r) => r.clinic.id)).size;
-  // Keyed by id, not name — the chips below link by specialtyId (an exact
-  // filter the API applies via practitionerSpecialties), not by name, so a
-  // clicked chip has to carry the same id it was built from.
-  const specialtiesById = new Map(results.flatMap((r) => r.specialties).map((s) => [s.id, s]));
-  const specialtyList = [...specialtiesById.values()];
+  // Keyed by slug, not name — the chips below link by the specialty's slug
+  // (a human-readable exact filter the API applies via
+  // practitionerSpecialties), so a clicked chip has to carry the same slug
+  // it was built from.
+  const specialtiesBySlug = new Map(
+    results.flatMap((r) => r.specialties).map((s) => [s.slug, s]),
+  );
+  const specialtyList = [...specialtiesBySlug.values()];
   const verifiedCount = results.filter((r) => r.verificationStatus === "verified").length;
 
   return (
@@ -108,9 +111,9 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
                 {specialtyList.slice(0, 8).map((s) => (
                   <Link
                     key={s.id}
-                    href={{ pathname: "/", query: { city, specialtyId: s.id } }}
+                    href={{ pathname: "/", query: { city, specialty: s.slug } }}
                     locale={locale}
-                    className={`chip${specialtyId === s.id ? " on" : ""}`}
+                    className={`chip${specialty === s.slug ? " on" : ""}`}
                   >
                     {s.nameEn}
                   </Link>

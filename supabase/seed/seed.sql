@@ -75,10 +75,10 @@ values (
 )
 on conflict (id) do nothing;
 
-insert into public.specialties (id, name_en, name_ur, practitioner_type)
+insert into public.specialties (id, name_en, name_ur, practitioner_type, slug)
 values (
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  'Dermatology', 'جلد کے امراض', 'doctor'
+  'Dermatology', 'جلد کے امراض', 'doctor', 'dermatology'
 )
 on conflict (id) do nothing;
 

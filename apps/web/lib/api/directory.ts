@@ -11,7 +11,7 @@ export interface DirectoryListing {
   languages: string[];
   averageRating: number | null;
   reviewCount: number;
-  specialties: Array<{ id: string; nameEn: string; nameUr: string | null }>;
+  specialties: Array<{ id: string; nameEn: string; nameUr: string | null; slug: string }>;
   clinic: { id: string; slug: string; name: string; city: string; area: string };
   consultationFee: string;
   slotLengthMinutes: number;
@@ -35,7 +35,7 @@ export interface PractitionerProfile {
   languages: string[];
   averageRating: number | null;
   reviewCount: number;
-  specialties: Array<{ id: string; nameEn: string; nameUr: string | null }>;
+  specialties: Array<{ id: string; nameEn: string; nameUr: string | null; slug: string }>;
   clinics: Array<{
     id: string;
     slug: string;

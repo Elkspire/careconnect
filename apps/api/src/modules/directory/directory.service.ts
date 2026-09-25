@@ -22,7 +22,12 @@ export interface DirectoryListing {
   languages: string[];
   averageRating: number | null;
   reviewCount: number;
-  specialties: Array<{ id: string; nameEn: string; nameUr: string | null }>;
+  specialties: Array<{
+    id: string;
+    nameEn: string;
+    nameUr: string | null;
+    slug: string;
+  }>;
   clinic: {
     id: string;
     slug: string;
@@ -52,7 +57,12 @@ export interface PractitionerProfile {
   languages: string[];
   averageRating: number | null;
   reviewCount: number;
-  specialties: Array<{ id: string; nameEn: string; nameUr: string | null }>;
+  specialties: Array<{
+    id: string;
+    nameEn: string;
+    nameUr: string | null;
+    slug: string;
+  }>;
   clinics: Array<{
     id: string;
     slug: string;
@@ -81,6 +91,7 @@ export class DirectoryService {
         nameEn: specialties.nameEn,
         nameUr: specialties.nameUr,
         practitionerType: specialties.practitionerType,
+        slug: specialties.slug,
       })
       .from(specialties)
       .where(
@@ -114,14 +125,18 @@ export class DirectoryService {
     if (query.language) {
       conditions.push(sql`${query.language} = any(${practitioners.languages})`);
     }
-    if (query.specialtyId) {
+    if (query.specialty) {
       conditions.push(
         inArray(
           practitioners.id,
           this.db
             .select({ id: practitionerSpecialties.practitionerId })
             .from(practitionerSpecialties)
-            .where(eq(practitionerSpecialties.specialtyId, query.specialtyId)),
+            .innerJoin(
+              specialties,
+              eq(specialties.id, practitionerSpecialties.specialtyId),
+            )
+            .where(eq(specialties.slug, query.specialty)),
         ),
       );
     }
@@ -181,6 +196,7 @@ export class DirectoryService {
               id: specialties.id,
               nameEn: specialties.nameEn,
               nameUr: specialties.nameUr,
+              slug: specialties.slug,
             })
             .from(practitionerSpecialties)
             .innerJoin(
@@ -200,7 +216,12 @@ export class DirectoryService {
     >();
     for (const row of specialtyRows) {
       const list = specialtiesByPractitioner.get(row.practitionerId) ?? [];
-      list.push({ id: row.id, nameEn: row.nameEn, nameUr: row.nameUr });
+      list.push({
+        id: row.id,
+        nameEn: row.nameEn,
+        nameUr: row.nameUr,
+        slug: row.slug,
+      });
       specialtiesByPractitioner.set(row.practitionerId, list);
     }
 
@@ -262,6 +283,7 @@ export class DirectoryService {
           id: specialties.id,
           nameEn: specialties.nameEn,
           nameUr: specialties.nameUr,
+          slug: specialties.slug,
         })
         .from(practitionerSpecialties)
         .innerJoin(
