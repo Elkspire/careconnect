@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Stethoscope } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Card } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form-field";
+import { Alert } from "@/components/ui/alert";
 
 type Method = "phone" | "email";
 
@@ -92,29 +96,42 @@ export default function LoginPage() {
     window.location.href = `/${locale}${next}`;
   }
 
+  const inputClasses =
+    "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  const primaryButtonClasses =
+    "tap-target rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:opacity-60";
+
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-10">
-      <div className="slip">
-        <p className="slip-no mono">CC / AUTH-01</p>
-        <h1>{t("heading")}</h1>
+      <Card padding="lg">
+        <div className="mb-5 text-center">
+          <Stethoscope aria-hidden className="mx-auto size-9 text-primary-600" />
+        </div>
+        <h1 className="text-center text-xl font-bold text-text">{t("heading")}</h1>
 
         {step === "input" && PHONE_LOGIN_ENABLED && (
           <div className="mt-4 flex gap-2">
             <button
               type="button"
               onClick={() => switchMethod("phone")}
-              className="btn gh sm tap-target"
               aria-pressed={method === "phone"}
-              style={method === "phone" ? { borderColor: "var(--color-stamp)" } : undefined}
+              className={`tap-target rounded-md border px-3 py-1.5 text-sm font-medium transition ${
+                method === "phone"
+                  ? "border-primary-600 bg-primary-50 text-primary-800"
+                  : "border-border text-text-muted hover:border-primary-500"
+              }`}
             >
               {t("methodPhone")}
             </button>
             <button
               type="button"
               onClick={() => switchMethod("email")}
-              className="btn gh sm tap-target"
               aria-pressed={method === "email"}
-              style={method === "email" ? { borderColor: "var(--color-stamp)" } : undefined}
+              className={`tap-target rounded-md border px-3 py-1.5 text-sm font-medium transition ${
+                method === "email"
+                  ? "border-primary-600 bg-primary-50 text-primary-800"
+                  : "border-border text-text-muted hover:border-primary-500"
+              }`}
             >
               {t("methodEmail")}
             </button>
@@ -122,51 +139,44 @@ export default function LoginPage() {
         )}
 
         {error && (
-          <div className="alert mt-4">
-            <div>
-              <b>{error}</b>
-            </div>
+          <div className="mt-4">
+            <Alert tone="danger" title={error} />
           </div>
         )}
 
         {step === "input" ? (
           <form onSubmit={handleSendCode} className="mt-6 flex flex-col gap-4">
             {method === "phone" ? (
-              <label>
-                <span className="lbl">{t("phoneLabel")}</span>
+              <FormField label={t("phoneLabel")}>
                 <input
                   type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t("phonePlaceholder")}
-                  className="field tap-target"
+                  className={inputClasses}
                 />
-              </label>
+              </FormField>
             ) : (
-              <label>
-                <span className="lbl">{t("emailLabel")}</span>
+              <FormField label={t("emailLabel")}>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("emailPlaceholder")}
-                  className="field tap-target"
+                  className={inputClasses}
                 />
-              </label>
+              </FormField>
             )}
-            <button type="submit" disabled={pending} className="btn tap-target">
+            <button type="submit" disabled={pending} className={primaryButtonClasses}>
               {t("sendCode")}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerify} className="mt-6 flex flex-col gap-4">
-            <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
-              {t("sentCodeTo", { identifier })}
-            </p>
-            <label>
-              <span className="lbl">{t("codeLabel")}</span>
+            <p className="text-sm text-text-muted">{t("sentCodeTo", { identifier })}</p>
+            <FormField label={t("codeLabel")}>
               <input
                 type="text"
                 inputMode="numeric"
@@ -174,23 +184,22 @@ export default function LoginPage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder={t("codePlaceholder")}
-                className="field tap-target mono"
+                className={inputClasses}
               />
-            </label>
-            <button type="submit" disabled={pending} className="btn tap-target">
+            </FormField>
+            <button type="submit" disabled={pending} className={primaryButtonClasses}>
               {t("verify")}
             </button>
             <button
               type="button"
               onClick={() => switchMethod(method)}
-              className="mono text-xs"
-              style={{ color: "var(--color-ink-soft)", letterSpacing: "0.08em" }}
+              className="text-xs font-medium text-text-muted hover:text-text"
             >
               {method === "phone" ? t("changeNumber") : t("changeEmail")}
             </button>
           </form>
         )}
-      </div>
+      </Card>
     </main>
   );
 }

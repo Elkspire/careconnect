@@ -1,6 +1,7 @@
+import { Stethoscope, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { RoleCard } from "@/components/ui/role-card";
 
 /**
  * Every new sign-in used to land straight on /patient regardless of who
@@ -17,46 +18,24 @@ export default async function OnboardingPage(
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-10">
-      <div className="slip">
-        <p className="slip-no mono">CC / ONBOARD-01</p>
-        <h1>{t("roleHeading")}</h1>
+      <h1 className="text-center text-xl font-bold text-text">{t("roleHeading")}</h1>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <RoleCard
-            href="/patient"
-            locale={locale as AppLocale}
-            title={t("patientOption")}
-            body={t("patientOptionDesc")}
-          />
-          <RoleCard
-            href="/onboarding/practitioner"
-            locale={locale as AppLocale}
-            title={t("practitionerOption")}
-            body={t("practitionerOptionDesc")}
-          />
-        </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <RoleCard
+          href="/patient"
+          locale={locale as AppLocale}
+          icon={UserRound}
+          title={t("patientOption")}
+          description={t("patientOptionDesc")}
+        />
+        <RoleCard
+          href="/onboarding/practitioner"
+          locale={locale as AppLocale}
+          icon={Stethoscope}
+          title={t("practitionerOption")}
+          description={t("practitionerOptionDesc")}
+        />
       </div>
     </main>
-  );
-}
-
-function RoleCard({
-  href,
-  locale,
-  title,
-  body,
-}: {
-  href: "/patient" | "/onboarding/practitioner";
-  locale: AppLocale;
-  title: string;
-  body: string;
-}) {
-  return (
-    <Link href={href} locale={locale} className="card tap-target">
-      <b className="disp block text-base font-semibold">{title}</b>
-      <p className="mt-1 text-sm" style={{ color: "var(--color-ink-soft)" }}>
-        {body}
-      </p>
-    </Link>
   );
 }

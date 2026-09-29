@@ -1,7 +1,13 @@
+import { CheckCircle2, Clock3, MapPin, Search, Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { searchPractitioners } from "@/lib/api/directory";
 import { StarRating } from "@/components/star-rating";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { StatGrid } from "@/components/ui/stat-tile";
+import { InitialsAvatar } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const DEFAULT_CITY = "Lahore";
 
@@ -33,193 +39,185 @@ export default async function DirectoryPage(props: PageProps<"/[locale]">) {
   const verifiedCount = results.filter((r) => r.verificationStatus === "verified").length;
 
   return (
-    <main className="w-full flex-1">
-      <section className="hero px-4 md:px-10 lg:px-16">
-        <div className="hero-inner">
-          <div className="hero-copy">
-            <div className="kicker-row">
-              <div className="seal">
-                <em>{t("sealLine1")}</em>
-                <em>{t("sealLine2")}</em>
-              </div>
-              <p className="kicker">{t("heading")}</p>
-            </div>
-            <h1 className="disp mt-4 text-[clamp(1.6rem,4.8vw,4rem)] leading-[1.08] font-extrabold tracking-tight text-paper">
-              {/* No whitespace-nowrap: at the clamp's floor size, the Urdu
-                  headline especially can still be wider than a narrow phone
-                  screen (~320-360px) — letting a `block` line wrap onto a
-                  second visual line beats clipping it off-screen. */}
+    <main className="w-full flex-1 bg-bg">
+      <section className="bg-gradient-to-br from-primary-700 to-accent-700 px-4 py-12 text-text-on-primary sm:px-8 md:py-16 lg:px-16">
+        <div className="mx-auto flex max-w-5xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-[clamp(1.8rem,4.8vw,3rem)] font-extrabold leading-tight text-balance">
               <span className="block">{t("heroHeadlineLine1")}</span>
               <span className="block">{t("heroHeadlineLine2")}</span>
             </h1>
-            <p
-              className="mt-5 max-w-xl text-base md:text-lg"
-              style={{ color: "var(--color-cream-dim)" }}
-            >
-              {t("heroSubtitle")}
-            </p>
+            <p className="mt-4 max-w-xl text-base text-primary-100 md:text-lg">{t("heroSubtitle")}</p>
 
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <b>{total}</b>
-                <em>{t("resultCount", { count: total })}</em>
+            <StatGrid>
+              <div className="rounded-md bg-white/10 px-4 py-3">
+                <div className="text-2xl font-extrabold">{total}</div>
+                <div className="text-xs font-medium text-primary-100">
+                  {t("resultCount", { count: total })}
+                </div>
               </div>
               {verifiedCount > 0 && (
-                <div className="hero-stat">
-                  <b>{verifiedCount}</b>
-                  <em>{t("verifiedBadge")}</em>
+                <div className="rounded-md bg-white/10 px-4 py-3">
+                  <div className="text-2xl font-extrabold">{verifiedCount}</div>
+                  <div className="text-xs font-medium text-primary-100">{t("verifiedBadge")}</div>
                 </div>
               )}
               {clinicCount > 0 && (
-                <div className="hero-stat">
-                  <b>{clinicCount}</b>
-                  <em>{city}</em>
+                <div className="rounded-md bg-white/10 px-4 py-3">
+                  <div className="text-2xl font-extrabold">{clinicCount}</div>
+                  <div className="text-xs font-medium text-primary-100">{city}</div>
                 </div>
               )}
               {specialtyList.length > 0 && (
-                <div className="hero-stat">
-                  <b>{specialtyList.length}</b>
-                  <em>{t("specialtiesLabel")}</em>
+                <div className="rounded-md bg-white/10 px-4 py-3">
+                  <div className="text-2xl font-extrabold">{specialtyList.length}</div>
+                  <div className="text-xs font-medium text-primary-100">{t("specialtiesLabel")}</div>
                 </div>
               )}
-            </div>
+            </StatGrid>
           </div>
 
-          <form method="get" className="slip hero-search flex flex-wrap items-end gap-3">
-            <label className="flex-1" style={{ minWidth: 160 }}>
-              <span className="lbl">{t("cityLabel")}</span>
-              <input type="text" name="city" defaultValue={city} className="field tap-target" />
-            </label>
-            <label className="flex-1" style={{ minWidth: 200 }}>
-              <span className="lbl">{t("searchLabel")}</span>
-              <input
-                type="text"
-                name="q"
-                defaultValue={q}
-                placeholder={t("searchPlaceholder")}
-                className="field tap-target"
-              />
-            </label>
-            {/* Not a visible field — carries the active specialty chip
-                through a name/city search submit, which otherwise only
-                posts city+q and would silently drop it. */}
-            {specialty && <input type="hidden" name="specialty" value={specialty} />}
-            <div className="rowend" style={{ minWidth: 140 }}>
-              <button type="submit" className="btn tap-target">
+          <Card padding="lg" className="w-full max-w-md shrink-0">
+            <form method="get" className="flex flex-col gap-4">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  {t("cityLabel")}
+                </span>
+                <div className="relative">
+                  <MapPin aria-hidden className="absolute inset-y-0 start-3 my-auto size-4 text-text-faint" />
+                  <input
+                    type="text"
+                    name="city"
+                    defaultValue={city}
+                    className="tap-target w-full rounded-md border border-border py-2 ps-9 pe-3 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                  />
+                </div>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  {t("searchLabel")}
+                </span>
+                <div className="relative">
+                  <Search aria-hidden className="absolute inset-y-0 start-3 my-auto size-4 text-text-faint" />
+                  <input
+                    type="text"
+                    name="q"
+                    defaultValue={q}
+                    placeholder={t("searchPlaceholder")}
+                    className="tap-target w-full rounded-md border border-border py-2 ps-9 pe-3 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                  />
+                </div>
+              </label>
+              {/* Not a visible field — carries the active specialty chip
+                  through a name/city search submit, which otherwise only
+                  posts city+q and would silently drop it. */}
+              {specialty && <input type="hidden" name="specialty" value={specialty} />}
+              <button
+                type="submit"
+                className="tap-target flex items-center justify-center gap-2 rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+              >
+                <Search aria-hidden className="size-4" />
                 {t("heading")}
               </button>
-            </div>
 
-            {specialtyList.length > 0 && (
-              <div className="mt-1 flex w-full flex-wrap gap-2">
-                {specialtyList.slice(0, 8).map((s) => (
-                  <Link
-                    key={s.id}
-                    href={{
-                      pathname: "/",
-                      query: q ? { city, q, specialty: s.slug } : { city, specialty: s.slug },
-                    }}
-                    locale={locale}
-                    className={`chip${specialty === s.slug ? " on" : ""}`}
-                  >
-                    {s.nameEn}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </form>
+              {specialtyList.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {specialtyList.slice(0, 8).map((s) => (
+                    <Link
+                      key={s.id}
+                      href={{
+                        pathname: "/",
+                        query: q ? { city, q, specialty: s.slug } : { city, specialty: s.slug },
+                      }}
+                      locale={locale}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                        specialty === s.slug
+                          ? "border-primary-600 bg-primary-600 text-white"
+                          : "border-border text-text-muted hover:border-primary-500 hover:text-primary-700"
+                      }`}
+                    >
+                      {s.nameEn}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </form>
+          </Card>
         </div>
       </section>
 
-      <section
-        className="px-4 md:px-10 lg:px-16"
-        style={{ borderTop: "1px solid var(--color-line)" }}
-      >
-        <div className="trust-strip">
-          <div className="trust-item">
-            <span className="trust-mark" style={{ color: "var(--color-mint)" }}>
-              ✓
-            </span>
+      <section className="border-b border-border bg-surface px-4 py-8 sm:px-8 lg:px-16">
+        <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-3">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 aria-hidden className="size-6 shrink-0 text-primary-600" />
             <div>
-              <h3>{t("trust1Title")}</h3>
-              <p>{t("trust1Body")}</p>
+              <h3 className="font-semibold text-text">{t("trust1Title")}</h3>
+              <p className="mt-0.5 text-sm text-text-muted">{t("trust1Body")}</p>
             </div>
           </div>
-          <div className="trust-item">
-            <span className="trust-mark" style={{ color: "var(--color-brass)" }}>
-              ◷
-            </span>
+          <div className="flex items-start gap-3">
+            <Clock3 aria-hidden className="size-6 shrink-0 text-accent-600" />
             <div>
-              <h3>{t("trust2Title")}</h3>
-              <p>{t("trust2Body")}</p>
+              <h3 className="font-semibold text-text">{t("trust2Title")}</h3>
+              <p className="mt-0.5 text-sm text-text-muted">{t("trust2Body")}</p>
             </div>
           </div>
-          <div className="trust-item">
-            <span className="trust-mark" style={{ color: "var(--color-seal)" }}>
-              ⚕
-            </span>
+          <div className="flex items-start gap-3">
+            <Stethoscope aria-hidden className="size-6 shrink-0 text-purple-fg" />
             <div>
-              <h3>{t("trust3Title")}</h3>
-              <p>{t("trust3Body")}</p>
+              <h3 className="font-semibold text-text">{t("trust3Title")}</h3>
+              <p className="mt-0.5 text-sm text-text-muted">{t("trust3Body")}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="w-full px-4 py-10 md:px-10 lg:px-16" style={{ borderTop: "1px solid var(--color-line)" }}>
-        <div className="results-heading">
-          <h2 className="disp text-xl font-bold text-paper md:text-2xl">
-            {t("resultsHeading")}
-          </h2>
-          <p className="mono text-xs" style={{ color: "var(--color-cream-dim)" }}>
-            {t("resultCount", { count: total })}
-          </p>
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-8 lg:px-16">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-xl font-bold text-text md:text-2xl">{t("resultsHeading")}</h2>
+          <p className="text-sm text-text-muted">{t("resultCount", { count: total })}</p>
         </div>
 
         {results.length === 0 ? (
-          <p className="mt-8" style={{ color: "var(--color-cream-dim)" }}>
-            {t("empty")}
-          </p>
+          <EmptyState icon={Search} title={t("empty")} />
         ) : (
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {results.map((listing) => (
               <li key={`${listing.practitionerId}-${listing.clinic.id}`}>
-                <Link
-                  href={`/practitioners/${listing.practitionerSlug}`}
-                  locale={locale}
-                  className="block h-full"
-                >
-                  <div className="dcard h-full">
-                    <div className="av">
-                      {listing.fullName
-                        .split(" ")
-                        .map((p) => p[0])
-                        .slice(0, 2)
-                        .join("")}
+                <Link href={`/practitioners/${listing.practitionerSlug}`} locale={locale} className="block h-full">
+                  <Card interactive className="flex h-full flex-col gap-3">
+                    <div className="flex items-start gap-3">
+                      <InitialsAvatar name={listing.fullName} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold text-text">{listing.fullName}</p>
+                        <p className="truncate text-sm font-medium text-primary-700">
+                          {listing.specialties.map((s) => s.nameEn).join(", ")}
+                        </p>
+                        <p className="truncate text-xs text-text-muted">
+                          {listing.clinic.name} — {listing.clinic.area}, {listing.clinic.city}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <b>{listing.fullName}</b>
-                      <small>{listing.specialties.map((s) => s.nameEn).join(", ")}</small>
-                      <small>
-                        {listing.clinic.name} — {listing.clinic.area}, {listing.clinic.city}
-                      </small>
+
+                    <div className="flex flex-wrap items-center gap-2">
                       {listing.verificationStatus === "verified" && (
-                        <span className="vtick">{t("verifiedBadge")}</span>
+                        <Badge tone="green" icon={CheckCircle2}>
+                          {t("verifiedBadge")}
+                        </Badge>
                       )}
                       {listing.averageRating !== null && (
-                        <span className="mt-1 flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-xs text-text-muted">
                           <StarRating rating={listing.averageRating} />
-                          <span className="mono text-xs" style={{ color: "#8a9a92" }}>
-                            {listing.averageRating.toFixed(1)} ({listing.reviewCount})
-                          </span>
+                          {listing.averageRating.toFixed(1)} ({listing.reviewCount})
                         </span>
                       )}
                     </div>
-                    <div className="fee mono">
-                      {listing.consultationFee}
-                      <em>{t("feeLabel")}</em>
+
+                    <div className="mt-auto flex items-baseline justify-end gap-1 border-t border-border pt-3">
+                      <span className="font-bold text-text">{listing.consultationFee}</span>
+                      <span className="text-xs text-text-muted">{t("feeLabel")}</span>
                     </div>
-                  </div>
+                  </Card>
                 </Link>
               </li>
             ))}

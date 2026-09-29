@@ -1,10 +1,17 @@
 import { PRACTITIONER_TYPE } from "@careconnect/shared-types";
+import { Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { listSpecialties } from "@/lib/api/practitioners";
 import { getMe } from "@/lib/api/me";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { FormField } from "@/components/ui/form-field";
 import { registerPractitionerAction } from "../actions";
 
 const GENDERS = ["male", "female", "other"] as const;
+
+const inputClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
 export default async function PractitionerOnboardingPage(
   props: PageProps<"/[locale]/onboarding/practitioner">,
@@ -25,151 +32,109 @@ export default async function PractitionerOnboardingPage(
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-10">
-      <div className="slip">
-        <p className="slip-no mono">CC / ONBOARD-02</p>
-        <h1>{t("practitionerHeading")}</h1>
+      <Card padding="lg">
+        <PageHeader icon={Stethoscope} title={t("practitionerHeading")} />
 
-        <form action={action} className="mt-6 flex flex-col gap-4">
+        <form action={action} className="flex flex-col gap-4">
           {!alreadyRegistered && (
             <>
-              <label>
-                <span className="lbl">{t("fullNameLabel")}</span>
-                <input
-                  type="text"
-                  name="fullName"
-                  required
-                  className="field tap-target"
-                />
-              </label>
+              <FormField label={t("fullNameLabel")}>
+                <input type="text" name="fullName" required className={inputClasses} />
+              </FormField>
 
-              <label>
-                <span className="lbl">{t("genderLabel")}</span>
-                <select name="gender" required className="field tap-target">
+              <FormField label={t("genderLabel")}>
+                <select name="gender" required className={inputClasses}>
                   {GENDERS.map((g) => (
                     <option key={g} value={g}>
                       {t(`genders.${g}`)}
                     </option>
                   ))}
                 </select>
-              </label>
+              </FormField>
 
-              <label>
-                <span className="lbl">{t("practitionerTypeLabel")}</span>
-                <select
-                  name="practitionerType"
-                  required
-                  className="field tap-target"
-                >
+              <FormField label={t("practitionerTypeLabel")}>
+                <select name="practitionerType" required className={inputClasses}>
                   {PRACTITIONER_TYPE.map((type) => (
                     <option key={type} value={type}>
                       {t(`practitionerTypes.${type}`)}
                     </option>
                   ))}
                 </select>
-              </label>
+              </FormField>
 
-              <label>
-                <span className="lbl">{t("councilRegistrationNoLabel")}</span>
-                <input
-                  type="text"
-                  name="councilRegistrationNo"
-                  required
-                  className="field tap-target"
-                />
-              </label>
+              <FormField label={t("councilRegistrationNoLabel")}>
+                <input type="text" name="councilRegistrationNo" required className={inputClasses} />
+              </FormField>
 
-              <label>
-                <span className="lbl">{t("bioLabel")}</span>
-                <textarea name="bio" rows={3} className="field" />
-              </label>
+              <FormField label={t("bioLabel")}>
+                <textarea name="bio" rows={3} className={inputClasses} />
+              </FormField>
 
-              <label>
-                <span className="lbl">{t("languagesLabel")}</span>
+              <FormField label={t("languagesLabel")}>
                 <input
                   type="text"
                   name="languages"
                   required
                   placeholder={t("languagesPlaceholder")}
-                  className="field tap-target"
+                  className={inputClasses}
                 />
-              </label>
+              </FormField>
 
-              <div>
-                <span className="lbl">{t("specialtiesLabel")}</span>
-                <p className="text-xs" style={{ color: "var(--color-ink-soft)" }}>
-                  {t("specialtiesHint")}
-                </p>
+              <FormField label={t("specialtiesLabel")} hint={t("specialtiesHint")}>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {specialties.map((s) => (
-                    <label key={s.id} className="chip flex items-center gap-2">
-                      <input type="checkbox" name="specialtyIds" value={s.id} />
+                    <label
+                      key={s.id}
+                      className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm text-text transition has-checked:border-primary-600 has-checked:bg-primary-50 has-checked:text-primary-800"
+                    >
+                      <input type="checkbox" name="specialtyIds" value={s.id} className="accent-primary-600" />
                       {s.nameEn}
                     </label>
                   ))}
                 </div>
-              </div>
+              </FormField>
 
-              <div className="rule" />
+              <div className="border-t border-border" />
             </>
           )}
 
-          <h2 className="lbl">{t("clinicSectionHeading")}</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+            {t("clinicSectionHeading")}
+          </h2>
 
-          <label>
-            <span className="lbl">{t("clinicNameLabel")}</span>
-            <input
-              type="text"
-              name="clinicName"
-              required
-              className="field tap-target"
-            />
-          </label>
+          <FormField label={t("clinicNameLabel")}>
+            <input type="text" name="clinicName" required className={inputClasses} />
+          </FormField>
 
-          <label>
-            <span className="lbl">{t("clinicCityLabel")}</span>
-            <input
-              type="text"
-              name="clinicCity"
-              required
-              className="field tap-target"
-            />
-          </label>
+          <FormField label={t("clinicCityLabel")}>
+            <input type="text" name="clinicCity" required className={inputClasses} />
+          </FormField>
 
-          <label>
-            <span className="lbl">{t("clinicAreaLabel")}</span>
-            <input
-              type="text"
-              name="clinicArea"
-              required
-              className="field tap-target"
-            />
-          </label>
+          <FormField label={t("clinicAreaLabel")}>
+            <input type="text" name="clinicArea" required className={inputClasses} />
+          </FormField>
 
-          <label>
-            <span className="lbl">{t("clinicAddressLabel")}</span>
-            <input
-              type="text"
-              name="clinicAddress"
-              required
-              className="field tap-target"
-            />
-          </label>
+          <FormField label={t("clinicAddressLabel")}>
+            <input type="text" name="clinicAddress" required className={inputClasses} />
+          </FormField>
 
-          <label>
-            <span className="lbl">{t("clinicPhoneLabel")}</span>
+          <FormField label={t("clinicPhoneLabel")}>
             <input
               type="tel"
               name="clinicPhone"
               placeholder="+923001234567"
-              className="field tap-target"
+              className={inputClasses}
             />
-          </label>
+          </FormField>
 
-          <button type="submit" className="btn tap-target">
+          <button
+            type="submit"
+            className="tap-target rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+          >
             {t("submit")}
           </button>
         </form>
-      </div>
+      </Card>
     </main>
   );
 }
