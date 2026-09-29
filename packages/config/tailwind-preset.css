@@ -39,9 +39,64 @@
   --radius-doc: 3px;
 }
 
+/* ==========================================================================
+   New design system (2026 visual revamp) — added alongside the legacy
+   block above, not replacing it, while the app migrates page by page (see
+   the "design/visual-revamp" branch plan). A clean teal/blue clinical-SaaS
+   palette, restrained relative to a typical marketing teal for better
+   contrast and a more trustworthy register. Once every page has migrated
+   off the legacy classes/tokens above, that whole block — and this
+   comment — gets deleted in one cleanup commit.
+   ========================================================================== */
+@theme {
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-accent-100: #e0f2fe;
+  --color-accent-600: #0369a1;
+  --color-accent-700: #075985;
+
+  --color-success-bg: #dcfce7;
+  --color-success-fg: #15803d;
+  --color-warning-bg: #ffedd5;
+  --color-warning-fg: #c2410c;
+  --color-danger-bg: #fee2e2;
+  --color-danger-fg: #b91c1c;
+  --color-info-bg: #e0f2fe;
+  --color-info-fg: #0369a1;
+  --color-purple-bg: #f3e8ff;
+  --color-purple-fg: #7c3aed;
+  --color-neutral-bg: #f1f5f9;
+  --color-neutral-fg: #475569;
+
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-faint: #94a3b8;
+  --color-text-on-primary: #ffffff;
+
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+}
+
 /* Low-literacy design principle: icon-led nav and large tap targets are
    component defaults, not per-page discretion. 44px is the WCAG 2.5.5
-   AA minimum target size. */
+   AA minimum target size. Unchanged by the visual revamp — applies to
+   both the legacy and new design systems identically. */
 @utility tap-target {
   min-height: 44px;
   min-width: 44px;

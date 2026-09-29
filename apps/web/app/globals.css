@@ -1107,3 +1107,25 @@ a.card:hover {
 .dash-main h1 {
   color: var(--color-ink);
 }
+
+/* ==========================================================================
+   New design system (2026 visual revamp) — added alongside the legacy
+   system above, not replacing it, while the app migrates page by page
+   (see the "design/visual-revamp" branch plan). New components under
+   apps/web/components/ui/ compose Tailwind utility classes directly in
+   JSX rather than adding more global classes here — this section only
+   holds the handful of constructs (keyframes) that utilities can't
+   express on their own. Deleted, along with the legacy section above,
+   once every page has migrated.
+   ========================================================================== */
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

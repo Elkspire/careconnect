@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Bricolage_Grotesque, Newsreader, IBM_Plex_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Newsreader, IBM_Plex_Mono, Inter } from "next/font/google";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/site-header";
 import { ToastProvider } from "@/components/toast-provider";
@@ -23,6 +23,15 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+});
+// New design system's body/UI font (see tailwind-preset.css's new @theme
+// block) — loaded alongside the 3 legacy fonts above while the app
+// migrates page by page; the legacy loaders are removed once every page
+// is off the old design system.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export function generateStaticParams() {
@@ -46,7 +55,7 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
     <html
       lang={locale}
       dir={dir}
-      className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>

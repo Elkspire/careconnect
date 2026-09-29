@@ -16,7 +16,10 @@ export function LogoutButton() {
   }
 
   return (
-    <button onClick={handleLogout} className="navlink tap-target">
+    <button
+      onClick={handleLogout}
+      className="tap-target flex items-center rounded-md px-3 py-2 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
+    >
       {t("logout")}
     </button>
   );

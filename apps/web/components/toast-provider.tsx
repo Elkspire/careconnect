@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
 
 interface Toast {
   id: number;
@@ -66,11 +67,14 @@ export function ToastProvider() {
         <button
           key={toast.id}
           type="button"
-          className="notif toast-btn text-start"
+          className="flex items-start gap-3 rounded-lg border border-border bg-surface p-4 text-start shadow-lg [animation:toast-in_0.25s_ease]"
           onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
         >
-          <b>{toast.title}</b>
-          {toast.body && <p>{toast.body}</p>}
+          <Bell aria-hidden className="mt-0.5 size-5 shrink-0 text-primary-600" />
+          <span>
+            <b className="block text-sm font-semibold text-text">{toast.title}</b>
+            {toast.body && <p className="mt-0.5 text-sm text-text-muted">{toast.body}</p>}
+          </span>
         </button>
       ))}
     </div>

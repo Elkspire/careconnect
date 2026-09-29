@@ -1,3 +1,4 @@
+import { Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -11,19 +12,24 @@ export async function SiteHeader({ locale }: { locale: AppLocale }) {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="mast">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" locale={locale} className="flex items-center gap-3">
-          <span className="wordmark">
-            Care<span>Connect</span>
+        <Link href="/" locale={locale} className="flex items-center gap-2 font-bold text-primary-700">
+          <Stethoscope aria-hidden className="size-6" />
+          <span>
+            Care<span className="text-text">Connect</span>
           </span>
         </Link>
-        <div className="hidden sm:block kicker">{t("kicker")}</div>
-        <div className="flex items-center gap-1">
+        <div className="hidden text-sm text-text-muted sm:block">{t("kicker")}</div>
+        <div className="flex items-center gap-2">
           <Link
             href={user ? "/post-login" : "/login"}
             locale={locale}
-            className="navlink tap-target flex items-center"
+            className={
+              user
+                ? "tap-target flex items-center rounded-md px-3 py-2 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
+                : "tap-target flex items-center rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+            }
           >
             {user ? t("myAccount") : t("login")}
           </Link>

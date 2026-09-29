@@ -1,0 +1,62 @@
+"use client";
+
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link, usePathname } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
+
+/**
+ * Replaces .dash-shell/.dash-sidebar/.dash-navlink — the sidebar portal
+ * shell used by the patient and clinic dashboards. Unlike the legacy
+ * version, SidebarLink actually highlights the active route (the legacy
+ * .dash-navlink.on class exists in CSS but neither portal layout ever
+ * applied it).
+ */
+export function Sidebar({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-6 md:flex-row md:items-start">{children}</div>
+  );
+}
+
+export function SidebarNav({ children }: { children: ReactNode }) {
+  return (
+    <nav className="flex shrink-0 gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-2 md:w-56 md:flex-col md:overflow-visible">
+      {children}
+    </nav>
+  );
+}
+
+export function SidebarLink({
+  href,
+  icon: Icon,
+  label,
+  locale,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  locale: AppLocale;
+}) {
+  const pathname = usePathname();
+  const active = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      locale={locale}
+      aria-current={active ? "page" : undefined}
+      className={`flex shrink-0 items-center gap-3 rounded-md border-s-2 px-3 py-2.5 text-sm font-medium transition ${
+        active
+          ? "border-s-primary-600 bg-primary-50 text-primary-800"
+          : "border-s-transparent text-text-muted hover:bg-surface-muted hover:text-text"
+      }`}
+    >
+      <Icon aria-hidden className="size-4.5 shrink-0" />
+      <span className="whitespace-nowrap">{label}</span>
+    </Link>
+  );
+}
+
+export function SidebarMain({ children }: { children: ReactNode }) {
+  return <div className="min-w-0 flex-1">{children}</div>;
+}
