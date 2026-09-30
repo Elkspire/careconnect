@@ -6,7 +6,11 @@ import { LogoutButton } from "@/components/logout-button";
 import type { AppLocale } from "@/i18n/routing";
 
 export async function SiteHeader({ locale }: { locale: AppLocale }) {
-  const [t, supabase] = await Promise.all([getTranslations("site"), createClient()]);
+  const [t, tPatient, supabase] = await Promise.all([
+    getTranslations("site"),
+    getTranslations("patient"),
+    createClient(),
+  ]);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -20,7 +24,14 @@ export async function SiteHeader({ locale }: { locale: AppLocale }) {
             Care<span className="text-text">Connect</span>
           </span>
         </Link>
-        <div className="hidden text-sm text-text-muted sm:block">{t("kicker")}</div>
+        <Link
+          href="/directory"
+          locale={locale}
+          className="tap-target hidden items-center rounded-md px-3 py-2 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text sm:flex"
+        >
+          {tPatient("findDoctor")}
+        </Link>
+        <div className="hidden text-sm text-text-muted md:block">{t("kicker")}</div>
         <div className="flex items-center gap-2">
           <Link
             href={user ? "/post-login" : "/login"}

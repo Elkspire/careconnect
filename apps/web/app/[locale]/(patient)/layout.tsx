@@ -7,7 +7,13 @@ export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
   const t = await getTranslations("patient");
 
   const navItems: Array<{
-    href: "/patient" | "/" | "/patient/appointments" | "/patient/family" | "/patient/vault" | "/patient/notifications";
+    href:
+      | "/patient"
+      | "/directory"
+      | "/patient/appointments"
+      | "/patient/family"
+      | "/patient/vault"
+      | "/patient/notifications";
     label: string;
   }> = [
     { href: "/patient", label: t("dashboardHeading") },
@@ -15,7 +21,7 @@ export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
     // doctor, then a clinic) — "Appointments" below only ever showed
     // *existing* bookings, with nothing in the patient area pointing back
     // at the directory to start a new one.
-    { href: "/", label: t("findDoctor") },
+    { href: "/directory", label: t("findDoctor") },
     { href: "/patient/appointments", label: t("appointmentsHeading") },
     { href: "/patient/family", label: t("familyMembersHeading") },
     { href: "/patient/vault", label: t("vaultHeading") },

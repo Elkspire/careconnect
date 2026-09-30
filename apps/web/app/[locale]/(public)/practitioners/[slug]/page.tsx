@@ -36,7 +36,7 @@ export default async function PractitionerProfilePage(
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
       <Link
-        href="/"
+        href="/directory"
         locale={locale}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800"
       >
