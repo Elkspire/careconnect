@@ -1,3 +1,4 @@
+import { ChevronDown, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { listPendingPractitioners, listPractitionerDocuments } from "@/lib/api/admin";
@@ -7,6 +8,12 @@ import {
   verifyPractitionerAction,
   viewVerificationDocumentAction,
 } from "../actions";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ListRow } from "@/components/ui/list-row";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
 
 export default async function AdminPractitionersPage(
   props: PageProps<"/[locale]/admin/practitioners">,
@@ -21,11 +28,7 @@ export default async function AdminPractitionersPage(
   if (practitioners === null) {
     return (
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </main>
     );
   }
@@ -40,107 +43,111 @@ export default async function AdminPractitionersPage(
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <nav className="mt-2 flex gap-4 text-sm">
-        <span style={{ color: "var(--color-verified)" }}>{t("navPractitioners")}</span>
-        <Link href="/admin/reviews" locale={locale} style={{ color: "var(--color-ink-soft)" }}>
+      <nav className="mb-4 flex gap-2">
+        <span className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white">
+          {t("navPractitioners")}
+        </span>
+        <Link
+          href="/admin/reviews"
+          locale={locale}
+          className="rounded-md px-3 py-1.5 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
+        >
           {t("navReviews")}
         </Link>
       </nav>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
-      <p className="mt-2 text-sm" style={{ color: "var(--color-ink-soft)" }}>
-        {t("scopeNote")}
-      </p>
+      <PageHeader
+        icon={ShieldCheck}
+        kicker="CareConnect"
+        title={t("heading")}
+        description={t("scopeNote")}
+      />
 
       {practitioners.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
-          {t("empty")}
-        </p>
+        <EmptyState icon={ShieldCheck} title={t("empty")} />
       ) : (
-        <ul className="mt-6 flex flex-col gap-4">
+        <ul className="flex flex-col gap-4">
           {practitioners.map((p) => (
-            <li key={p.id} className="chart">
-              <div className="cn">
-                <b>{p.fullName}</b>
-                <small>
+            <li key={p.id}>
+              <Card padding="lg">
+                <b className="font-semibold text-text">{p.fullName}</b>
+                <p className="text-sm text-text-muted">
                   {p.practitionerType} · {t("joinedLabel")} {formatClinicDate(p.createdAt, locale)}
-                </small>
-              </div>
-              <div className="pgrid">
-                <div className="prow">
-                  <span>{t("registrationNoLabel")}</span>
-                  <em>{p.councilRegistrationNo}</em>
-                </div>
-                <div className="prow">
-                  <span>{t("phoneLabel")}</span>
-                  <em>{p.phone ?? "—"}</em>
-                </div>
-                <div className="prow">
-                  <span>{t("statusLabel")}</span>
-                  <em>{p.verificationStatus}</em>
-                </div>
-              </div>
-              {p.verificationNote && (
-                <p className="mt-2 text-sm" style={{ color: "var(--color-seal)" }}>
-                  {t("lastNoteLabel")}: {p.verificationNote}
                 </p>
-              )}
-
-              <div className="mt-3">
-                <span className="lbl">{t("documentsLabel")}</span>
-                {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
-                  <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
-                    {t("noDocuments")}
+                <div className="mt-3 rounded-md border border-border">
+                  <ListRow title={t("registrationNoLabel")} meta={p.councilRegistrationNo} />
+                  <ListRow title={t("phoneLabel")} meta={p.phone ?? "—"} />
+                  <ListRow title={t("statusLabel")} meta={<Badge tone="orange">{p.verificationStatus}</Badge>} />
+                </div>
+                {p.verificationNote && (
+                  <p className="mt-2 text-sm text-danger-fg">
+                    {t("lastNoteLabel")}: {p.verificationNote}
                   </p>
-                ) : (
-                  <ul className="mt-1 flex flex-col gap-1">
-                    {documentsByPractitioner.get(p.id)!.map((doc) => (
-                      <li key={doc.id}>
-                        <form action={viewVerificationDocumentAction} className="inline">
-                          <input type="hidden" name="documentId" value={doc.id} />
-                          <button
-                            type="submit"
-                            className="mono text-xs tap-target"
-                            style={{ color: "var(--color-verified)" }}
-                          >
-                            {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
-                            {doc.fileName}
-                          </button>
-                        </form>
-                      </li>
-                    ))}
-                  </ul>
                 )}
-              </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <form action={verify}>
-                  <input type="hidden" name="practitionerId" value={p.id} />
-                  <button type="submit" className="btn sm tap-target">
-                    {t("verify")}
-                  </button>
-                </form>
-                <details>
-                  <summary
-                    className="mono text-xs tap-target"
-                    style={{ color: "var(--color-seal)" }}
-                  >
-                    {t("reject")}
-                  </summary>
-                  <form action={reject} className="mt-2 flex flex-wrap items-end gap-2">
+                <div className="mt-3">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                    {t("documentsLabel")}
+                  </span>
+                  {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
+                    <p className="text-sm text-text-muted">{t("noDocuments")}</p>
+                  ) : (
+                    <ul className="mt-1 flex flex-col gap-1">
+                      {documentsByPractitioner.get(p.id)!.map((doc) => (
+                        <li key={doc.id}>
+                          <form action={viewVerificationDocumentAction} className="inline">
+                            <input type="hidden" name="documentId" value={doc.id} />
+                            <button
+                              type="submit"
+                              className="tap-target text-xs font-medium text-primary-700 hover:text-primary-800"
+                            >
+                              {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
+                              {doc.fileName}
+                            </button>
+                          </form>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <form action={verify}>
                     <input type="hidden" name="practitionerId" value={p.id} />
-                    <label>
-                      <span className="lbl">{t("rejectReasonLabel")}</span>
-                      <input type="text" name="reason" required className="field tap-target" />
-                    </label>
-                    <button type="submit" className="btn gh sm tap-target">
-                      {t("confirmReject")}
+                    <button
+                      type="submit"
+                      className="tap-target rounded-md bg-primary-700 px-3 py-1.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+                    >
+                      {t("verify")}
                     </button>
                   </form>
-                </details>
-              </div>
+                  <details className="group">
+                    <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-danger-fg">
+                      {t("reject")}
+                      <ChevronDown aria-hidden className="size-3.5 transition group-open:rotate-180" />
+                    </summary>
+                    <form action={reject} className="mt-2 flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="practitionerId" value={p.id} />
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                          {t("rejectReasonLabel")}
+                        </span>
+                        <input
+                          type="text"
+                          name="reason"
+                          required
+                          className="tap-target rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
+                      >
+                        {t("confirmReject")}
+                      </button>
+                    </form>
+                  </details>
+                </div>
+              </Card>
             </li>
           ))}
         </ul>

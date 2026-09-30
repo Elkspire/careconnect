@@ -1,3 +1,4 @@
+import { ChevronDown, Star } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getPractitionerReviews } from "@/lib/api/reviews";
@@ -5,6 +6,10 @@ import { getMe, resolveClinicStaffBySlug } from "@/lib/api/me";
 import { StarRating } from "@/components/star-rating";
 import { formatClinicDate } from "@/lib/format-time";
 import { reportReviewAction } from "../../../actions";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
 
 export default async function ClinicReviewsPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/reviews">,
@@ -26,11 +31,7 @@ export default async function ClinicReviewsPage(
   if (staffCtx.role !== "owner" || !me.practitioner) {
     return (
       <div className="max-w-xl">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </div>
     );
   }
@@ -40,48 +41,57 @@ export default async function ClinicReviewsPage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("reviewsHeading")}</h1>
-      <p style={{ color: "var(--color-ink-soft)" }}>{t("reviewsPrompt")}</p>
+      <PageHeader
+        icon={Star}
+        kicker="CareConnect"
+        title={t("reviewsHeading")}
+        description={t("reviewsPrompt")}
+      />
 
       {reviews.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
-          {t("noReviewsYet")}
-        </p>
+        <EmptyState icon={Star} title={t("noReviewsYet")} />
       ) : (
-        <div className="card mt-6">
-          {reviews.map((review) => (
-            <div key={review.id} className="review">
-              <div className="flex items-center justify-between gap-3">
-                <StarRating rating={review.rating} />
-                <span className="mono text-xs" style={{ color: "var(--color-ink-soft)" }}>
-                  {formatClinicDate(review.createdAt, locale)}
-                </span>
+        <Card>
+          <div className="flex flex-col divide-y divide-border">
+            {reviews.map((review) => (
+              <div key={review.id} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-center justify-between gap-3">
+                  <StarRating rating={review.rating} />
+                  <span className="text-xs text-text-muted">
+                    {formatClinicDate(review.createdAt, locale)}
+                  </span>
+                </div>
+                {review.comment && <p className="mt-1 text-sm text-text">{review.comment}</p>}
+                <details className="group mt-2">
+                  <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-text-muted">
+                    {t("reportReview")}
+                    <ChevronDown aria-hidden className="size-3.5 transition group-open:rotate-180" />
+                  </summary>
+                  <form action={report} className="mt-2 flex flex-col gap-2">
+                    <input type="hidden" name="reviewId" value={review.id} />
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                        {t("reportReasonLabel")}
+                      </span>
+                      <textarea
+                        name="reason"
+                        required
+                        rows={2}
+                        className="w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      className="tap-target self-start rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
+                    >
+                      {t("submitReport")}
+                    </button>
+                  </form>
+                </details>
               </div>
-              {review.comment && <p>{review.comment}</p>}
-              <details className="mt-2">
-                <summary
-                  className="mono tap-target text-xs"
-                  style={{ color: "var(--color-ink-soft)", cursor: "pointer" }}
-                >
-                  {t("reportReview")}
-                </summary>
-                <form action={report} className="mt-2 flex flex-col gap-2">
-                  <input type="hidden" name="reviewId" value={review.id} />
-                  <label>
-                    <span className="lbl">{t("reportReasonLabel")}</span>
-                    <textarea name="reason" required rows={2} className="field" />
-                  </label>
-                  <button type="submit" className="btn sm tap-target self-start">
-                    {t("submitReport")}
-                  </button>
-                </form>
-              </details>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </Card>
       )}
     </div>
   );

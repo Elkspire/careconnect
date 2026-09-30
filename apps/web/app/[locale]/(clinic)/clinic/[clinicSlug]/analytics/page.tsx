@@ -1,8 +1,15 @@
+import { BarChart3 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getClinicAnalytics } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate } from "@/lib/format-time";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatGrid, StatTile } from "@/components/ui/stat-tile";
+import { Card } from "@/components/ui/card";
+import { ListRow } from "@/components/ui/list-row";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
 
 export default async function ClinicAnalyticsPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/analytics">,
@@ -22,11 +29,7 @@ export default async function ClinicAnalyticsPage(
   if (staffCtx.role !== "owner") {
     return (
       <div className="max-w-xl">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </div>
     );
   }
@@ -36,73 +39,59 @@ export default async function ClinicAnalyticsPage(
 
   return (
     <div className="max-w-4xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("analyticsHeading")}</h1>
-      <p style={{ color: "var(--color-ink-soft)" }}>{t("windowLabel")}</p>
+      <PageHeader
+        icon={BarChart3}
+        kicker="CareConnect"
+        title={t("analyticsHeading")}
+        description={t("windowLabel")}
+      />
 
-      <div className="stats mt-6">
-        <div className="stat">
-          <b>{analytics.totals.visits}</b>
-          <em>{t("totalVisitsLabel")}</em>
-        </div>
-        <div className="stat">
-          <b>{analytics.totals.uniquePatients}</b>
-          <em>{t("uniquePatientsLabel")}</em>
-        </div>
-        <div className="stat">
-          <b>{analytics.totals.cancelled}</b>
-          <em>{t("cancelledLabel")}</em>
-        </div>
-        <div className="stat">
-          <b>{analytics.totals.noShows}</b>
-          <em>{t("noShowsLabel")}</em>
-        </div>
-        <div className="stat">
-          <b>{analytics.totals.estimatedRevenue.toLocaleString(locale)}</b>
-          <em>{t("estimatedRevenueLabel")}</em>
-        </div>
-      </div>
-      <p className="mt-2 text-xs" style={{ color: "var(--color-ink-soft)" }}>
-        {t("revenueDisclaimer")}
-      </p>
+      <StatGrid>
+        <StatTile value={analytics.totals.visits} label={t("totalVisitsLabel")} />
+        <StatTile value={analytics.totals.uniquePatients} label={t("uniquePatientsLabel")} />
+        <StatTile value={analytics.totals.cancelled} label={t("cancelledLabel")} />
+        <StatTile value={analytics.totals.noShows} label={t("noShowsLabel")} />
+        <StatTile
+          value={analytics.totals.estimatedRevenue.toLocaleString(locale)}
+          label={t("estimatedRevenueLabel")}
+        />
+      </StatGrid>
+      <p className="mt-2 text-xs text-text-faint">{t("revenueDisclaimer")}</p>
 
       {!hasActivity ? (
-        <p className="mt-8" style={{ color: "var(--color-ink-soft)" }}>
-          {t("noActivityYet")}
-        </p>
+        <div className="mt-8">
+          <EmptyState icon={BarChart3} title={t("noActivityYet")} />
+        </div>
       ) : (
         <>
-          <h2 className="lbl mt-8" style={{ color: "var(--color-ink-soft)" }}>
+          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
             {t("dailyBreakdownHeading")}
           </h2>
-          <div className="pgrid mt-3">
+          <Card>
             {analytics.daily.map((d) => (
-              <div key={d.day} className="trow">
-                <span>{formatClinicDate(d.day, locale)}</span>
-                <b className="mono">
-                  {d.visits} · {t("cancelledLabel")} {d.cancelled} · {t("noShowsLabel")}{" "}
-                  {d.noShows} ·{" "}
-                  {Number(d.estimatedRevenue).toLocaleString(locale)}
-                </b>
-              </div>
+              <ListRow
+                key={d.day}
+                title={formatClinicDate(d.day, locale)}
+                meta={
+                  <>
+                    {d.visits} · {t("cancelledLabel")} {d.cancelled} · {t("noShowsLabel")} {d.noShows} ·{" "}
+                    {Number(d.estimatedRevenue).toLocaleString(locale)}
+                  </>
+                }
+              />
             ))}
-          </div>
+          </Card>
 
           {analytics.byPractitioner.length > 1 && (
             <>
-              <h2 className="lbl mt-8" style={{ color: "var(--color-ink-soft)" }}>
+              <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
                 {t("byPractitionerHeading")}
               </h2>
-              <div className="pgrid mt-3">
+              <Card>
                 {analytics.byPractitioner.map((p) => (
-                  <div key={p.practitionerId} className="trow">
-                    <span>{p.practitionerFullName}</span>
-                    <b className="mono">{p.visits}</b>
-                  </div>
+                  <ListRow key={p.practitionerId} title={p.practitionerFullName} meta={p.visits} />
                 ))}
-              </div>
+              </Card>
             </>
           )}
         </>

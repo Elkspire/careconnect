@@ -1,3 +1,4 @@
+import { ShieldCheck, Upload } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getMe, resolveClinicStaffBySlug } from "@/lib/api/me";
@@ -7,8 +8,16 @@ import {
   deleteVerificationDocumentAction,
   uploadVerificationDocumentAction,
 } from "../../../actions";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ListRow } from "@/components/ui/list-row";
+import { FormField } from "@/components/ui/form-field";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
 
 const DOCUMENT_TYPES = ["cnic", "degree", "council_registration", "other"] as const;
+const STATUS_TONE = { verified: "green", pending: "orange", unverified: "gray" } as const;
 
 export default async function ClinicVerificationPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/verification">,
@@ -29,11 +38,7 @@ export default async function ClinicVerificationPage(
   if (!me.practitioner || (staffCtx.role !== "owner" && staffCtx.role !== "junior_doctor")) {
     return (
       <div className="max-w-xl">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </div>
     );
   }
@@ -44,70 +49,77 @@ export default async function ClinicVerificationPage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("verificationHeading")}</h1>
-      <p className="mt-2" style={{ color: "var(--color-ink-soft)" }}>
-        {t("verificationScopeNote")}
-      </p>
-      <div className="trow mt-4">
-        <span>{t("verificationStatusLabel")}</span>
-        <em>{me.practitioner.verificationStatus}</em>
+      <PageHeader
+        icon={ShieldCheck}
+        kicker="CareConnect"
+        title={t("verificationHeading")}
+        description={t("verificationScopeNote")}
+      />
+
+      <div className="mb-6 flex items-center gap-2">
+        <span className="text-sm text-text-muted">{t("verificationStatusLabel")}:</span>
+        <Badge tone={STATUS_TONE[me.practitioner.verificationStatus as keyof typeof STATUS_TONE] ?? "gray"}>
+          {me.practitioner.verificationStatus}
+        </Badge>
       </div>
 
-      <div className="card mt-6">
-        {documents.length === 0 ? (
-          <p style={{ color: "var(--color-ink-soft)" }}>{t("noDocumentsYet")}</p>
-        ) : (
-          <div className="pgrid">
-            {documents.map((doc) => (
-              <div key={doc.id} className="prow">
-                <span>
-                  {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
-                  {doc.fileName}
-                  <br />
-                  <small style={{ color: "var(--color-ink-soft)" }}>
-                    {formatClinicDate(doc.uploadedAt, locale)}
-                  </small>
-                </span>
+      {documents.length === 0 ? (
+        <EmptyState icon={ShieldCheck} title={t("noDocumentsYet")} />
+      ) : (
+        <Card>
+          {documents.map((doc) => (
+            <ListRow
+              key={doc.id}
+              title={`${t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} — ${doc.fileName}`}
+              subtitle={formatClinicDate(doc.uploadedAt, locale)}
+              action={
                 <form action={remove}>
                   <input type="hidden" name="documentId" value={doc.id} />
-                  <button type="submit" className="qb tap-target">
+                  <button
+                    type="submit"
+                    className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
+                  >
                     {t("removeDocument")}
                   </button>
                 </form>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              }
+            />
+          ))}
+        </Card>
+      )}
 
-      <form action={upload} className="slip mt-6 flex flex-wrap items-end gap-3">
-        <label>
-          <span className="lbl">{t("documentTypeLabel")}</span>
-          <select name="documentType" className="field tap-target">
-            {DOCUMENT_TYPES.map((dt) => (
-              <option key={dt} value={dt}>
-                {t(`documentTypes.${dt}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className="lbl">{t("fileLabel")}</span>
-          <input
-            type="file"
-            name="file"
-            required
-            accept="application/pdf,image/jpeg,image/png"
-            className="tap-target"
-          />
-        </label>
-        <button type="submit" className="btn tap-target">
-          {t("uploadDocument")}
-        </button>
-      </form>
+      <Card padding="lg" className="mt-6">
+        <form action={upload} className="flex flex-wrap items-end gap-3">
+          <FormField label={t("documentTypeLabel")}>
+            <select
+              name="documentType"
+              className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            >
+              {DOCUMENT_TYPES.map((dt) => (
+                <option key={dt} value={dt}>
+                  {t(`documentTypes.${dt}`)}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label={t("fileLabel")}>
+            <input
+              type="file"
+              name="file"
+              required
+              accept="application/pdf,image/jpeg,image/png"
+              className="tap-target text-sm"
+            />
+          </FormField>
+          <button
+            type="submit"
+            className="tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+          >
+            <Upload aria-hidden className="size-4" />
+            {t("uploadDocument")}
+          </button>
+        </form>
+      </Card>
     </div>
   );
 }

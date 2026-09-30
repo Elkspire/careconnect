@@ -1,3 +1,4 @@
+import { NotebookPen, Pill } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
@@ -7,12 +8,20 @@ import {
 } from "@/lib/api/clinical";
 import { getVitals } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert } from "@/components/ui/alert";
+import { ListRow } from "@/components/ui/list-row";
+import { FormField } from "@/components/ui/form-field";
 import {
   saveClinicalNoteAction,
   saveClinicalPrescriptionAction,
 } from "../../../../actions";
 
 const PRESCRIPTION_ROWS = 8;
+const inputClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
 export default async function ClinicalNotePage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/clinical-notes/[appointmentId]">,
@@ -38,11 +47,7 @@ export default async function ClinicalNotePage(
   if (staffCtx.role !== "owner" && staffCtx.role !== "junior_doctor") {
     return (
       <div className="max-w-xl">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </div>
     );
   }
@@ -72,168 +77,156 @@ export default async function ClinicalNotePage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("notesHeading")}</h1>
+      <PageHeader icon={NotebookPen} kicker="CareConnect" title={t("notesHeading")} />
 
       {allergies.length > 0 && (
-        <div className="flagrow mt-4">
+        <div className="mb-4 flex flex-wrap gap-2">
           {allergies.map((a) => (
-            <span key={a} className="flag mono">
+            <Badge key={a} tone="red">
               {a}
-            </span>
+            </Badge>
           ))}
         </div>
       )}
 
-      <div className="card mt-4">
-        <p className="lbl">{t("vitalsSummaryHeading")}</p>
+      <Card>
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {t("vitalsSummaryHeading")}
+        </p>
         {vitals ? (
           <>
-            <div className="pgrid mt-2">
+            <div className="mt-2 flex flex-col">
               {(vitals.systolicMmhg !== null || vitals.diastolicMmhg !== null) && (
-                <div className="trow">
-                  <span>{t("bloodPressureLabel")}</span>
-                  <b className="mono">
-                    {vitals.systolicMmhg ?? "—"}/{vitals.diastolicMmhg ?? "—"}
-                  </b>
-                </div>
+                <ListRow
+                  title={t("bloodPressureLabel")}
+                  meta={`${vitals.systolicMmhg ?? "—"}/${vitals.diastolicMmhg ?? "—"}`}
+                />
               )}
               {vitals.pulseBpm !== null && (
-                <div className="trow">
-                  <span>{t("pulseLabel")}</span>
-                  <b className="mono">{vitals.pulseBpm}</b>
-                </div>
+                <ListRow title={t("pulseLabel")} meta={vitals.pulseBpm} />
               )}
               {vitals.weightKg !== null && (
-                <div className="trow">
-                  <span>{t("weightLabel")}</span>
-                  <b className="mono">{vitals.weightKg}</b>
-                </div>
+                <ListRow title={t("weightLabel")} meta={vitals.weightKg} />
               )}
               {vitals.temperatureF !== null && (
-                <div className="trow">
-                  <span>{t("temperatureLabel")}</span>
-                  <b className="mono">{vitals.temperatureF}</b>
-                </div>
+                <ListRow title={t("temperatureLabel")} meta={vitals.temperatureF} />
               )}
             </div>
-            <small className="mt-2 block" style={{ color: "var(--color-ink-soft)" }}>
+            <small className="mt-2 block text-xs text-text-muted">
               {t("recordedByLabel", { name: vitals.recordedByName ?? vitals.recordedByPhone ?? "" })}
             </small>
           </>
         ) : (
-          <p style={{ color: "var(--color-ink-soft)" }}>{t("noVitalsRecorded")}</p>
+          <p className="mt-2 text-sm text-text-muted">{t("noVitalsRecorded")}</p>
         )}
-      </div>
+      </Card>
 
       {warned.length > 0 && (
-        <div className="alert mt-4">
-          <div>
-            <b>{t("allergyWarningTitle")}</b>
-            <p>{t("allergyWarningBody", { drugs: warned.join(", ") })}</p>
-          </div>
+        <div className="mt-4">
+          <Alert
+            tone="danger"
+            title={t("allergyWarningTitle")}
+            description={t("allergyWarningBody", { drugs: warned.join(", ") })}
+          />
         </div>
       )}
 
-      <div className="rx mt-6">
-        <div className="rxh">
-          <span className="rxsym">℞</span>
-          <b className="disp">{t("notesHeading")}</b>
+      <Card padding="lg" className="mt-6">
+        <div className="mb-4 flex items-center gap-2">
+          <NotebookPen aria-hidden className="size-4 text-primary-600" />
+          <b className="font-semibold text-text">{t("notesHeading")}</b>
         </div>
         <form action={action} className="flex flex-col gap-4">
-          <label>
-            <span className="lbl">{t("notesLabel")}</span>
+          <FormField label={t("notesLabel")}>
             <textarea
               name="notes"
               required
               defaultValue={note?.notes}
               rows={6}
-              className="field"
+              className={inputClasses}
             />
-          </label>
-          <label>
-            <span className="lbl">{t("diagnosisLabel")}</span>
+          </FormField>
+          <FormField label={t("diagnosisLabel")}>
             <input
               type="text"
               name="diagnosis"
               defaultValue={note?.diagnosis ?? ""}
-              className="field tap-target"
+              className={inputClasses}
             />
-          </label>
-          <button type="submit" className="btn tap-target self-start">
+          </FormField>
+          <button
+            type="submit"
+            className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+          >
             {t("saveNote")}
           </button>
         </form>
-      </div>
+      </Card>
 
       {note && (
-        <div className="rx mt-6">
-          <div className="rxh">
-            <span className="rxsym">℞</span>
-            <b className="disp">{t("prescriptionHeading")}</b>
+        <Card padding="lg" className="mt-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Pill aria-hidden className="size-4 text-primary-600" />
+            <b className="font-semibold text-text">{t("prescriptionHeading")}</b>
           </div>
           <form action={prescriptionAction} className="flex flex-col gap-3">
             {rows.map((item, i) => (
-              <div key={i} className="rxline flex-wrap gap-2 sm:flex-nowrap">
+              <div key={i} className="flex flex-wrap gap-2 sm:flex-nowrap">
                 <input
                   type="text"
                   name={`drugName${i + 1}`}
                   defaultValue={item?.drugName ?? ""}
                   placeholder={t("drugNameLabel")}
-                  className="field tap-target"
-                  style={{ flex: "1 1 160px" }}
+                  className={`${inputClasses} flex-[1_1_160px]`}
                 />
                 <input
                   type="text"
                   name={`dosage${i + 1}`}
                   defaultValue={item?.dosage ?? ""}
                   placeholder={t("dosageLabel")}
-                  className="field tap-target"
-                  style={{ flex: "1 1 90px" }}
+                  className={`${inputClasses} flex-[1_1_90px]`}
                 />
                 <input
                   type="text"
                   name={`frequency${i + 1}`}
                   defaultValue={item?.frequency ?? ""}
                   placeholder={t("frequencyLabel")}
-                  className="field tap-target"
-                  style={{ flex: "1 1 90px" }}
+                  className={`${inputClasses} flex-[1_1_90px]`}
                 />
                 <input
                   type="text"
                   name={`duration${i + 1}`}
                   defaultValue={item?.duration ?? ""}
                   placeholder={t("durationLabel")}
-                  className="field tap-target"
-                  style={{ flex: "1 1 90px" }}
+                  className={`${inputClasses} flex-[1_1_90px]`}
                 />
                 <input
                   type="text"
                   name={`instructions${i + 1}`}
                   defaultValue={item?.instructions ?? ""}
                   placeholder={t("instructionsLabel")}
-                  className="field tap-target"
-                  style={{ flex: "1 1 140px" }}
+                  className={`${inputClasses} flex-[1_1_140px]`}
                 />
               </div>
             ))}
 
-            <label className="rxfoot flex items-start gap-2">
-              <input type="checkbox" required style={{ marginTop: 3 }} />
-              <span className="text-sm">
+            <label className="flex items-start gap-2 border-t border-border pt-3">
+              <input type="checkbox" required className="mt-0.5 size-4 accent-primary-600" />
+              <span className="text-sm text-text">
                 {allergies.length > 0
                   ? t("reviewedAllergiesLabel")
                   : t("reviewedNoAllergiesLabel")}
               </span>
             </label>
 
-            <button type="submit" className="btn tap-target self-start">
+            <button
+              type="submit"
+              className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+            >
               {t("savePrescription")}
             </button>
           </form>
-        </div>
+        </Card>
       )}
     </div>
   );

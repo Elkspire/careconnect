@@ -7,8 +7,13 @@ import {
   type AssignableStaffRole,
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
+import { FormField } from "@/components/ui/form-field";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
+
+const selectClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
 /**
  * Role picker + per-permission toggles for the invite form. A toggle can
@@ -42,11 +47,10 @@ export function StaffInviteFields() {
 
   return (
     <>
-      <label>
-        <span className="lbl">{t("roleLabel")}</span>
+      <FormField label={t("roleLabel")}>
         <select
           name="role"
-          className="field tap-target"
+          className={selectClasses}
           value={role}
           onChange={(e) => selectRole(e.target.value as AssignableStaffRole)}
         >
@@ -56,22 +60,22 @@ export function StaffInviteFields() {
             </option>
           ))}
         </select>
-      </label>
+      </FormField>
 
       <div className="w-full">
-        <span className="lbl">{t("permissionsToggleHeading")}</span>
-        <div className="mt-2">
+        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {t("permissionsToggleHeading")}
+        </span>
+        <div className="flex flex-col divide-y divide-border rounded-md border border-border">
           {ROLE_PERMISSION_CEILING[role].map((key) => {
             const allowed = !denied.has(key);
             return (
-              <div key={key} className="trow">
-                <span>{t(`permissions.${key}`)}</span>
-                <button
-                  type="button"
-                  className={`tg${allowed ? " on" : ""}`}
-                  aria-pressed={allowed}
-                  aria-label={t(`permissions.${key}`)}
-                  onClick={() => toggle(key)}
+              <div key={key} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                <span className="text-sm text-text">{t(`permissions.${key}`)}</span>
+                <ToggleSwitch
+                  checked={allowed}
+                  onChange={() => toggle(key)}
+                  label={t(`permissions.${key}`)}
                 />
                 {!allowed && <input type="hidden" name="deniedPermissions" value={key} />}
               </div>

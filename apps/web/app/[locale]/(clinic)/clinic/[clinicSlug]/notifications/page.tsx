@@ -1,8 +1,12 @@
+import { Bell } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { listMyNotifications } from "@/lib/api/notifications";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicTime } from "@/lib/format-time";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function ClinicNotificationsPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/notifications">,
@@ -19,26 +23,27 @@ export default async function ClinicNotificationsPage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
+      <PageHeader icon={Bell} kicker="CareConnect" title={t("heading")} />
       {notifications.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
-          {t("empty")}
-        </p>
+        <EmptyState icon={Bell} title={t("empty")} />
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {notifications.map((n) => (
-            <li key={n.id} className="notif">
-              <b>
-                {n.eventType.replaceAll("_", " ")}
-                <em>{formatClinicTime(n.createdAt, locale)}</em>
-              </b>
-              {n.message && <p>{n.message}</p>}
-            </li>
-          ))}
-        </ul>
+        <Card>
+          <div className="flex flex-col divide-y divide-border">
+            {notifications.map((n) => (
+              <div key={n.id} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex items-center justify-between gap-3">
+                  <b className="font-semibold capitalize text-text">
+                    {n.eventType.replaceAll("_", " ")}
+                  </b>
+                  <span className="text-xs text-text-muted">
+                    {formatClinicTime(n.createdAt, locale)}
+                  </span>
+                </div>
+                {n.message && <p className="mt-1 text-sm text-text-muted">{n.message}</p>}
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
     </div>
   );

@@ -1,3 +1,4 @@
+import { UserCog } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { listClinicPatients, listPatientAssignments, listStaff } from "@/lib/api/clinic";
@@ -10,6 +11,19 @@ import {
 } from "../../../actions";
 import { StaffPermissionMatrix } from "@/components/staff-permission-matrix";
 import { StaffInviteFields } from "@/components/staff-invite-fields";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { ListRow } from "@/components/ui/list-row";
+import { FormField } from "@/components/ui/form-field";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
+
+const inputClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+const secondaryButtonClasses =
+  "tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg";
+const primaryButtonClasses =
+  "tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 
 export default async function ClinicStaffPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/staff">,
@@ -31,11 +45,7 @@ export default async function ClinicStaffPage(
   if (staffCtx.role !== "owner") {
     return (
       <div className="max-w-xl">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </div>
     );
   }
@@ -55,122 +65,112 @@ export default async function ClinicStaffPage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("staffHeading")}</h1>
+      <PageHeader icon={UserCog} kicker="CareConnect" title={t("staffHeading")} />
 
-      <div className="card mt-6">
-        <div className="pgrid">
-          {staff.map((member) => (
-            <div key={member.id} className="prow">
-              <span>
-                {member.fullName ?? member.phone ?? member.email} —{" "}
+      <Card>
+        {staff.map((member) => (
+          <ListRow
+            key={member.id}
+            title={member.fullName ?? member.phone ?? member.email}
+            subtitle={
+              <>
                 {t(`roles.${member.role}` as "roles.owner")} — {member.status}
                 {member.revokedPermissions.length > 0 && (
-                  <>
-                    <br />
-                    <small style={{ color: "var(--color-ink-soft)" }}>
-                      {t("customPermissionsNote", {
-                        permissions: member.revokedPermissions
-                          .map((p) => t(`permissions.${p}` as "permissions.viewPatientList"))
-                          .join(", "),
-                      })}
-                    </small>
-                  </>
+                  <span className="mt-0.5 block text-xs text-text-faint">
+                    {t("customPermissionsNote", {
+                      permissions: member.revokedPermissions
+                        .map((p) => t(`permissions.${p}` as "permissions.viewPatientList"))
+                        .join(", "),
+                    })}
+                  </span>
                 )}
-              </span>
-              {member.status === "active" && member.role !== "owner" && (
+              </>
+            }
+            action={
+              member.status === "active" &&
+              member.role !== "owner" && (
                 <form action={revoke}>
                   <input type="hidden" name="staffId" value={member.id} />
-                  <button type="submit" className="qb tap-target">
+                  <button type="submit" className={secondaryButtonClasses}>
                     {t("revoke")}
                   </button>
                 </form>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+              )
+            }
+          />
+        ))}
+      </Card>
 
-      <div className="card mt-6">
+      <Card padding="lg" className="mt-6">
         <StaffPermissionMatrix />
-      </div>
+      </Card>
 
-      <div className="slip mt-8">
-        <p style={{ color: "var(--color-ink-soft)" }}>{t("invitePrompt")}</p>
+      <Card padding="lg" className="mt-8">
+        <p className="text-sm text-text-muted">{t("invitePrompt")}</p>
         <form action={invite} className="mt-4 flex flex-wrap items-end gap-3">
-          <label>
-            <span className="lbl">{t("phoneLabel")}</span>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="+923001234567"
-              className="field tap-target"
-            />
-          </label>
-          <label>
-            <span className="lbl">{t("emailLabel")}</span>
-            <input type="email" name="email" className="field tap-target" />
-          </label>
-          <label>
-            <span className="lbl">{t("fullNameLabel")}</span>
-            <input type="text" name="fullName" required className="field tap-target" />
-          </label>
+          <FormField label={t("phoneLabel")}>
+            <input type="tel" name="phone" placeholder="+923001234567" className={inputClasses} />
+          </FormField>
+          <FormField label={t("emailLabel")}>
+            <input type="email" name="email" className={inputClasses} />
+          </FormField>
+          <FormField label={t("fullNameLabel")}>
+            <input type="text" name="fullName" required className={inputClasses} />
+          </FormField>
           <StaffInviteFields />
-          <button type="submit" className="btn tap-target">
+          <button type="submit" className={primaryButtonClasses}>
             {t("invite")}
           </button>
         </form>
-      </div>
+      </Card>
 
-      <div className="slip mt-8">
-        <h2 className="disp text-lg font-bold">{t("assignmentsHeading")}</h2>
-        <p className="mt-1" style={{ color: "var(--color-ink-soft)" }}>
-          {t("assignmentsPrompt")}
-        </p>
+      <Card padding="lg" className="mt-8">
+        <h2 className="text-lg font-bold text-text">{t("assignmentsHeading")}</h2>
+        <p className="mt-1 text-sm text-text-muted">{t("assignmentsPrompt")}</p>
 
-        <div className="pgrid mt-4">
-          {assignments.length === 0 && (
-            <p style={{ color: "var(--color-ink-soft)" }}>{t("noAssignments")}</p>
-          )}
-          {assignments.map((a) => (
-            <div key={a.id} className="prow">
-              <span>
-                {a.juniorDoctorFullName} —{" "}
-                {a.familyMemberFullName
-                  ? `${a.familyMemberFullName} (${t("familyMemberOfLabel", { name: a.patientFullName })})`
-                  : a.patientFullName}
-              </span>
-              <form action={unassign}>
-                <input type="hidden" name="assignmentId" value={a.id} />
-                <button type="submit" className="qb tap-target">
-                  {t("unassign")}
-                </button>
-              </form>
+        <div className="mt-4">
+          {assignments.length === 0 ? (
+            <EmptyState icon={UserCog} title={t("noAssignments")} />
+          ) : (
+            <div className="rounded-md border border-border">
+              {assignments.map((a) => (
+                <ListRow
+                  key={a.id}
+                  title={a.juniorDoctorFullName}
+                  subtitle={
+                    a.familyMemberFullName
+                      ? `${a.familyMemberFullName} (${t("familyMemberOfLabel", { name: a.patientFullName })})`
+                      : a.patientFullName
+                  }
+                  action={
+                    <form action={unassign}>
+                      <input type="hidden" name="assignmentId" value={a.id} />
+                      <button type="submit" className={secondaryButtonClasses}>
+                        {t("unassign")}
+                      </button>
+                    </form>
+                  }
+                />
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
         {activeJuniorDoctors.length === 0 ? (
-          <p className="mt-4" style={{ color: "var(--color-ink-soft)" }}>
-            {t("noJuniorDoctors")}
-          </p>
+          <p className="mt-4 text-sm text-text-muted">{t("noJuniorDoctors")}</p>
         ) : (
           <form action={assign} className="mt-4 flex flex-wrap items-end gap-3">
-            <label>
-              <span className="lbl">{t("assignJuniorDoctorLabel")}</span>
-              <select name="juniorDoctorUserId" required className="field tap-target">
+            <FormField label={t("assignJuniorDoctorLabel")}>
+              <select name="juniorDoctorUserId" required className={inputClasses}>
                 {activeJuniorDoctors.map((doc) => (
                   <option key={doc.userId} value={doc.userId}>
                     {doc.fullName ?? doc.phone ?? doc.email}
                   </option>
                 ))}
               </select>
-            </label>
-            <label>
-              <span className="lbl">{t("assignPatientLabel")}</span>
-              <select name="subject" required className="field tap-target">
+            </FormField>
+            <FormField label={t("assignPatientLabel")}>
+              <select name="subject" required className={inputClasses}>
                 {patients.map((p) => (
                   <option
                     key={`${p.patientId}:${p.familyMemberId ?? ""}`}
@@ -182,13 +182,13 @@ export default async function ClinicStaffPage(
                   </option>
                 ))}
               </select>
-            </label>
-            <button type="submit" className="btn tap-target">
+            </FormField>
+            <button type="submit" className={primaryButtonClasses}>
               {t("assign")}
             </button>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

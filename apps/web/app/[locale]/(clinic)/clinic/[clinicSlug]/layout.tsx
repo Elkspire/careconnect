@@ -1,7 +1,8 @@
+import { BarChart3, Bell, CalendarDays, ShieldCheck, Star, UserCog, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
+import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
 
 export default async function ClinicLayout(
   props: LayoutProps<"/[locale]/clinic/[clinicSlug]">,
@@ -17,41 +18,40 @@ export default async function ClinicLayout(
   // linking to a page that just shows "access denied" — the page still
   // enforces this itself independently, this is purely nav tidiness.
   const navItems = [
-    { href: `/clinic/${clinicSlug}/today`, label: t("nav.today") },
-    { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients") },
+    { href: `/clinic/${clinicSlug}/today`, label: t("nav.today"), icon: CalendarDays },
+    { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients"), icon: Users },
     ...(!staffCtx || staffCtx.role === "owner"
       ? [
-          { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff") },
-          { href: `/clinic/${clinicSlug}/analytics`, label: t("nav.analytics") },
-          { href: `/clinic/${clinicSlug}/reviews`, label: t("nav.reviews") },
+          { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff"), icon: UserCog },
+          { href: `/clinic/${clinicSlug}/analytics`, label: t("nav.analytics"), icon: BarChart3 },
+          { href: `/clinic/${clinicSlug}/reviews`, label: t("nav.reviews"), icon: Star },
         ]
       : []),
     // Every owner and junior doctor is a practitioner with their own
     // verification status — receptionist isn't a practitioner at all, so
     // the page (and the API underneath it) has nothing to show them.
     ...(!staffCtx || staffCtx.role === "owner" || staffCtx.role === "junior_doctor"
-      ? [{ href: `/clinic/${clinicSlug}/verification`, label: t("nav.verification") }]
+      ? [{ href: `/clinic/${clinicSlug}/verification`, label: t("nav.verification"), icon: ShieldCheck }]
       : []),
-    { href: `/clinic/${clinicSlug}/notifications`, label: t("nav.notifications") },
+    { href: `/clinic/${clinicSlug}/notifications`, label: t("nav.notifications"), icon: Bell },
   ];
 
   return (
-    <div className="dash-shell flex flex-1 flex-col md:flex-row">
-      <aside className="dash-sidebar">
-        <nav className="flex flex-row overflow-x-auto md:flex-col md:overflow-visible md:py-4">
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-8">
+      <Sidebar>
+        <SidebarNav>
           {navItems.map((item) => (
-            <Link
+            <SidebarLink
               key={item.href}
               href={item.href}
+              icon={item.icon}
+              label={item.label}
               locale={locale as AppLocale}
-              className="dash-navlink tap-target"
-            >
-              {item.label}
-            </Link>
+            />
           ))}
-        </nav>
-      </aside>
-      <main className="dash-main">{props.children}</main>
+        </SidebarNav>
+        <SidebarMain>{props.children}</SidebarMain>
+      </Sidebar>
     </div>
   );
 }

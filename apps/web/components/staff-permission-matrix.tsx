@@ -7,6 +7,8 @@ import {
   isPermissionGranted,
   type AssignableStaffRole,
 } from "@/lib/staff-permissions";
+import { ListRow } from "@/components/ui/list-row";
+import { Badge } from "@/components/ui/badge";
 
 const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
 
@@ -18,13 +20,19 @@ export function StaffPermissionMatrix() {
 
   return (
     <div>
-      <p className="lbl">{t("permissionsHeading")}</p>
-      <div className="pmx">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
+        {t("permissionsHeading")}
+      </p>
+      <div className="mb-3 flex flex-wrap gap-2">
         {ROLES.map((r) => (
           <button
             key={r}
             type="button"
-            className={`tap-target${r === role ? " on" : ""}`}
+            className={`tap-target rounded-md border px-3 py-1.5 text-sm font-medium transition ${
+              r === role
+                ? "border-primary-600 bg-primary-600 text-white"
+                : "border-border text-text-muted hover:border-primary-500"
+            }`}
             aria-pressed={r === role}
             onClick={() => setRole(r)}
           >
@@ -32,14 +40,19 @@ export function StaffPermissionMatrix() {
           </button>
         ))}
       </div>
-      <div className="pgrid">
+      <div className="rounded-md border border-border">
         {STAFF_PERMISSION_KEYS.map((key) => {
           const allowed = isPermissionGranted(role, key);
           return (
-            <div key={key} className={`prow ${allowed ? "yes" : "no"}`}>
-              <span>{t(`permissions.${key}`)}</span>
-              <em>{allowed ? t("permissionAllowed") : t("permissionBlocked")}</em>
-            </div>
+            <ListRow
+              key={key}
+              title={t(`permissions.${key}`)}
+              meta={
+                <Badge tone={allowed ? "green" : "gray"}>
+                  {allowed ? t("permissionAllowed") : t("permissionBlocked")}
+                </Badge>
+              }
+            />
           );
         })}
       </div>

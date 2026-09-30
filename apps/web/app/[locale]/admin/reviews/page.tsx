@@ -1,9 +1,14 @@
+import { Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { listHiddenReviews, listReportedReviews } from "@/lib/api/admin";
 import { StarRating } from "@/components/star-rating";
 import { formatClinicDate } from "@/lib/format-time";
 import { hideReviewAction, unhideReviewAction } from "../actions";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Alert } from "@/components/ui/alert";
 
 export default async function AdminReviewsPage(
   props: PageProps<"/[locale]/admin/reviews">,
@@ -21,83 +26,88 @@ export default async function AdminReviewsPage(
   if (reported === null || hidden === null) {
     return (
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
-        <div className="locked">
-          <div className="lockmsg">
-            <span className="mono">{t("accessDenied")}</span>
-          </div>
-        </div>
+        <Alert tone="warning" title={t("accessDenied")} />
       </main>
     );
   }
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <nav className="mt-2 flex gap-4 text-sm">
-        <Link href="/admin/practitioners" locale={locale} style={{ color: "var(--color-ink-soft)" }}>
+      <nav className="mb-4 flex gap-2">
+        <Link
+          href="/admin/practitioners"
+          locale={locale}
+          className="rounded-md px-3 py-1.5 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
+        >
           {t("navPractitioners")}
         </Link>
-        <span style={{ color: "var(--color-verified)" }}>{t("navReviews")}</span>
+        <span className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white">
+          {t("navReviews")}
+        </span>
       </nav>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("reviewsHeading")}</h1>
-      <p className="mt-2 text-sm" style={{ color: "var(--color-ink-soft)" }}>
-        {t("reviewsScopeNote")}
-      </p>
+      <PageHeader
+        icon={Star}
+        kicker="CareConnect"
+        title={t("reviewsHeading")}
+        description={t("reviewsScopeNote")}
+      />
 
       {reported.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
-          {t("noReportedReviews")}
-        </p>
+        <EmptyState icon={Star} title={t("noReportedReviews")} />
       ) : (
-        <ul className="mt-6 flex flex-col gap-4">
+        <ul className="flex flex-col gap-4">
           {reported.map((r) => (
-            <li key={r.reportId} className="chart">
-              <div className="cn">
-                <b>{r.practitionerFullName}</b>
-                <small>
+            <li key={r.reportId}>
+              <Card padding="lg">
+                <b className="font-semibold text-text">{r.practitionerFullName}</b>
+                <p className="text-sm text-text-muted">
                   {t("reportedByLabel")} {formatClinicDate(r.reportedAt, locale)}
-                </small>
-              </div>
-              <StarRating rating={r.rating} />
-              {r.comment && <p>{r.comment}</p>}
-              <p className="mt-2 text-sm" style={{ color: "var(--color-seal)" }}>
-                {r.reason}
-              </p>
-              <form action={hide} className="mt-3">
-                <input type="hidden" name="reviewId" value={r.reviewId} />
-                <button type="submit" className="btn sm tap-target">
-                  {t("hide")}
-                </button>
-              </form>
+                </p>
+                <div className="mt-2">
+                  <StarRating rating={r.rating} />
+                </div>
+                {r.comment && <p className="mt-1 text-sm text-text">{r.comment}</p>}
+                <p className="mt-2 text-sm text-danger-fg">{r.reason}</p>
+                <form action={hide} className="mt-3">
+                  <input type="hidden" name="reviewId" value={r.reviewId} />
+                  <button
+                    type="submit"
+                    className="tap-target rounded-md bg-primary-700 px-3 py-1.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+                  >
+                    {t("hide")}
+                  </button>
+                </form>
+              </Card>
             </li>
           ))}
         </ul>
       )}
 
-      <h2 className="lbl mt-8" style={{ color: "var(--color-ink-soft)" }}>
+      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
         {t("hiddenReviewsHeading")}
       </h2>
       {hidden.length === 0 ? (
-        <p className="mt-3" style={{ color: "var(--color-ink-soft)" }}>
-          {t("noHiddenReviews")}
-        </p>
+        <EmptyState icon={Star} title={t("noHiddenReviews")} />
       ) : (
-        <ul className="mt-3 flex flex-col gap-4">
+        <ul className="flex flex-col gap-4">
           {hidden.map((r) => (
-            <li key={r.id} className="chart">
-              <div className="cn">
-                <b>{r.practitionerFullName}</b>
-              </div>
-              <StarRating rating={r.rating} />
-              {r.comment && <p>{r.comment}</p>}
-              <form action={unhide} className="mt-3">
-                <input type="hidden" name="reviewId" value={r.id} />
-                <button type="submit" className="btn gh sm tap-target">
-                  {t("unhide")}
-                </button>
-              </form>
+            <li key={r.id}>
+              <Card padding="lg">
+                <b className="font-semibold text-text">{r.practitionerFullName}</b>
+                <div className="mt-2">
+                  <StarRating rating={r.rating} />
+                </div>
+                {r.comment && <p className="mt-1 text-sm text-text">{r.comment}</p>}
+                <form action={unhide} className="mt-3">
+                  <input type="hidden" name="reviewId" value={r.id} />
+                  <button
+                    type="submit"
+                    className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
+                  >
+                    {t("unhide")}
+                  </button>
+                </form>
+              </Card>
             </li>
           ))}
         </ul>
