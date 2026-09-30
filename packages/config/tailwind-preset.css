@@ -9,45 +9,11 @@
    ml/mr/pl/pr everywhere so components flip automatically under
    dir="rtl" per the Urdu/RTL design principle.
 
-   Palette and type system mirror resources/careconnect-journeys.html —
-   the "vintage stamped document" visual language: a deep bottle-green
-   page chrome with cream/paper card surfaces, Bricolage Grotesque for
-   display type, Newsreader for body serif, IBM Plex Mono for
-   uppercase labels/mono detail. */
+   Teal/blue clinical-SaaS palette (2026 visual revamp, see
+   resources/CareConnect.html for the reference), restrained relative to a
+   typical marketing teal for better contrast and a more trustworthy
+   register. Inter for UI text. */
 
-@theme {
-  --color-bottle: #0e2620;
-  --color-bottle-2: #153429;
-  --color-bottle-3: #1d4235;
-  --color-line: #2c5748;
-  --color-paper: #f4f0e4;
-  --color-paper-2: #fbf9f1;
-  --color-ink: #12201b;
-  --color-ink-soft: #4a5c54;
-  --color-stamp: #2b4c9b;
-  --color-seal: #b93b26;
-  --color-brass: #b8912f;
-  --color-mint: #79d2a6;
-  --color-cream-dim: #c3d4cb;
-  --color-verified: #1c7a55;
-
-  --font-display: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
-  --font-serif: var(--font-serif), "Newsreader", Georgia, serif;
-  --font-mono: var(--font-mono), "IBM Plex Mono", monospace;
-  --font-urdu: "Noto Nastaliq Urdu", "Noto Naskh Arabic", serif;
-
-  --radius-doc: 3px;
-}
-
-/* ==========================================================================
-   New design system (2026 visual revamp) — added alongside the legacy
-   block above, not replacing it, while the app migrates page by page (see
-   the "design/visual-revamp" branch plan). A clean teal/blue clinical-SaaS
-   palette, restrained relative to a typical marketing teal for better
-   contrast and a more trustworthy register. Once every page has migrated
-   off the legacy classes/tokens above, that whole block — and this
-   comment — gets deleted in one cleanup commit.
-   ========================================================================== */
 @theme {
   --color-primary-50: #f0fdfa;
   --color-primary-100: #ccfbf1;
@@ -95,8 +61,7 @@
 
 /* Low-literacy design principle: icon-led nav and large tap targets are
    component defaults, not per-page discretion. 44px is the WCAG 2.5.5
-   AA minimum target size. Unchanged by the visual revamp — applies to
-   both the legacy and new design systems identically. */
+   AA minimum target size. */
 @utility tap-target {
   min-height: 44px;
   min-width: 44px;

@@ -2,32 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { Bricolage_Grotesque, Newsreader, IBM_Plex_Mono, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/site-header";
 import { ToastProvider } from "@/components/toast-provider";
 import "../globals.css";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "600", "800"],
-});
-const newsreader = Newsreader({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["300", "400"],
-});
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-// New design system's body/UI font (see tailwind-preset.css's new @theme
-// block) — loaded alongside the 3 legacy fonts above while the app
-// migrates page by page; the legacy loaders are removed once every page
-// is off the old design system.
+// The design system's body/UI font (see tailwind-preset.css's @theme block).
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -52,11 +33,7 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
   const dir = (locale as AppLocale) === "ur" ? "rtl" : "ltr";
 
   return (
-    <html
-      lang={locale}
-      dir={dir}
-      className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} ${inter.variable} h-full antialiased`}
-    >
+    <html lang={locale} dir={dir} className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <SiteHeader locale={locale as AppLocale} />
