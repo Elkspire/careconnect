@@ -1,10 +1,17 @@
+import { CalendarPlus } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getAvailability } from "@/lib/api/booking";
 import { getPractitionerProfile } from "@/lib/api/directory";
 import { listFamilyMembers } from "@/lib/api/patients";
 import { clinicTodayIso, formatClinicTime } from "@/lib/format-time";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { FormField } from "@/components/ui/form-field";
 import { createAppointmentAction, joinWaitlistAction } from "../../../../actions";
+
+const inputClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
 export default async function BookAppointmentPage(
   props: PageProps<"/[locale]/patient/book/[practitionerSlug]/[clinicSlug]">,
@@ -38,39 +45,41 @@ export default async function BookAppointmentPage(
 
   return (
     <div className="max-w-2xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("bookingHeading")}</h1>
+      <PageHeader icon={CalendarPlus} kicker="CareConnect" title={t("bookingHeading")} />
 
-      <div className="slip mt-6">
+      <Card padding="lg">
         <form method="get" className="flex flex-wrap items-end gap-3">
-          <label>
-            <span className="lbl">{t("pickDate")}</span>
-            <input type="date" name="date" defaultValue={date} className="field tap-target" />
-          </label>
-          <button type="submit" className="btn gh sm tap-target">
+          <FormField label={t("pickDate")}>
+            <input type="date" name="date" defaultValue={date} className={inputClasses} />
+          </FormField>
+          <button
+            type="submit"
+            className="tap-target rounded-md border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
+          >
             {t("pickDate")}
           </button>
         </form>
 
-        <div className="rule" />
+        <div className="my-4 border-t border-border" />
 
         {familyMembers.length > 0 && (
-          <label className="mb-4 block">
-            <span className="lbl">{t("forFamilyMember")}</span>
-            <select name="familyMemberId" form="booking-form" className="field tap-target">
-              <option value="">{t("forSelf")}</option>
-              {familyMembers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.fullName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="mb-4">
+            <FormField label={t("forFamilyMember")}>
+              <select name="familyMemberId" form="booking-form" className={inputClasses}>
+                <option value="">{t("forSelf")}</option>
+                {familyMembers.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          </div>
         )}
 
-        <h4 className="lbl">{t("availableSlots")}</h4>
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
+          {t("availableSlots")}
+        </h4>
 
         {
           // A single form covers both the slot grid and the waitlist
@@ -84,25 +93,25 @@ export default async function BookAppointmentPage(
           <input type="hidden" name="clinicId" value={clinicId} />
           <input type="hidden" name="requestedDate" value={date} />
           {slots.length === 0 ? (
-            <div className="mt-2">
-              <p style={{ color: "var(--color-ink-soft)" }}>{t("noSlots")}</p>
+            <div>
+              <p className="text-sm text-text-muted">{t("noSlots")}</p>
               <button
                 type="submit"
                 formAction={waitlistAction}
-                className="btn gh sm tap-target mt-3"
+                className="tap-target mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
               >
                 {t("joinWaitlist")}
               </button>
             </div>
           ) : (
-            <div className="slots">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2">
               {slots.map((slot) => (
                 <button
                   key={slot.start}
                   type="submit"
                   name="scheduledStart"
                   value={slot.start}
-                  className="slot tap-target"
+                  className="tap-target rounded-md border border-border bg-surface py-2.5 text-sm font-medium text-text transition hover:border-primary-500 hover:bg-primary-50"
                 >
                   {formatClinicTime(slot.start, locale)}
                 </button>
@@ -110,7 +119,7 @@ export default async function BookAppointmentPage(
             </div>
           )}
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

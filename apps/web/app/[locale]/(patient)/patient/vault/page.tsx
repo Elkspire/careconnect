@@ -1,3 +1,4 @@
+import { ChevronDown, FolderHeart, Share2, Upload } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { listVaultRecords, type VaultRecord } from "@/lib/api/vault";
 import { listFamilyMembers, type FamilyMember } from "@/lib/api/patients";
@@ -9,6 +10,13 @@ import {
 } from "@/lib/api/medical-summary";
 import { listMyShares, type RecordShare } from "@/lib/api/shares";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ListRow } from "@/components/ui/list-row";
+import { FormField } from "@/components/ui/form-field";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   createShareAction,
   revokeShareAction,
@@ -18,6 +26,13 @@ import {
 } from "../../actions";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+const inputClasses =
+  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+const secondaryButtonClasses =
+  "tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700";
+const primaryButtonClasses =
+  "tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 
 function RecordGroup({
   heading,
@@ -32,27 +47,26 @@ function RecordGroup({
 }) {
   return (
     <div className="mt-6">
-      <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
         {heading}
       </h2>
-      <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      <Card>
         {records.map((record) => (
-          <li key={record.id} className="vslip flex items-center justify-between">
-            <div>
-              <b className="disp font-semibold">{record.fileName}</b>
-              <small className="mono">
-                {t(`types.${record.recordType}` as "types.prescription_photo")}
-              </small>
-            </div>
-            <form action={view}>
-              <input type="hidden" name="recordId" value={record.id} />
-              <button type="submit" className="btn gh sm tap-target">
-                {t("view")}
-              </button>
-            </form>
-          </li>
+          <ListRow
+            key={record.id}
+            title={record.fileName}
+            subtitle={t(`types.${record.recordType}` as "types.prescription_photo")}
+            action={
+              <form action={view}>
+                <input type="hidden" name="recordId" value={record.id} />
+                <button type="submit" className={secondaryButtonClasses}>
+                  {t("view")}
+                </button>
+              </form>
+            }
+          />
         ))}
-      </ul>
+      </Card>
     </div>
   );
 }
@@ -77,59 +91,53 @@ function MedicalSummaryCard({
       summary.chronicConditions.length > 0);
 
   return (
-    <div className="chart mt-6">
-      <div className="cn">
-        <b>{heading}</b>
-      </div>
+    <Card padding="lg" className="mt-6">
+      <b className="font-semibold text-text">{heading}</b>
 
       {hasFlags ? (
-        <div className="flagrow">
+        <div className="mt-3 flex flex-wrap gap-2">
           {summary!.allergies.map((a) => (
-            <span key={a} className="flag mono">
+            <Badge key={a} tone="red">
               {a}
-            </span>
+            </Badge>
           ))}
           {summary!.chronicConditions.map((c) => (
-            <span key={c} className="flag mono">
+            <Badge key={c} tone="orange">
               {c}
-            </span>
+            </Badge>
           ))}
-          {summary!.bloodGroup && <span className="flag n mono">{summary!.bloodGroup}</span>}
+          {summary!.bloodGroup && <Badge tone="blue">{summary!.bloodGroup}</Badge>}
         </div>
       ) : (
-        <p className="text-sm" style={{ color: "var(--color-ink-soft)" }}>
-          {t("noMedicalSummary")}
-        </p>
+        <p className="mt-2 text-sm text-text-muted">{t("noMedicalSummary")}</p>
       )}
 
       {summary && summary.activeMedications.length > 0 && (
-        <>
-          <h4 className="lbl mt-3">{t("activeMedicationsLabel")}</h4>
-          <ul className="mt-1 grid gap-1">
+        <div className="mt-3">
+          <h4 className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+            {t("activeMedicationsLabel")}
+          </h4>
+          <ul className="mt-1 flex flex-col gap-1">
             {summary.activeMedications.map((m) => (
-              <li key={m} className="text-sm">
+              <li key={m} className="text-sm text-text">
                 {m}
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
 
-      <details className="mt-3">
-        <summary className="mono text-xs tap-target" style={{ color: "var(--color-verified)" }}>
+      <details className="group mt-4">
+        <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-primary-700">
           {t("editMedicalSummary")}
+          <ChevronDown aria-hidden className="size-3.5 transition group-open:rotate-180" />
         </summary>
         <form action={save} className="mt-3 flex flex-col gap-3">
           {familyMemberId && (
             <input type="hidden" name="familyMemberId" value={familyMemberId} />
           )}
-          <label>
-            <span className="lbl">{t("bloodGroupLabel")}</span>
-            <select
-              name="bloodGroup"
-              defaultValue={summary?.bloodGroup ?? ""}
-              className="field tap-target"
-            >
+          <FormField label={t("bloodGroupLabel")}>
+            <select name="bloodGroup" defaultValue={summary?.bloodGroup ?? ""} className={inputClasses}>
               <option value="">{t("unknown")}</option>
               {BLOOD_GROUPS.map((bg) => (
                 <option key={bg} value={bg}>
@@ -137,43 +145,40 @@ function MedicalSummaryCard({
                 </option>
               ))}
             </select>
-          </label>
-          <label>
-            <span className="lbl">{t("allergiesLabel")}</span>
+          </FormField>
+          <FormField label={t("allergiesLabel")}>
             <textarea
               name="allergies"
               rows={3}
               defaultValue={summary?.allergies.join("\n")}
               placeholder={t("oneItemPerLine")}
-              className="field"
+              className={inputClasses}
             />
-          </label>
-          <label>
-            <span className="lbl">{t("chronicConditionsLabel")}</span>
+          </FormField>
+          <FormField label={t("chronicConditionsLabel")}>
             <textarea
               name="chronicConditions"
               rows={3}
               defaultValue={summary?.chronicConditions.join("\n")}
               placeholder={t("oneItemPerLine")}
-              className="field"
+              className={inputClasses}
             />
-          </label>
-          <label>
-            <span className="lbl">{t("activeMedicationsLabel")}</span>
+          </FormField>
+          <FormField label={t("activeMedicationsLabel")}>
             <textarea
               name="activeMedications"
               rows={3}
               defaultValue={summary?.activeMedications.join("\n")}
               placeholder={t("oneItemPerLine")}
-              className="field"
+              className={inputClasses}
             />
-          </label>
-          <button type="submit" className="btn sm tap-target self-start">
+          </FormField>
+          <button type="submit" className={primaryButtonClasses}>
             {t("saveMedicalSummary")}
           </button>
         </form>
       </details>
-    </div>
+    </Card>
   );
 }
 
@@ -188,44 +193,48 @@ function HistorySection({
 }) {
   return (
     <div className="mt-8">
-      <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
         {t("visitHistoryHeading")}
       </h2>
-      <div className="tl mt-3">
+      <Timeline>
         {entries.map((entry) => (
-          <div key={entry.appointmentId} className="tli">
-            <span className="td">{formatClinicDate(entry.scheduledStart, locale)}</span>
-            <div>
-              <b className="disp font-semibold">
+          <TimelineItem
+            key={entry.appointmentId}
+            date={formatClinicDate(entry.scheduledStart, locale)}
+            title={
+              <>
                 {entry.practitionerFullName}
                 {entry.diagnosis ? ` — ${entry.diagnosis}` : ""}
-              </b>
-              <small>
-                {entry.clinicName}
-                {entry.subjectType === "family_member" && entry.familyMemberFullName
-                  ? ` · ${entry.familyMemberFullName}`
-                  : ""}
-              </small>
-              <small>{entry.notes}</small>
-              {entry.prescriptionItems.length > 0 && (
-                <div className="rx mt-2">
-                  {entry.prescriptionItems.map((item, i) => (
-                    <div key={i} className="rxline">
-                      <div>
-                        <b>{item.drugName}</b>
-                        {item.instructions && <small>{item.instructions}</small>}
-                      </div>
-                      <span className="rxmeta">
-                        {[item.dosage, item.frequency, item.duration].filter(Boolean).join(" · ")}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+              </>
+            }
+          >
+            <p>
+              {entry.clinicName}
+              {entry.subjectType === "family_member" && entry.familyMemberFullName
+                ? ` · ${entry.familyMemberFullName}`
+                : ""}
+            </p>
+            {entry.notes && <p>{entry.notes}</p>}
+            {entry.prescriptionItems.length > 0 && (
+              <div className="mt-2 flex flex-col gap-1.5 rounded-md border border-border bg-surface-muted p-3">
+                {entry.prescriptionItems.map((item, i) => (
+                  <div key={i} className="flex items-baseline justify-between gap-3 text-sm">
+                    <span>
+                      <b className="font-semibold text-text">{item.drugName}</b>
+                      {item.instructions && (
+                        <span className="ms-1.5 text-text-muted">{item.instructions}</span>
+                      )}
+                    </span>
+                    <span className="shrink-0 text-xs text-text-muted">
+                      {[item.dosage, item.frequency, item.duration].filter(Boolean).join(" · ")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TimelineItem>
         ))}
-      </div>
+      </Timeline>
     </div>
   );
 }
@@ -258,108 +267,122 @@ function ShareSection({
 }) {
   return (
     <div className="mt-8">
-      <h2 className="lbl" style={{ color: "var(--color-ink-soft)" }}>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
         {t("shareHeading")}
       </h2>
 
-      <div className="pgrid mt-3">
-        {shares.length === 0 ? (
-          <p style={{ color: "var(--color-ink-soft)" }}>{t("noShares")}</p>
-        ) : (
-          shares.map((s) => {
+      {shares.length === 0 ? (
+        <EmptyState icon={Share2} title={t("noShares")} />
+      ) : (
+        <Card>
+          {shares.map((s) => {
             const status = shareStatus(s);
             const shareUrl = `/${locale}/s/${s.token}`;
             return (
-              <div key={s.id} className="prow">
-                <div className="min-w-0">
-                  <b>{s.familyMemberFullName ?? t("forSelf")}</b>
-                  {status === "active" && (
-                    <>
-                      <br />
+              <ListRow
+                key={s.id}
+                title={s.familyMemberFullName ?? t("forSelf")}
+                subtitle={
+                  <>
+                    {status === "active" && (
                       <a
                         href={shareUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mono text-sm"
-                        style={{ color: "var(--color-verified)" }}
+                        className="block text-primary-700 hover:text-primary-800"
                       >
                         {shareUrl}
                       </a>
-                    </>
-                  )}
-                  <br />
-                  <small>
-                    {status === "revoked"
-                      ? t("shareRevoked")
-                      : status === "expired"
-                        ? t("shareExpired")
-                        : s.expiresAt
-                          ? t("shareExpiresLabel", {
-                              date: `${formatClinicDate(s.expiresAt, locale)} ${formatClinicTime(s.expiresAt, locale)}`,
-                            })
-                          : t("shareNeverExpires")}
-                    {" · "}
-                    {t("shareOpenedCount", { count: s.accessCount })}
-                  </small>
-                </div>
-                {status !== "revoked" && (
-                  <form action={revoke}>
-                    <input type="hidden" name="shareId" value={s.id} />
-                    <button type="submit" className="qb tap-target">
-                      {t("revokeShare")}
-                    </button>
-                  </form>
-                )}
-              </div>
+                    )}
+                    <span>
+                      {status === "revoked"
+                        ? t("shareRevoked")
+                        : status === "expired"
+                          ? t("shareExpired")
+                          : s.expiresAt
+                            ? t("shareExpiresLabel", {
+                                date: `${formatClinicDate(s.expiresAt, locale)} ${formatClinicTime(s.expiresAt, locale)}`,
+                              })
+                            : t("shareNeverExpires")}
+                      {" · "}
+                      {t("shareOpenedCount", { count: s.accessCount })}
+                    </span>
+                  </>
+                }
+                action={
+                  status !== "revoked" && (
+                    <form action={revoke}>
+                      <input type="hidden" name="shareId" value={s.id} />
+                      <button type="submit" className={secondaryButtonClasses}>
+                        {t("revokeShare")}
+                      </button>
+                    </form>
+                  )
+                }
+              />
             );
-          })
-        )}
-      </div>
+          })}
+        </Card>
+      )}
 
-      <form action={create} className="slip mt-4 flex max-w-xl flex-col gap-3">
-        {familyMembers.length > 0 && (
-          <label>
-            <span className="lbl">{t("shareSubjectLabel")}</span>
-            <select name="familyMemberId" className="field tap-target">
-              <option value="">{t("forSelf")}</option>
-              {familyMembers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.fullName}
-                </option>
-              ))}
-            </select>
+      <Card padding="lg" className="mt-4 max-w-xl">
+        <form action={create} className="flex flex-col gap-3">
+          {familyMembers.length > 0 && (
+            <FormField label={t("shareSubjectLabel")}>
+              <select name="familyMemberId" className={inputClasses}>
+                <option value="">{t("forSelf")}</option>
+                {familyMembers.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          )}
+          <label className="flex items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              name="includeClinicalHistory"
+              defaultChecked
+              className="size-4 accent-primary-600"
+            />
+            <span className="text-sm text-text">
+              {t("shareIncludeClinicalHistory")}
+              <small className="block text-xs text-text-muted">
+                {t("shareIncludeClinicalHistoryHint")}
+              </small>
+            </span>
           </label>
-        )}
-        <label className="trow items-center">
-          <span>
-            {t("shareIncludeClinicalHistory")}
-            <small>{t("shareIncludeClinicalHistoryHint")}</small>
-          </span>
-          <input type="checkbox" name="includeClinicalHistory" defaultChecked />
-        </label>
-        <label className="trow items-center">
-          <span>{t("shareIncludeLabReports")}</span>
-          <input type="checkbox" name="includeLabReports" defaultChecked />
-        </label>
-        <label className="trow items-center">
-          <span>
-            {t("shareIncludeOtherRecords")}
-            <small>{t("shareIncludeOtherRecordsHint")}</small>
-          </span>
-          <input type="checkbox" name="includeOtherRecords" />
-        </label>
-        <label>
-          <span className="lbl">{t("shareDurationLabel")}</span>
-          <select name="duration" defaultValue="7d" className="field tap-target">
-            <option value="24h">{t("duration24h")}</option>
-            <option value="7d">{t("duration7d")}</option>
-            <option value="forever">{t("durationForever")}</option>
-          </select>
-        </label>
-        <button type="submit" className="btn tap-target self-start">
-          {t("createShare")}
-        </button>
-      </form>
+          <label className="flex items-center gap-3 py-1">
+            <input
+              type="checkbox"
+              name="includeLabReports"
+              defaultChecked
+              className="size-4 accent-primary-600"
+            />
+            <span className="text-sm text-text">{t("shareIncludeLabReports")}</span>
+          </label>
+          <label className="flex items-center gap-3 py-1">
+            <input type="checkbox" name="includeOtherRecords" className="size-4 accent-primary-600" />
+            <span className="text-sm text-text">
+              {t("shareIncludeOtherRecords")}
+              <small className="block text-xs text-text-muted">
+                {t("shareIncludeOtherRecordsHint")}
+              </small>
+            </span>
+          </label>
+          <FormField label={t("shareDurationLabel")}>
+            <select name="duration" defaultValue="7d" className={inputClasses}>
+              <option value="24h">{t("duration24h")}</option>
+              <option value="7d">{t("duration7d")}</option>
+              <option value="forever">{t("durationForever")}</option>
+            </select>
+          </FormField>
+          <button type="submit" className={primaryButtonClasses}>
+            {t("createShare")}
+          </button>
+        </form>
+      </Card>
     </div>
   );
 }
@@ -400,11 +423,8 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
   }
 
   return (
-    <div className="max-w-6xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("heading")}</h1>
+    <div>
+      <PageHeader icon={FolderHeart} kicker="CareConnect" title={t("heading")} />
 
       <MedicalSummaryCard
         heading={t("forSelf")}
@@ -424,9 +444,9 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
       ))}
 
       {records.length === 0 ? (
-        <p className="mt-6" style={{ color: "var(--color-ink-soft)" }}>
-          {t("empty")}
-        </p>
+        <div className="mt-6">
+          <EmptyState icon={FolderHeart} title={t("empty")} />
+        </div>
       ) : (
         <>
           {selfRecords.length > 0 && (
@@ -447,42 +467,42 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
         </>
       )}
 
-      <form action={upload} className="slip mt-8 flex max-w-2xl flex-wrap items-end gap-3">
-        <label>
-          <span className="lbl">{t("recordTypeLabel")}</span>
-          <select name="recordType" className="field tap-target">
-            <option value="prescription_photo">{t("types.prescription_photo")}</option>
-            <option value="lab_report">{t("types.lab_report")}</option>
-            <option value="other_document">{t("types.other_document")}</option>
-          </select>
-        </label>
-        {familyMembers.length > 0 && (
-          <label>
-            <span className="lbl">{t("familyMemberLabel")}</span>
-            <select name="familyMemberId" className="field tap-target">
-              <option value="">{t("forSelf")}</option>
-              {familyMembers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.fullName}
-                </option>
-              ))}
+      <Card padding="lg" className="mt-8 max-w-2xl">
+        <form action={upload} className="flex flex-wrap items-end gap-3">
+          <FormField label={t("recordTypeLabel")}>
+            <select name="recordType" className={inputClasses}>
+              <option value="prescription_photo">{t("types.prescription_photo")}</option>
+              <option value="lab_report">{t("types.lab_report")}</option>
+              <option value="other_document">{t("types.other_document")}</option>
             </select>
-          </label>
-        )}
-        <label>
-          <span className="lbl">{t("fileLabel")}</span>
-          <input
-            type="file"
-            name="file"
-            required
-            accept="application/pdf,image/jpeg,image/png,image/heic"
-            className="tap-target"
-          />
-        </label>
-        <button type="submit" className="btn tap-target">
-          {t("upload")}
-        </button>
-      </form>
+          </FormField>
+          {familyMembers.length > 0 && (
+            <FormField label={t("familyMemberLabel")}>
+              <select name="familyMemberId" className={inputClasses}>
+                <option value="">{t("forSelf")}</option>
+                {familyMembers.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          )}
+          <FormField label={t("fileLabel")}>
+            <input
+              type="file"
+              name="file"
+              required
+              accept="application/pdf,image/jpeg,image/png,image/heic"
+              className="tap-target text-sm"
+            />
+          </FormField>
+          <button type="submit" className="tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800">
+            <Upload aria-hidden className="size-4" />
+            {t("upload")}
+          </button>
+        </form>
+      </Card>
 
       {history.length > 0 && <HistorySection entries={history} t={t} locale={locale} />}
 

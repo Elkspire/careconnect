@@ -1,3 +1,4 @@
+import { CalendarCheck, FolderHeart, LayoutDashboard, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
@@ -5,6 +6,11 @@ import { getMyProfile, listFamilyMembers } from "@/lib/api/patients";
 import { listMyAppointments } from "@/lib/api/booking";
 import { listVaultRecords } from "@/lib/api/vault";
 import { PushNotifications } from "@/components/push-notifications";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatGrid, StatTile } from "@/components/ui/stat-tile";
+import { Card } from "@/components/ui/card";
+import { Alert } from "@/components/ui/alert";
+import { FormField } from "@/components/ui/form-field";
 import { saveProfileAction } from "../actions";
 
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
@@ -21,76 +27,64 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
   const upcomingCount = appointments.filter((a) => a.status === "booked").length;
 
   return (
-    <div className="max-w-5xl">
-      <p className="kicker" style={{ color: "var(--color-verified)" }}>
-        CareConnect
-      </p>
-      <h1 className="disp mt-2 text-2xl font-bold">{t("dashboardHeading")}</h1>
+    <div>
+      <PageHeader icon={LayoutDashboard} kicker="CareConnect" title={t("dashboardHeading")} />
 
-      <div className="stats mt-6">
-        <div className="stat">
-          <b>{upcomingCount}</b>
-          <em>{t("appointmentsHeading")}</em>
-        </div>
-        <div className="stat">
-          <b>{familyMembers.length}</b>
-          <em>{t("familyMembersHeading")}</em>
-        </div>
-        <div className="stat">
-          <b>{records.length}</b>
-          <em>{t("vaultHeading")}</em>
-        </div>
-      </div>
+      <StatGrid>
+        <StatTile icon={CalendarCheck} value={upcomingCount} label={t("appointmentsHeading")} />
+        <StatTile icon={Users} value={familyMembers.length} label={t("familyMembersHeading")} />
+        <StatTile icon={FolderHeart} value={records.length} label={t("vaultHeading")} />
+      </StatGrid>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="slip">
+        <Card padding="lg">
           {!profile && (
-            <div className="alert mb-5">
-              <div>
-                <b>{t("createProfilePrompt")}</b>
-              </div>
+            <div className="mb-5">
+              <Alert tone="warning" title={t("createProfilePrompt")} />
             </div>
           )}
 
           <form action={action} className="flex flex-col gap-4">
-            <label>
-              <span className="lbl">{t("fullNameLabel")}</span>
+            <FormField label={t("fullNameLabel")}>
               <input
                 type="text"
                 name="fullName"
                 required
                 defaultValue={profile?.fullName}
-                className="field tap-target"
+                className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               />
-            </label>
-            <label>
-              <span className="lbl">{t("preferredLanguageLabel")}</span>
+            </FormField>
+            <FormField label={t("preferredLanguageLabel")}>
               <select
                 name="preferredLanguage"
                 defaultValue={profile?.preferredLanguage ?? locale}
-                className="field tap-target"
+                className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               >
                 <option value="en">English</option>
                 <option value="ur">اردو</option>
               </select>
-            </label>
-            <button type="submit" className="btn tap-target self-start">
+            </FormField>
+            <button
+              type="submit"
+              className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
+            >
               {t("saveProfile")}
             </button>
           </form>
-        </div>
+        </Card>
 
-        <div className="slip">
-          <h4 className="lbl">{t("preferencesHeading")}</h4>
+        <Card padding="lg">
+          <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted">
+            {t("preferencesHeading")}
+          </h4>
           <PushNotifications />
-        </div>
+        </Card>
       </div>
 
       <Link
         href="/onboarding/practitioner"
         locale={locale as AppLocale}
-        className="mono mt-6 inline-block text-xs"
-        style={{ color: "var(--color-ink-soft)" }}
+        className="mt-6 inline-block text-xs font-medium text-text-muted hover:text-text"
       >
         {tOnboarding("becomeProviderLink")}
       </Link>

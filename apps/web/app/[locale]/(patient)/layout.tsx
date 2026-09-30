@@ -1,45 +1,41 @@
+import { Bell, CalendarCheck, FolderHeart, LayoutDashboard, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
 
 export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
   const { locale } = await props.params;
   const t = await getTranslations("patient");
 
-  const navItems: Array<{
-    href:
-      | "/patient"
-      | "/directory"
-      | "/patient/appointments"
-      | "/patient/family"
-      | "/patient/vault"
-      | "/patient/notifications";
-    label: string;
-  }> = [
-    { href: "/patient", label: t("dashboardHeading") },
+  const navItems = [
+    { href: "/patient", label: t("dashboardHeading"), icon: LayoutDashboard },
     // Booking a new appointment starts from the directory search (pick a
     // doctor, then a clinic) — "Appointments" below only ever showed
     // *existing* bookings, with nothing in the patient area pointing back
     // at the directory to start a new one.
-    { href: "/directory", label: t("findDoctor") },
-    { href: "/patient/appointments", label: t("appointmentsHeading") },
-    { href: "/patient/family", label: t("familyMembersHeading") },
-    { href: "/patient/vault", label: t("vaultHeading") },
-    { href: "/patient/notifications", label: t("notificationsHeading") },
-  ];
+    { href: "/directory", label: t("findDoctor"), icon: Search },
+    { href: "/patient/appointments", label: t("appointmentsHeading"), icon: CalendarCheck },
+    { href: "/patient/family", label: t("familyMembersHeading"), icon: Users },
+    { href: "/patient/vault", label: t("vaultHeading"), icon: FolderHeart },
+    { href: "/patient/notifications", label: t("notificationsHeading"), icon: Bell },
+  ] as const;
 
   return (
-    <div className="dash-shell flex flex-1 flex-col md:flex-row">
-      <aside className="dash-sidebar">
-        <nav className="flex flex-row overflow-x-auto md:flex-col md:overflow-visible md:py-4">
+    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-8">
+      <Sidebar>
+        <SidebarNav>
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} locale={locale as AppLocale} className="dash-navlink tap-target">
-              {item.label}
-            </Link>
+            <SidebarLink
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+              locale={locale as AppLocale}
+            />
           ))}
-        </nav>
-      </aside>
-      <main className="dash-main">{props.children}</main>
+        </SidebarNav>
+        <SidebarMain>{props.children}</SidebarMain>
+      </Sidebar>
     </div>
   );
 }

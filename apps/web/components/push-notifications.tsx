@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { API_URL } from "@/lib/api/config";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 type Status = "unsupported" | "default" | "denied" | "subscribed" | "checking" | "working";
 
@@ -152,21 +153,22 @@ export function PushNotifications() {
   const isLocked = status === "checking" || status === "working" || status === "denied";
 
   return (
-    <div className="trow">
-      <span>
+    <div className="flex items-center gap-3 py-1.5">
+      <span className="text-sm text-text">
         {t("enableNotifications")}
-        {status === "denied" && <small>{t("notificationsBlocked")}</small>}
-        {error && <small>{t("notificationsError")}</small>}
+        {status === "denied" && (
+          <small className="block text-xs text-text-muted">{t("notificationsBlocked")}</small>
+        )}
+        {error && <small className="block text-xs text-danger-fg">{t("notificationsError")}</small>}
       </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={isOn}
-        aria-label={t("enableNotifications")}
-        disabled={isLocked}
-        onClick={handleToggle}
-        className={`tg ${isOn ? "on" : ""} ${isLocked ? "lock" : ""}`}
-      />
+      <div className="ms-auto">
+        <ToggleSwitch
+          checked={isOn}
+          onChange={handleToggle}
+          label={t("enableNotifications")}
+          disabled={isLocked}
+        />
+      </div>
     </div>
   );
 }
