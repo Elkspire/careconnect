@@ -140,10 +140,26 @@ function extractApiErrorMessage(err: unknown): string {
   }
   try {
     const parsed: unknown = JSON.parse(err.message.slice(jsonStart));
-    if (parsed && typeof parsed === "object" && "message" in parsed) {
-      const { message } = parsed as { message: unknown };
-      if (typeof message === "string") return message;
-      if (Array.isArray(message)) return message.join(", ");
+    if (parsed && typeof parsed === "object") {
+      // nestjs-zod's validation exception puts the actual per-field reason
+      // in `errors` (a zod issue list) and leaves the top-level `message`
+      // as a generic "Validation failed" — that generic string is useless
+      // shown on its own, so prefer the real issue text when present.
+      if ("errors" in parsed && Array.isArray(parsed.errors) && parsed.errors.length > 0) {
+        const issues = parsed.errors
+          .map((issue: unknown) =>
+            issue && typeof issue === "object" && "message" in issue
+              ? String((issue as { message: unknown }).message)
+              : null,
+          )
+          .filter((m: string | null): m is string => !!m);
+        if (issues.length > 0) return issues.join(" ");
+      }
+      if ("message" in parsed) {
+        const { message } = parsed as { message: unknown };
+        if (typeof message === "string") return message;
+        if (Array.isArray(message)) return message.join(", ");
+      }
     }
   } catch {
     // Not JSON — fall through to the raw message below.
