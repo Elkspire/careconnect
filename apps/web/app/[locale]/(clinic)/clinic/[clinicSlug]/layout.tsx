@@ -44,7 +44,7 @@ export default async function ClinicLayout(
             <SidebarLink
               key={item.href}
               href={item.href}
-              icon={item.icon}
+              icon={<item.icon aria-hidden className="size-4.5 shrink-0" />}
               label={item.label}
               locale={locale as AppLocale}
             />

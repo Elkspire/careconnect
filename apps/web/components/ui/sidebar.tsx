@@ -1,6 +1,5 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
@@ -28,12 +27,17 @@ export function SidebarNav({ children }: { children: ReactNode }) {
 
 export function SidebarLink({
   href,
-  icon: Icon,
+  icon,
   label,
   locale,
 }: {
   href: string;
-  icon: LucideIcon;
+  // A rendered element, not a component reference — a bare component type
+  // (e.g. passing the LucideIcon function itself) can't cross the server
+  // Component -> Client Component boundary this component sits on, since
+  // function values aren't serializable. Server callers pass
+  // `<Icon aria-hidden className="..." />` here, not `icon={Icon}`.
+  icon: ReactNode;
   label: string;
   locale: AppLocale;
 }) {
@@ -51,7 +55,7 @@ export function SidebarLink({
           : "border-s-transparent text-text-muted hover:bg-surface-muted hover:text-text"
       }`}
     >
-      <Icon aria-hidden className="size-4.5 shrink-0" />
+      {icon}
       <span className="whitespace-nowrap">{label}</span>
     </Link>
   );
