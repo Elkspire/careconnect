@@ -104,18 +104,51 @@ export async function inviteStaffAction(
   const role: AssignableStaffRole = roleRaw === "junior_doctor" ? roleRaw : "receptionist";
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
-  await inviteStaff(clinicId, {
-    clinicId,
-    phone: phone || undefined,
-    email: email || undefined,
-    fullName: String(formData.get("fullName") ?? ""),
-    role,
-    deniedPermissions: formData
-      .getAll("deniedPermissions")
-      .map(String)
-      .filter((v): v is StaffPermissionKey => (STAFF_PERMISSION_KEY as readonly string[]).includes(v)),
-  });
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+  const staffPath = `/${locale}/clinic/${clinicSlug}/staff`;
+
+  try {
+    await inviteStaff(clinicId, {
+      clinicId,
+      phone: phone || undefined,
+      email: email || undefined,
+      fullName: String(formData.get("fullName") ?? ""),
+      role,
+      deniedPermissions: formData
+        .getAll("deniedPermissions")
+        .map(String)
+        .filter((v): v is StaffPermissionKey => (STAFF_PERMISSION_KEY as readonly string[]).includes(v)),
+    });
+  } catch (err) {
+    // inviteStaff throws a plain Error whose message embeds the API's raw
+    // JSON body (see parseJsonOrThrow) — e.g. "Invite staff failed: 404
+    // {"message":"No CareConnect account found...",...}". Left uncaught,
+    // this crashed the whole page with a generic error screen instead of
+    // showing the invitee-facing reason (wrong phone/email, not signed up
+    // yet, no practitioner profile for a junior doctor) next to the form.
+    redirect(`${staffPath}?inviteError=${encodeURIComponent(extractApiErrorMessage(err))}`);
+  }
+  revalidatePath(staffPath);
+}
+
+function extractApiErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) {
+    return "Something went wrong. Please try again.";
+  }
+  const jsonStart = err.message.indexOf("{");
+  if (jsonStart === -1) {
+    return err.message;
+  }
+  try {
+    const parsed: unknown = JSON.parse(err.message.slice(jsonStart));
+    if (parsed && typeof parsed === "object" && "message" in parsed) {
+      const { message } = parsed as { message: unknown };
+      if (typeof message === "string") return message;
+      if (Array.isArray(message)) return message.join(", ");
+    }
+  } catch {
+    // Not JSON — fall through to the raw message below.
+  }
+  return err.message;
 }
 
 export async function revokeStaffAction(
