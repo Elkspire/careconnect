@@ -99,15 +99,18 @@ export default function LoginPage() {
   const inputClasses =
     "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
   const primaryButtonClasses =
-    "tap-target rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:opacity-60";
+    "tap-target w-full rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:opacity-60";
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-10">
+    <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center px-4 py-10">
       <Card padding="lg">
         <div className="mb-5 text-center">
           <Stethoscope aria-hidden className="mx-auto size-9 text-primary-600" />
         </div>
         <h1 className="text-center text-xl font-bold text-text">{t("heading")}</h1>
+        {step === "input" && (
+          <p className="mt-1 text-center text-sm text-text-muted">{t("subtitle")}</p>
+        )}
 
         {step === "input" && PHONE_LOGIN_ENABLED && (
           <div className="mt-4 flex gap-2">

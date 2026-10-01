@@ -55,6 +55,7 @@
   },
   "auth": {
     "heading": "Log in or sign up",
+    "subtitle": "Enter your email and we'll send you a one-time code",
     "methodPhone": "Phone",
     "methodEmail": "Email",
     "phoneLabel": "Phone number",
