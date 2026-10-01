@@ -17,6 +17,7 @@ import type {
 } from '@careconnect/validation';
 import type { RecordType } from '@careconnect/shared-types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   and,
   desc,
@@ -30,6 +31,7 @@ import {
   sql,
 } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
+import { SUPABASE_ADMIN } from '../../common/supabase/supabase-admin.module';
 import {
   appointments,
   authUsers,
@@ -57,6 +59,7 @@ import { VaultService, type UploadedFile } from '../vault/vault.service';
 export class ClinicService {
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
+    @Inject(SUPABASE_ADMIN) private readonly supabaseAdmin: SupabaseClient,
     private readonly eventEmitter: EventEmitter2,
     private readonly vaultService: VaultService,
     private readonly medicalSummaryService: MedicalSummaryService,
@@ -228,10 +231,14 @@ export class ClinicService {
   }
 
   /**
-   * Staff must already have a Supabase account (found by phone or email) —
-   * this app has no server-side user-creation flow yet, so a clinic can only
-   * invite someone who has signed in to CareConnect at least once. A real
-   * pending-invite flow is future work tied to the M7 notifications module.
+   * Staff don't need an account before being invited — if no Supabase user
+   * exists yet for the given phone/email, one is created here (service-role
+   * Auth Admin API) so the invite always succeeds. The invitee then just
+   * logs in normally at the regular login page; post-login routes them to
+   * the clinic dashboard since their clinicStaff row already exists. This
+   * replaces the earlier "ask them to sign in first" 404 — there was no
+   * self-service "register as receptionist/junior doctor" flow for them to
+   * go complete, so that error was a dead end.
    */
   async inviteStaff(
     clinicId: string,
@@ -242,7 +249,7 @@ export class ClinicService {
     // input.phone, when given, is validated E.164 (leading '+'), but
     // Supabase Auth stores auth.users.phone without it. Email lookups use
     // lowercase since Supabase normalizes emails to lowercase on signup.
-    const [user] = input.phone
+    const [existing] = input.phone
       ? await this.db
           .select({ id: authUsers.id })
           .from(authUsers)
@@ -253,12 +260,30 @@ export class ClinicService {
           .from(authUsers)
           .where(eq(authUsers.email, input.email!.toLowerCase()))
           .limit(1);
+
+    let user = existing;
     if (!user) {
-      throw new NotFoundException(
-        input.phone
-          ? 'No CareConnect account found for this phone number yet — ask them to sign in to the app first'
-          : 'No CareConnect account found for this email yet — ask them to sign in to the app first',
-      );
+      // email_confirm/phone_confirm: true — they're trusted by the inviting
+      // clinic owner, not self-signed-up, so there's no "confirm your
+      // email" step to make them go through before their first OTP login
+      // works.
+      const { data, error } = input.phone
+        ? await this.supabaseAdmin.auth.admin.createUser({
+            phone: input.phone.replace(/^\+/, ''),
+            phone_confirm: true,
+            user_metadata: { full_name: input.fullName },
+          })
+        : await this.supabaseAdmin.auth.admin.createUser({
+            email: input.email!.toLowerCase(),
+            email_confirm: true,
+            user_metadata: { full_name: input.fullName },
+          });
+      if (error || !data.user) {
+        throw new BadRequestException(
+          `Could not create an account for this ${input.phone ? 'phone number' : 'email'}: ${error?.message ?? 'unknown error'}`,
+        );
+      }
+      user = { id: data.user.id };
     }
 
     // A junior doctor co-authors clinical notes under this clinic (see

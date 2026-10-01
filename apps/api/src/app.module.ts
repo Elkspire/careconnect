@@ -9,6 +9,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { ClinicRoleGuard } from './common/guards/clinic-role.guard';
 import { SupabaseAuthGuard } from './common/guards/supabase-auth.guard';
 import { StorageModule } from './common/storage/storage.module';
+import { SupabaseAdminModule } from './common/supabase/supabase-admin.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -31,6 +32,7 @@ import { VerificationModule } from './modules/verification/verification.module';
     ScheduleModule.forRoot(),
     DatabaseModule,
     StorageModule,
+    SupabaseAdminModule,
     AuditModule,
     AuthModule,
     DirectoryModule,
