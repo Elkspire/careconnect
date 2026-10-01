@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +10,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 
 type Method = "phone" | "email";
+type Role = "patient" | "practitioner";
 
 // Temporarily off: phone OTP delivery has no reliable SMS provider
 // configured, so offering it just leads to a code that never arrives.
@@ -19,17 +20,23 @@ const PHONE_LOGIN_ENABLED = false;
 
 export default function LoginPage() {
   const t = useTranslations("auth");
+  const tOnboarding = useTranslations("onboarding");
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/post-login";
+  const explicitNext = searchParams.get("next");
 
   const [method, setMethod] = useState<Method>(PHONE_LOGIN_ENABLED ? "phone" : "email");
   const [step, setStep] = useState<"input" | "otp">("input");
+  const [role, setRole] = useState<Role | null>(null);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  // Only a brand-new account (nothing decided yet) ever looks at this hint
+  // — see post-login/page.tsx. An explicit deep-link `next` always wins.
+  const effectiveNext = explicitNext ?? (role ? `/post-login?roleHint=${role}` : "/post-login");
 
   const identifier = method === "phone" ? phone : email;
 
@@ -54,7 +61,7 @@ export default function LoginPage() {
               // The typed-code flow below never uses this — only a clicked
               // link does, landing on the callback route to exchange its
               // PKCE code for a session server-side.
-              emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(next)}`,
+              emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(effectiveNext)}`,
             },
           });
     setPending(false);
@@ -93,7 +100,7 @@ export default function LoginPage() {
     // load guarantees the browser sends the real cookie jar and proxy.ts
     // re-evaluates from scratch.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    window.location.href = `/${locale}${next}`;
+    window.location.href = `/${locale}${effectiveNext}`;
   }
 
   const inputClasses =
@@ -110,6 +117,47 @@ export default function LoginPage() {
         <h1 className="text-center text-xl font-bold text-text">{t("heading")}</h1>
         {step === "input" && (
           <p className="mt-1 text-center text-sm text-text-muted">{t("subtitle")}</p>
+        )}
+
+        {step === "input" && (
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setRole(role === "patient" ? null : "patient")}
+              aria-pressed={role === "patient"}
+              className={`rounded-lg border-2 p-4 text-center transition ${
+                role === "patient"
+                  ? "border-primary-600 bg-primary-50"
+                  : "border-border hover:border-primary-500"
+              }`}
+            >
+              <UserRound aria-hidden className="mx-auto size-7 text-primary-600" />
+              <p className="mt-1.5 text-sm font-semibold text-text">
+                {tOnboarding("patientOption")}
+              </p>
+              <p className="mt-0.5 text-xs text-text-muted">
+                {tOnboarding("patientOptionDesc")}
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole(role === "practitioner" ? null : "practitioner")}
+              aria-pressed={role === "practitioner"}
+              className={`rounded-lg border-2 p-4 text-center transition ${
+                role === "practitioner"
+                  ? "border-primary-600 bg-primary-50"
+                  : "border-border hover:border-primary-500"
+              }`}
+            >
+              <Stethoscope aria-hidden className="mx-auto size-7 text-primary-600" />
+              <p className="mt-1.5 text-sm font-semibold text-text">
+                {tOnboarding("practitionerOption")}
+              </p>
+              <p className="mt-0.5 text-xs text-text-muted">
+                {tOnboarding("practitionerOptionDesc")}
+              </p>
+            </button>
+          </div>
         )}
 
         {step === "input" && PHONE_LOGIN_ENABLED && (
