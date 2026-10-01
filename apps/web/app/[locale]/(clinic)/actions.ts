@@ -127,7 +127,13 @@ export async function inviteStaffAction(
     // yet, no practitioner profile for a junior doctor) next to the form.
     redirect(`${staffPath}?inviteError=${encodeURIComponent(extractApiErrorMessage(err))}`);
   }
+  // A plain revalidatePath (no redirect) left a successful invite re-render
+  // at whatever URL the form was submitted from — if that still carried an
+  // ?inviteError= from a prior failed attempt, the error alert kept showing
+  // even though this submission succeeded. Redirecting to a clean "?invited"
+  // URL both clears that stale error and shows an explicit success alert.
   revalidatePath(staffPath);
+  redirect(`${staffPath}?invited=1`);
 }
 
 function extractApiErrorMessage(err: unknown): string {

@@ -31,6 +31,7 @@ export default async function ClinicStaffPage(
   const { locale, clinicSlug } = await props.params;
   const sp = await props.searchParams;
   const inviteError = typeof sp.inviteError === "string" ? sp.inviteError : undefined;
+  const invited = sp.invited === "1";
   const [t, staffCtx] = await Promise.all([
     getTranslations("clinic"),
     resolveClinicStaffBySlug(clinicSlug),
@@ -109,6 +110,11 @@ export default async function ClinicStaffPage(
 
       <Card padding="lg" className="mt-8">
         <p className="text-sm text-text-muted">{t("invitePrompt")}</p>
+        {invited && (
+          <div className="mt-3">
+            <Alert tone="success" title={t("inviteSuccess")} />
+          </div>
+        )}
         {inviteError && (
           <div className="mt-3">
             <Alert tone="danger" title={inviteError} />
