@@ -18,3 +18,9 @@ export const verifyOtpSchema = z.object({
   code: z.string().length(6, "OTP code must be 6 digits"),
 });
 export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
+
+export const checkRoleEligibilitySchema = z.object({
+  email: z.string().email(),
+  role: z.enum(["patient", "practitioner"]),
+});
+export type CheckRoleEligibilityQuery = z.infer<typeof checkRoleEligibilitySchema>;

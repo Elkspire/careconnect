@@ -70,7 +70,9 @@
     "changeEmail": "Use a different email",
     "sentCodeTo": "We sent a code to {identifier}",
     "error": "Something went wrong. Please try again.",
-    "invalidCode": "That code is not valid."
+    "invalidCode": "That code is not valid.",
+    "roleMismatchPatient": "This email belongs to a healthcare provider account. Select \"I'm a healthcare provider\" instead.",
+    "roleMismatchPractitioner": "This email belongs to a patient account. Select \"I'm looking for a doctor\" instead."
   },
   "patient": {
     "dashboardHeading": "My account",

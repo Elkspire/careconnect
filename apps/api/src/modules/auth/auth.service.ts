@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
+  authUsers,
   clinicStaff,
   clinics,
   patients,
@@ -69,5 +70,54 @@ export class AuthService {
     ]);
 
     return { patient, practitioner, clinicStaff: staffRows };
+  }
+
+  /**
+   * Lets the login page reject a role pick before sending an OTP, e.g. a
+   * doctor selecting "I'm looking for a doctor" with their practice email.
+   * A brand-new email (no CareConnect account yet) is always eligible for
+   * either role — the role only matters once an account actually exists.
+   * Clinic staff (receptionist etc., no practitioners row of their own)
+   * count as the provider side, matching the login page's two cards.
+   */
+  async checkRoleEligibility(
+    email: string,
+    role: 'patient' | 'practitioner',
+  ): Promise<{ ok: boolean }> {
+    const [authUser] = await this.db
+      .select({ id: authUsers.id })
+      .from(authUsers)
+      .where(eq(authUsers.email, email.toLowerCase()))
+      .limit(1);
+    if (!authUser) {
+      return { ok: true };
+    }
+
+    const [patient, practitioner, staffRows] = await Promise.all([
+      this.db
+        .select({ id: patients.id })
+        .from(patients)
+        .where(eq(patients.id, authUser.id))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      this.db
+        .select({ id: practitioners.id })
+        .from(practitioners)
+        .where(eq(practitioners.id, authUser.id))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+      this.db
+        .select({ id: clinicStaff.id })
+        .from(clinicStaff)
+        .where(eq(clinicStaff.userId, authUser.id))
+        .limit(1),
+    ]);
+
+    const hasPatient = !!patient;
+    const isProvider = !!practitioner || staffRows.length > 0;
+    if (!hasPatient && !isProvider) {
+      return { ok: true };
+    }
+    return { ok: role === 'patient' ? hasPatient : isProvider };
   }
 }

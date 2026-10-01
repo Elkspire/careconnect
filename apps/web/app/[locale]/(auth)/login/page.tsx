@@ -5,6 +5,7 @@ import { Stethoscope, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { checkRoleEligibility } from "@/lib/api/auth";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
@@ -51,6 +52,16 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setPending(true);
+
+    if (role && method === "email") {
+      const eligible = await checkRoleEligibility(email, role);
+      if (!eligible) {
+        setPending(false);
+        setError(role === "patient" ? t("roleMismatchPatient") : t("roleMismatchPractitioner"));
+        return;
+      }
+    }
+
     const supabase = createClient();
     const { error: sendError } =
       method === "phone"
