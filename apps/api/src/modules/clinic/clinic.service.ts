@@ -311,6 +311,7 @@ export class ClinicService {
         role: input.role,
         status: 'active',
         invitedBy,
+        fullName: input.fullName,
         revokedPermissions: input.deniedPermissions,
       })
       .onConflictDoUpdate({
@@ -318,6 +319,7 @@ export class ClinicService {
         set: {
           role: input.role,
           status: 'active',
+          fullName: input.fullName,
           revokedPermissions: input.deniedPermissions,
         },
       })
@@ -330,8 +332,12 @@ export class ClinicService {
    * owner's staff page — and the assignment picker below, which otherwise
    * has nothing but indistinguishable user ids to choose between — can
    * show who's who. Owner/junior_doctor always have a practitioners row
-   * (see inviteStaff's check above); receptionist doesn't, hence the left
-   * join and the phone-number fallback.
+   * (see inviteStaff's check above), which is their real registered name —
+   * preferred over the invite-time fullName if both exist. Receptionist/
+   * assistant have no practitioners row, so clinicStaff.fullName (set at
+   * invite time) is all there is; the phone/email fallback below only
+   * fires for the handful of pre-migration rows invited before that column
+   * existed.
    */
   listStaff(clinicId: string) {
     return this.db
@@ -342,7 +348,9 @@ export class ClinicService {
         role: clinicStaff.role,
         status: clinicStaff.status,
         revokedPermissions: clinicStaff.revokedPermissions,
-        fullName: practitioners.fullName,
+        fullName: sql<
+          string | null
+        >`coalesce(${practitioners.fullName}, ${clinicStaff.fullName})`,
         phone: authUsers.phone,
         email: authUsers.email,
       })

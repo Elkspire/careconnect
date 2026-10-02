@@ -584,6 +584,10 @@ export const clinicStaff = pgTable(
     role: clinicStaffRoleEnum('role').notNull(),
     status: clinicStaffStatusEnum('status').notNull().default('invited'),
     invitedBy: uuid('invited_by').references(() => authUsers.id),
+    // Set from the invite form at invite time. Only actually displayed for
+    // a role with no practitioners row to resolve a real name from
+    // (receptionist/assistant) — see ClinicService.listStaff's coalesce.
+    fullName: text('full_name'),
     revokedPermissions: text('revoked_permissions')
       .array()
       .notNull()
