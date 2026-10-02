@@ -2,15 +2,23 @@ import { CheckCircle2, Clock3, Search, Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { listSpecialties } from "@/lib/api/practitioners";
+import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 
 export default async function HomePage(props: PageProps<"/[locale]">) {
   const { locale } = await props.params;
-  const [t, tSite, specialties] = await Promise.all([
+  const [t, tSite, specialties, supabase] = await Promise.all([
     getTranslations("directory"),
     getTranslations("site"),
     listSpecialties(),
+    createClient(),
   ]);
+  // Mirrors SiteHeader's login/"My Account" check — the hero's second CTA
+  // had never looked at auth state, so it kept inviting an already-signed-in
+  // visitor to log in again instead of taking them to their dashboard.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <main className="w-full flex-1 bg-bg">
@@ -38,11 +46,11 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
                   {t("heading")}
                 </Link>
                 <Link
-                  href="/login"
+                  href={user ? "/post-login" : "/login"}
                   locale={locale}
                   className="tap-target inline-flex items-center gap-2 rounded-md border-2 border-white/50 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
                 >
-                  {tSite("login")}
+                  {user ? tSite("myAccount") : tSite("login")}
                 </Link>
               </div>
             </div>
