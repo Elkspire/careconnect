@@ -394,6 +394,7 @@
     "languagesPlaceholder": "English, Urdu",
     "specialtiesLabel": "Specialties",
     "specialtiesHint": "Pick at least one",
+    "specialtiesRequired": "Please pick at least one specialty.",
     "clinicSectionHeading": "Your clinic",
     "clinicNameLabel": "Clinic name",
     "clinicCityLabel": "City",

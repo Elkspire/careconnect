@@ -3,6 +3,7 @@ import { Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { listSpecialties } from "@/lib/api/practitioners";
 import { getMe } from "@/lib/api/me";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { FormField } from "@/components/ui/form-field";
@@ -17,6 +18,7 @@ export default async function PractitionerOnboardingPage(
   props: PageProps<"/[locale]/onboarding/practitioner">,
 ) {
   const { locale } = await props.params;
+  const { error } = await props.searchParams;
   const [t, me, specialties] = await Promise.all([
     getTranslations("onboarding"),
     getMe(),
@@ -36,6 +38,13 @@ export default async function PractitionerOnboardingPage(
         <PageHeader icon={Stethoscope} title={t("practitionerHeading")} />
 
         <form action={action} className="flex flex-col gap-4">
+          {error && (
+            <Alert
+              tone="danger"
+              title={error === "specialties" ? t("specialtiesRequired") : t("error")}
+            />
+          )}
+
           {!alreadyRegistered && (
             <>
               <FormField label={t("fullNameLabel")}>
