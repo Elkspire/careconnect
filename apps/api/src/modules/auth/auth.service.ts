@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
   authUsers,
@@ -78,11 +78,17 @@ export class AuthService {
    * A brand-new email (no CareConnect account yet) is always eligible for
    * either role — the role only matters once an account actually exists.
    * Clinic staff (receptionist etc., no practitioners row of their own)
-   * count as the provider side, matching the login page's two cards.
+   * also count as the provider side for the practitioner card.
+   *
+   * 'staff' is the exception to "brand-new is always eligible": staff
+   * can't sign themselves up — a clinic owner has to invite them first —
+   * so with no active clinic_staff row there's nowhere for them to land.
+   * Without this check they fell through post-login as a brand-new
+   * account and ended up as a patient.
    */
   async checkRoleEligibility(
     email: string,
-    role: 'patient' | 'practitioner',
+    role: 'patient' | 'practitioner' | 'staff',
   ): Promise<{ ok: boolean }> {
     const [authUser] = await this.db
       .select({ id: authUsers.id })
@@ -90,7 +96,21 @@ export class AuthService {
       .where(eq(authUsers.email, email.toLowerCase()))
       .limit(1);
     if (!authUser) {
-      return { ok: true };
+      return { ok: role !== 'staff' };
+    }
+
+    if (role === 'staff') {
+      const [activeStaff] = await this.db
+        .select({ id: clinicStaff.id })
+        .from(clinicStaff)
+        .where(
+          and(
+            eq(clinicStaff.userId, authUser.id),
+            eq(clinicStaff.status, 'active'),
+          ),
+        )
+        .limit(1);
+      return { ok: !!activeStaff };
     }
 
     const [patient, practitioner, staffRows] = await Promise.all([

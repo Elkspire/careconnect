@@ -8,7 +8,7 @@ import { API_URL } from "./config";
  */
 export async function checkRoleEligibility(
   email: string,
-  role: "patient" | "practitioner",
+  role: "patient" | "practitioner" | "staff",
 ): Promise<boolean> {
   const params = new URLSearchParams({ email, role });
   const res = await fetch(`${API_URL}/auth/check-role?${params.toString()}`);

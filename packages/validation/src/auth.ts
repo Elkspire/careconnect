@@ -21,6 +21,6 @@ export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 
 export const checkRoleEligibilitySchema = z.object({
   email: z.string().email(),
-  role: z.enum(["patient", "practitioner"]),
+  role: z.enum(["patient", "practitioner", "staff"]),
 });
 export type CheckRoleEligibilityQuery = z.infer<typeof checkRoleEligibilitySchema>;

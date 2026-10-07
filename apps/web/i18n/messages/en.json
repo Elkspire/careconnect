@@ -72,7 +72,8 @@
     "error": "Something went wrong. Please try again.",
     "invalidCode": "That code is not valid.",
     "roleMismatchPatient": "This email belongs to a healthcare provider account. Select \"I'm a healthcare provider\" instead.",
-    "roleMismatchPractitioner": "This email belongs to a patient account. Select \"I'm looking for a doctor\" instead."
+    "roleMismatchPractitioner": "This email belongs to a patient account. Select \"I'm looking for a doctor\" instead.",
+    "roleMismatchStaff": "No clinic has added this email as staff yet. Ask your clinic owner to invite you from their Staff page using this exact email, then try again."
   },
   "patient": {
     "dashboardHeading": "My account",
@@ -385,6 +386,9 @@
     "patientOptionDesc": "Book appointments, manage your family's health records, and more.",
     "practitionerOption": "I'm a healthcare provider",
     "practitionerOptionDesc": "Register your practice and get discovered by patients near you.",
+    "staffOption": "I'm clinic staff",
+    "staffOptionDesc": "Receptionist or junior doctor invited by a clinic.",
+    "staffNote": "Clinic staff? You can't sign up on your own — your clinic owner adds you from their Staff page. Then sign in with that same email and choose \"I'm clinic staff\".",
     "practitionerHeading": "Register as a healthcare provider",
     "fullNameLabel": "Full name",
     "genderLabel": "Gender",

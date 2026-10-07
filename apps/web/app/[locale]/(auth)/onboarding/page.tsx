@@ -36,6 +36,8 @@ export default async function OnboardingPage(
           description={t("practitionerOptionDesc")}
         />
       </div>
+
+      <p className="mt-6 text-center text-sm text-text-muted">{t("staffNote")}</p>
     </main>
   );
 }

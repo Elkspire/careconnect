@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Stethoscope, UserRound } from "lucide-react";
+import { Stethoscope, UserCog, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +11,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 
 type Method = "phone" | "email";
-type Role = "patient" | "practitioner";
+type Role = "patient" | "practitioner" | "staff";
 
 // Temporarily off: phone OTP delivery has no reliable SMS provider
 // configured, so offering it just leads to a code that never arrives.
@@ -57,7 +57,13 @@ export default function LoginPage() {
       const eligible = await checkRoleEligibility(email, role);
       if (!eligible) {
         setPending(false);
-        setError(role === "patient" ? t("roleMismatchPatient") : t("roleMismatchPractitioner"));
+        setError(
+          role === "patient"
+            ? t("roleMismatchPatient")
+            : role === "practitioner"
+              ? t("roleMismatchPractitioner")
+              : t("roleMismatchStaff"),
+        );
         return;
       }
     }
@@ -131,7 +137,7 @@ export default function LoginPage() {
         )}
 
         {step === "input" && (
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <button
               type="button"
               onClick={() => setRole(role === "patient" ? null : "patient")}
@@ -166,6 +172,24 @@ export default function LoginPage() {
               </p>
               <p className="mt-0.5 text-xs text-text-muted">
                 {tOnboarding("practitionerOptionDesc")}
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole(role === "staff" ? null : "staff")}
+              aria-pressed={role === "staff"}
+              className={`col-span-2 rounded-lg border-2 p-4 text-center transition sm:col-span-1 ${
+                role === "staff"
+                  ? "border-primary-600 bg-primary-50"
+                  : "border-border hover:border-primary-500"
+              }`}
+            >
+              <UserCog aria-hidden className="mx-auto size-7 text-primary-600" />
+              <p className="mt-1.5 text-sm font-semibold text-text">
+                {tOnboarding("staffOption")}
+              </p>
+              <p className="mt-0.5 text-xs text-text-muted">
+                {tOnboarding("staffOptionDesc")}
               </p>
             </button>
           </div>
