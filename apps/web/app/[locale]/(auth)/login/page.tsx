@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Stethoscope, UserCog, UserRound } from "lucide-react";
+import { HeartPulse, Stethoscope, UserCog, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { checkRoleEligibility } from "@/lib/api/auth";
-import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 
@@ -127,71 +126,45 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center px-4 py-10">
-      <Card padding="lg">
-        <div className="mb-5 text-center">
-          <Stethoscope aria-hidden className="mx-auto size-9 text-primary-600" />
+      {/* Matches the demo's .login-screen: a 16px-radius white card with a
+          soft shadow, heartbeat mark, centred title/subtitle, then a
+          two-column grid of role cards. */}
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-md sm:p-8">
+        <div className="mb-6 text-center">
+          <HeartPulse aria-hidden className="mx-auto size-10 text-primary-600" />
         </div>
-        <h1 className="text-center text-xl font-bold text-text">{t("heading")}</h1>
+        <h1 className="text-center text-2xl font-bold text-text">{t("heading")}</h1>
         {step === "input" && (
-          <p className="mt-1 text-center text-sm text-text-muted">{t("subtitle")}</p>
+          <p className="mt-2 text-center text-[0.95rem] text-text-muted">{t("subtitle")}</p>
         )}
 
         {step === "input" && (
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <button
-              type="button"
+          <div className="mt-7 grid grid-cols-2 gap-4">
+            <RoleCard
+              selected={role === "patient"}
               onClick={() => setRole(role === "patient" ? null : "patient")}
-              aria-pressed={role === "patient"}
-              className={`rounded-lg border-2 p-4 text-center transition ${
-                role === "patient"
-                  ? "border-primary-600 bg-primary-50"
-                  : "border-border hover:border-primary-500"
-              }`}
-            >
-              <UserRound aria-hidden className="mx-auto size-7 text-primary-600" />
-              <p className="mt-1.5 text-sm font-semibold text-text">
-                {tOnboarding("patientOption")}
-              </p>
-              <p className="mt-0.5 text-xs text-text-muted">
-                {tOnboarding("patientOptionDesc")}
-              </p>
-            </button>
-            <button
-              type="button"
+              icon={<UserRound aria-hidden className="mx-auto size-8 text-primary-600" />}
+              title={tOnboarding("patientOption")}
+              description={tOnboarding("patientOptionDesc")}
+            />
+            <RoleCard
+              selected={role === "practitioner"}
               onClick={() => setRole(role === "practitioner" ? null : "practitioner")}
-              aria-pressed={role === "practitioner"}
-              className={`rounded-lg border-2 p-4 text-center transition ${
-                role === "practitioner"
-                  ? "border-primary-600 bg-primary-50"
-                  : "border-border hover:border-primary-500"
-              }`}
-            >
-              <Stethoscope aria-hidden className="mx-auto size-7 text-primary-600" />
-              <p className="mt-1.5 text-sm font-semibold text-text">
-                {tOnboarding("practitionerOption")}
-              </p>
-              <p className="mt-0.5 text-xs text-text-muted">
-                {tOnboarding("practitionerOptionDesc")}
-              </p>
-            </button>
-            <button
-              type="button"
+              icon={<Stethoscope aria-hidden className="mx-auto size-8 text-primary-600" />}
+              title={tOnboarding("practitionerOption")}
+              description={tOnboarding("practitionerOptionDesc")}
+            />
+            {/* Not in the demo (which only has patient/doctor) — kept as a
+                full-width row under the pair so the demo's two-column grid
+                stays intact instead of squeezing three cards into 420px. */}
+            <RoleCard
+              wide
+              selected={role === "staff"}
               onClick={() => setRole(role === "staff" ? null : "staff")}
-              aria-pressed={role === "staff"}
-              className={`col-span-2 rounded-lg border-2 p-4 text-center transition sm:col-span-1 ${
-                role === "staff"
-                  ? "border-primary-600 bg-primary-50"
-                  : "border-border hover:border-primary-500"
-              }`}
-            >
-              <UserCog aria-hidden className="mx-auto size-7 text-primary-600" />
-              <p className="mt-1.5 text-sm font-semibold text-text">
-                {tOnboarding("staffOption")}
-              </p>
-              <p className="mt-0.5 text-xs text-text-muted">
-                {tOnboarding("staffOptionDesc")}
-              </p>
-            </button>
+              icon={<UserCog aria-hidden className="size-7 shrink-0 text-primary-600" />}
+              title={tOnboarding("staffOption")}
+              description={tOnboarding("staffOptionDesc")}
+            />
           </div>
         )}
 
@@ -285,7 +258,46 @@ export default function LoginPage() {
             </button>
           </form>
         )}
-      </Card>
+      </div>
     </main>
+  );
+}
+
+function RoleCard({
+  selected,
+  onClick,
+  icon,
+  title,
+  description,
+  wide = false,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  wide?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`rounded-xl border-2 p-5 transition ${
+        wide ? "col-span-2 flex items-center gap-4 py-4 text-start" : "text-center"
+      } ${
+        selected
+          ? "border-primary-600 bg-primary-100"
+          : "border-border hover:border-primary-600 hover:bg-primary-100"
+      }`}
+    >
+      {icon}
+      <span className="block">
+        <span className={`block text-base font-semibold text-text ${wide ? "" : "mt-2"}`}>
+          {title}
+        </span>
+        <span className="mt-1 block text-xs text-text-muted">{description}</span>
+      </span>
+    </button>
   );
 }
