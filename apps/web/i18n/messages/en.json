@@ -182,6 +182,7 @@
     "phoneLabel": "Phone number",
     "fullNameLabel": "Full name",
     "roleLabel": "Role",
+    "switcherHeading": "Your clinics",
     "roles": {
       "owner": "Owner",
       "receptionist": "Receptionist",

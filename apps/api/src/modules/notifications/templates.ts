@@ -12,9 +12,15 @@ export type TemplateKey =
   | 'appointment_reminder_2h'
   | 'patient_checked_in'
   | 'appointment_no_show'
-  | 'waitlist_slot_available';
+  | 'waitlist_slot_available'
+  | 'staff_invited';
 
 type TemplateFn = (payload: Record<string, string>) => string;
+
+const STAFF_ROLE_LABELS: Record<'en' | 'ur', Record<string, string>> = {
+  en: { receptionist: 'Receptionist', junior_doctor: 'Junior Doctor' },
+  ur: { receptionist: 'ریسیپشنسٹ', junior_doctor: 'جونیئر ڈاکٹر' },
+};
 
 const templates: Record<TemplateKey, Record<'en' | 'ur', TemplateFn>> = {
   appointment_booked: {
@@ -68,6 +74,12 @@ const templates: Record<TemplateKey, Record<'en' | 'ur', TemplateFn>> = {
       `A slot opened up with ${p.practitionerName} at ${p.clinicName} on ${p.requestedDate} — you're first on the waitlist. Book it before it's gone.`,
     ur: (p) =>
       `${p.practitionerName} کے ساتھ ${p.clinicName} میں ${p.requestedDate} کو ایک وقت خالی ہو گیا ہے — آپ ویٹ لسٹ میں سب سے پہلے ہیں۔ جلد بک کریں۔`,
+  },
+  staff_invited: {
+    en: (p) =>
+      `${p.inviterName} added you as a ${STAFF_ROLE_LABELS.en[p.role ?? ''] ?? p.role} at ${p.clinicName}. Open it from the clinic switcher in your dashboard.`,
+    ur: (p) =>
+      `${p.inviterName} نے آپ کو ${p.clinicName} میں ${STAFF_ROLE_LABELS.ur[p.role ?? ''] ?? p.role} کے طور پر شامل کیا ہے۔ اسے اپنے ڈیش بورڈ میں کلینک سوئچر سے کھولیں۔`,
   },
 };
 

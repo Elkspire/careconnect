@@ -49,7 +49,9 @@ import {
 } from '../../common/database/schema';
 import {
   EVENT_PATIENT_CHECKED_IN,
+  EVENT_STAFF_INVITED,
   PatientCheckedInEvent,
+  StaffInvitedEvent,
 } from '../notifications/events';
 import { slugify } from '../../common/util/slug';
 import { MedicalSummaryService } from '../medical-summary/medical-summary.service';
@@ -342,6 +344,11 @@ export class ClinicService {
         },
       })
       .returning();
+
+    this.eventEmitter.emit(
+      EVENT_STAFF_INVITED,
+      new StaffInvitedEvent(clinicId, user.id, input.role, invitedBy),
+    );
     return row;
   }
 

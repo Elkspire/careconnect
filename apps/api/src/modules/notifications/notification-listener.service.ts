@@ -21,7 +21,9 @@ import {
   EVENT_APPOINTMENT_RESCHEDULED,
   EVENT_PATIENT_CHECKED_IN,
   EVENT_WAITLIST_OFFERED,
+  EVENT_STAFF_INVITED,
   PatientCheckedInEvent,
+  StaffInvitedEvent,
   WaitlistOfferedEvent,
 } from './events';
 import { NotificationDispatcher } from './notification-dispatcher.service';
@@ -191,6 +193,39 @@ export class NotificationListenerService {
         requestedDate: event.requestedDate,
       },
       locale: ctx.patientLocale,
+    });
+  }
+
+  /** Tells the invitee which clinic added them and as what — without this they had no way to learn they'd been invited at all. */
+  @OnEvent(EVENT_STAFF_INVITED)
+  async onStaffInvited(event: StaffInvitedEvent): Promise<void> {
+    const [clinic] = await this.db
+      .select({ name: clinics.name })
+      .from(clinics)
+      .where(eq(clinics.id, event.clinicId))
+      .limit(1);
+    const [inviter] = await this.db
+      .select({ fullName: practitioners.fullName })
+      .from(practitioners)
+      .where(eq(practitioners.id, event.invitedBy))
+      .limit(1);
+    const [invitee] = await this.db
+      .select({ phone: authUsers.phone })
+      .from(authUsers)
+      .where(eq(authUsers.id, event.userId))
+      .limit(1);
+    if (!clinic) return;
+
+    await this.dispatcher.dispatch({
+      eventType: EVENT_STAFF_INVITED,
+      templateKey: 'staff_invited',
+      recipient: { userId: event.userId, phone: invitee?.phone ?? undefined },
+      payload: {
+        inviterName: inviter?.fullName ?? clinic.name,
+        clinicName: clinic.name,
+        role: event.role,
+      },
+      locale: 'en',
     });
   }
 

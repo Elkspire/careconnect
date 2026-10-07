@@ -63,3 +63,15 @@ export class AppointmentReminderEvent {
 export class AppointmentNoShowEvent {
   constructor(public readonly appointment: AppointmentEventBase) {}
 }
+
+export const EVENT_STAFF_INVITED = 'staff.invited';
+
+/** Fired after a clinic owner adds someone to their clinic's staff — tells the invitee, who otherwise has no way to find out. */
+export class StaffInvitedEvent {
+  constructor(
+    public readonly clinicId: string,
+    public readonly userId: string,
+    public readonly role: string,
+    public readonly invitedBy: string,
+  ) {}
+}
