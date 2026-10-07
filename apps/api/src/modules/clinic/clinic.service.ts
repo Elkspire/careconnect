@@ -249,58 +249,76 @@ export class ClinicService {
     // input.phone, when given, is validated E.164 (leading '+'), but
     // Supabase Auth stores auth.users.phone without it. Email lookups use
     // lowercase since Supabase normalizes emails to lowercase on signup.
-    const [existing] = input.phone
+    const phone = input.phone?.replace(/^\+/, '');
+    const email = input.email?.toLowerCase();
+    const identifier = [email, input.phone].filter(Boolean).join(' / ');
+
+    // Both are looked up when both are given. Checking only the phone (as
+    // this used to) silently ignored the email: a practitioner who signed
+    // up by email couldn't be invited as a junior doctor if the owner also
+    // typed their phone, and an empty phone-only account got created on
+    // the way to the "no practitioner profile" error.
+    const [byEmail] = email
       ? await this.db
           .select({ id: authUsers.id })
           .from(authUsers)
-          .where(eq(authUsers.phone, input.phone.replace(/^\+/, '')))
+          .where(eq(authUsers.email, email))
           .limit(1)
-      : await this.db
+      : [];
+    const [byPhone] = phone
+      ? await this.db
           .select({ id: authUsers.id })
           .from(authUsers)
-          .where(eq(authUsers.email, input.email!.toLowerCase()))
-          .limit(1);
+          .where(eq(authUsers.phone, phone))
+          .limit(1)
+      : [];
+    if (byEmail && byPhone && byEmail.id !== byPhone.id) {
+      throw new BadRequestException(
+        'This email and phone number belong to two different CareConnect accounts — invite using just one of them',
+      );
+    }
 
-    let user = existing;
+    // Email first: phone login is currently disabled app-wide, so the
+    // email is the identifier the invitee can actually sign in with.
+    let user = byEmail ?? byPhone;
+
+    // A junior doctor co-authors clinical notes under this clinic (see
+    // ClinicalService), which requires a real practitioner profile — catch
+    // the mismatch here with a clear message instead of a raw FK error
+    // later when they try to write their first note. Checked before any
+    // account creation below: a brand-new account can never have a
+    // practitioner profile, so creating one would only leave an orphan.
+    if (input.role === 'junior_doctor') {
+      const [practitioner] = user
+        ? await this.db
+            .select({ id: practitioners.id })
+            .from(practitioners)
+            .where(eq(practitioners.id, user.id))
+            .limit(1)
+        : [];
+      if (!practitioner) {
+        throw new BadRequestException(
+          `No practitioner profile found for ${identifier} — a junior doctor must register as a practitioner first, using the same email or phone`,
+        );
+      }
+    }
+
     if (!user) {
       // email_confirm/phone_confirm: true — they're trusted by the inviting
       // clinic owner, not self-signed-up, so there's no "confirm your
       // email" step to make them go through before their first OTP login
       // works.
-      const { data, error } = input.phone
-        ? await this.supabaseAdmin.auth.admin.createUser({
-            phone: input.phone.replace(/^\+/, ''),
-            phone_confirm: true,
-            user_metadata: { full_name: input.fullName },
-          })
-        : await this.supabaseAdmin.auth.admin.createUser({
-            email: input.email!.toLowerCase(),
-            email_confirm: true,
-            user_metadata: { full_name: input.fullName },
-          });
+      const { data, error } = await this.supabaseAdmin.auth.admin.createUser({
+        ...(email ? { email, email_confirm: true } : {}),
+        ...(phone ? { phone, phone_confirm: true } : {}),
+        user_metadata: { full_name: input.fullName },
+      });
       if (error || !data.user) {
         throw new BadRequestException(
-          `Could not create an account for this ${input.phone ? 'phone number' : 'email'}: ${error?.message ?? 'unknown error'}`,
+          `Could not create an account for ${identifier}: ${error?.message ?? 'unknown error'}`,
         );
       }
       user = { id: data.user.id };
-    }
-
-    // A junior doctor co-authors clinical notes under this clinic (see
-    // ClinicalService), which requires a real practitioner profile — catch
-    // the mismatch here with a clear message instead of a raw FK error
-    // later when they try to write their first note.
-    if (input.role === 'junior_doctor') {
-      const [practitioner] = await this.db
-        .select({ id: practitioners.id })
-        .from(practitioners)
-        .where(eq(practitioners.id, user.id))
-        .limit(1);
-      if (!practitioner) {
-        throw new BadRequestException(
-          'This phone number has no practitioner profile yet — a junior doctor must have signed up as a practitioner first',
-        );
-      }
     }
 
     const [row] = await this.db
