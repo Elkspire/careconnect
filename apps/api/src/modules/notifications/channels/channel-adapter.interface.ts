@@ -1,6 +1,7 @@
 export interface NotificationRecipient {
   userId: string;
   phone?: string;
+  email?: string;
 }
 
 export interface DeliveryResult {
@@ -10,7 +11,7 @@ export interface DeliveryResult {
 }
 
 export interface ChannelAdapter {
-  readonly channel: 'sms' | 'whatsapp' | 'push' | 'in_app';
+  readonly channel: 'sms' | 'whatsapp' | 'push' | 'in_app' | 'email';
   send(
     recipient: NotificationRecipient,
     templateKey: string,

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import { notificationLog } from '../../common/database/schema';
+import { EmailAdapter } from './channels/email.adapter';
 import { ExpoPushAdapter } from './channels/expo-push.adapter';
 import { InAppAdapter } from './channels/in-app.adapter';
 import type {
@@ -37,6 +38,7 @@ export class NotificationDispatcher {
     private readonly pushAdapter: PushAdapter,
     private readonly expoPushAdapter: ExpoPushAdapter,
     private readonly inAppAdapter: InAppAdapter,
+    private readonly emailAdapter: EmailAdapter,
   ) {}
 
   private get adapters(): ChannelAdapter[] {
@@ -46,6 +48,7 @@ export class NotificationDispatcher {
       this.pushAdapter,
       this.expoPushAdapter,
       this.inAppAdapter,
+      this.emailAdapter,
     ];
   }
 

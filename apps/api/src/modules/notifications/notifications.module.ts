@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EmailAdapter } from './channels/email.adapter';
 import { ExpoPushAdapter } from './channels/expo-push.adapter';
 import { InAppAdapter } from './channels/in-app.adapter';
 import { PushAdapter } from './channels/push.adapter';
@@ -17,6 +18,7 @@ import { ReminderService } from './reminder.service';
     PushAdapter,
     ExpoPushAdapter,
     InAppAdapter,
+    EmailAdapter,
     NotificationDispatcher,
     NotificationListenerService,
     ReminderService,

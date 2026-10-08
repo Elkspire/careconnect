@@ -152,7 +152,7 @@ export type VerificationDocumentType = (typeof VERIFICATION_DOCUMENT_TYPE)[numbe
 export const AUDIT_ACTION = ["view", "create", "update", "delete", "export"] as const;
 export type AuditAction = (typeof AUDIT_ACTION)[number];
 
-export const NOTIFICATION_CHANNEL = ["sms", "whatsapp", "push", "in_app"] as const;
+export const NOTIFICATION_CHANNEL = ["sms", "whatsapp", "push", "in_app", "email"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNEL)[number];
 
 export const NOTIFICATION_STATUS = ["queued", "sent", "delivered", "failed"] as const;

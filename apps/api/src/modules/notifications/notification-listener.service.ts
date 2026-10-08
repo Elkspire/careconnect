@@ -210,7 +210,7 @@ export class NotificationListenerService {
       .where(eq(practitioners.id, event.invitedBy))
       .limit(1);
     const [invitee] = await this.db
-      .select({ phone: authUsers.phone })
+      .select({ phone: authUsers.phone, email: authUsers.email })
       .from(authUsers)
       .where(eq(authUsers.id, event.userId))
       .limit(1);
@@ -219,7 +219,11 @@ export class NotificationListenerService {
     await this.dispatcher.dispatch({
       eventType: EVENT_STAFF_INVITED,
       templateKey: 'staff_invited',
-      recipient: { userId: event.userId, phone: invitee?.phone ?? undefined },
+      recipient: {
+        userId: event.userId,
+        phone: invitee?.phone ?? undefined,
+        email: invitee?.email ?? undefined,
+      },
       payload: {
         inviterName: inviter?.fullName ?? clinic.name,
         clinicName: clinic.name,

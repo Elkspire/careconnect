@@ -142,6 +142,7 @@ export const notificationChannelEnum = pgEnum('notification_channel', [
   'whatsapp',
   'push',
   'in_app',
+  'email',
 ]);
 export const notificationStatusEnum = pgEnum('notification_status', [
   'queued',
