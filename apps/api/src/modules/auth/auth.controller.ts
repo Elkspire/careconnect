@@ -16,12 +16,12 @@ export class AuthController {
     return { id: user.id, phone: user.phone, email: user.email, ...profile };
   }
 
-  /** Lets the login page check a role pick against an email before sending an OTP. No account yet is always eligible. */
+  /** Lets the login page check a role pick against a phone number before sending an OTP. No account yet is eligible, except for the staff role. */
   @Get('auth/check-role')
   @Public()
   checkRoleEligibility(
     @Query() query: CheckRoleEligibilityQueryDto,
   ): Promise<{ ok: boolean }> {
-    return this.authService.checkRoleEligibility(query.email, query.role);
+    return this.authService.checkRoleEligibility(query.phone, query.role);
   }
 }

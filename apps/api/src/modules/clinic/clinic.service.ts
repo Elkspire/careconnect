@@ -234,55 +234,29 @@ export class ClinicService {
 
   /**
    * Staff don't need an account before being invited — if no Supabase user
-   * exists yet for the given phone/email, one is created here (service-role
-   * Auth Admin API) so the invite always succeeds. The invitee then just
-   * logs in normally at the regular login page; post-login routes them to
-   * the clinic dashboard since their clinicStaff row already exists. This
-   * replaces the earlier "ask them to sign in first" 404 — there was no
-   * self-service "register as receptionist/junior doctor" flow for them to
-   * go complete, so that error was a dead end.
+   * exists yet for the given phone, one is created here (service-role Auth
+   * Admin API) so the invite always succeeds. The invitee then just logs in
+   * normally at the regular login page with that number; post-login routes
+   * them to the clinic dashboard since their clinicStaff row already
+   * exists. This replaces the earlier "ask them to sign in first" 404 —
+   * there was no self-service "register as receptionist/junior doctor" flow
+   * for them to go complete, so that error was a dead end.
    */
   async inviteStaff(
     clinicId: string,
     invitedBy: string,
     input: InviteStaffInput,
   ) {
-    // inviteStaffSchema guarantees at least one of phone/email is present.
-    // input.phone, when given, is validated E.164 (leading '+'), but
-    // Supabase Auth stores auth.users.phone without it. Email lookups use
-    // lowercase since Supabase normalizes emails to lowercase on signup.
-    const phone = input.phone?.replace(/^\+/, '');
-    const email = input.email?.toLowerCase();
-    const identifier = [email, input.phone].filter(Boolean).join(' / ');
+    // input.phone is validated E.164 (leading '+'), but Supabase Auth
+    // stores auth.users.phone without it.
+    const phone = input.phone.replace(/^\+/, '');
 
-    // Both are looked up when both are given. Checking only the phone (as
-    // this used to) silently ignored the email: a practitioner who signed
-    // up by email couldn't be invited as a junior doctor if the owner also
-    // typed their phone, and an empty phone-only account got created on
-    // the way to the "no practitioner profile" error.
-    const [byEmail] = email
-      ? await this.db
-          .select({ id: authUsers.id })
-          .from(authUsers)
-          .where(eq(authUsers.email, email))
-          .limit(1)
-      : [];
-    const [byPhone] = phone
-      ? await this.db
-          .select({ id: authUsers.id })
-          .from(authUsers)
-          .where(eq(authUsers.phone, phone))
-          .limit(1)
-      : [];
-    if (byEmail && byPhone && byEmail.id !== byPhone.id) {
-      throw new BadRequestException(
-        'This email and phone number belong to two different CareConnect accounts — invite using just one of them',
-      );
-    }
-
-    // Email first: phone login is currently disabled app-wide, so the
-    // email is the identifier the invitee can actually sign in with.
-    let user = byEmail ?? byPhone;
+    const [existing] = await this.db
+      .select({ id: authUsers.id })
+      .from(authUsers)
+      .where(eq(authUsers.phone, phone))
+      .limit(1);
+    let user = existing;
 
     // A junior doctor co-authors clinical notes under this clinic (see
     // ClinicalService), which requires a real practitioner profile — catch
@@ -300,24 +274,23 @@ export class ClinicService {
         : [];
       if (!practitioner) {
         throw new BadRequestException(
-          `No practitioner profile found for ${identifier} — a junior doctor must register as a practitioner first, using the same email or phone`,
+          `No practitioner profile found for ${input.phone} — a junior doctor must register as a practitioner first, using this same phone number`,
         );
       }
     }
 
     if (!user) {
-      // email_confirm/phone_confirm: true — they're trusted by the inviting
-      // clinic owner, not self-signed-up, so there's no "confirm your
-      // email" step to make them go through before their first OTP login
-      // works.
+      // phone_confirm: true — they're trusted by the inviting clinic owner,
+      // not self-signed-up, so there's no confirmation step to make them go
+      // through before their first OTP login works.
       const { data, error } = await this.supabaseAdmin.auth.admin.createUser({
-        ...(email ? { email, email_confirm: true } : {}),
-        ...(phone ? { phone, phone_confirm: true } : {}),
+        phone,
+        phone_confirm: true,
         user_metadata: { full_name: input.fullName },
       });
       if (error || !data.user) {
         throw new BadRequestException(
-          `Could not create an account for ${identifier}: ${error?.message ?? 'unknown error'}`,
+          `Could not create an account for ${input.phone}: ${error?.message ?? 'unknown error'}`,
         );
       }
       user = { id: data.user.id };

@@ -77,9 +77,9 @@ const templates: Record<TemplateKey, Record<'en' | 'ur', TemplateFn>> = {
   },
   staff_invited: {
     en: (p) =>
-      `${p.inviterName} added you as a ${STAFF_ROLE_LABELS.en[p.role ?? ''] ?? p.role} at ${p.clinicName}. Sign in with this email and choose "I'm clinic staff".`,
+      `${p.inviterName} added you as a ${STAFF_ROLE_LABELS.en[p.role ?? ''] ?? p.role} at ${p.clinicName}. Sign in with this phone number and choose "I'm clinic staff".`,
     ur: (p) =>
-      `${p.inviterName} نے آپ کو ${p.clinicName} میں ${STAFF_ROLE_LABELS.ur[p.role ?? ''] ?? p.role} کے طور پر شامل کیا ہے۔ اسی ای میل سے سائن ان کریں اور "میں کلینک اسٹاف ہوں" منتخب کریں۔`,
+      `${p.inviterName} نے آپ کو ${p.clinicName} میں ${STAFF_ROLE_LABELS.ur[p.role ?? ''] ?? p.role} کے طور پر شامل کیا ہے۔ اسی فون نمبر سے سائن ان کریں اور "میں کلینک اسٹاف ہوں" منتخب کریں۔`,
   },
 };
 

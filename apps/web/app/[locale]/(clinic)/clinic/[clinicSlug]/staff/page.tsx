@@ -122,10 +122,13 @@ export default async function ClinicStaffPage(
         )}
         <form action={invite} className="mt-4 flex flex-wrap items-end gap-3">
           <FormField label={t("phoneLabel")}>
-            <input type="tel" name="phone" placeholder="+923001234567" className={inputClasses} />
-          </FormField>
-          <FormField label={t("emailLabel")}>
-            <input type="email" name="email" className={inputClasses} />
+            <input
+              type="tel"
+              name="phone"
+              required
+              placeholder="0300 1234567"
+              className={inputClasses}
+            />
           </FormField>
           <FormField label={t("fullNameLabel")}>
             <input type="text" name="fullName" required className={inputClasses} />

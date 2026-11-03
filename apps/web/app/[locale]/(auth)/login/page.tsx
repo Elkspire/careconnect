@@ -4,19 +4,13 @@ import { useState } from "react";
 import { HeartPulse, Stethoscope, UserCog, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { normalizePhone } from "@careconnect/validation";
 import { createClient } from "@/lib/supabase/client";
 import { checkRoleEligibility } from "@/lib/api/auth";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 
-type Method = "phone" | "email";
 type Role = "patient" | "practitioner" | "staff";
-
-// Temporarily off: phone OTP delivery has no reliable SMS provider
-// configured, so offering it just leads to a code that never arrives.
-// Flip back to true once that's sorted — nothing else needs to change,
-// the phone flow itself is untouched.
-const PHONE_LOGIN_ENABLED = false;
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -25,11 +19,9 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const explicitNext = searchParams.get("next");
 
-  const [method, setMethod] = useState<Method>(PHONE_LOGIN_ENABLED ? "phone" : "email");
   const [step, setStep] = useState<"input" | "otp">("input");
   const [role, setRole] = useState<Role | null>(null);
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -38,10 +30,7 @@ export default function LoginPage() {
   // — see post-login/page.tsx. An explicit deep-link `next` always wins.
   const effectiveNext = explicitNext ?? (role ? `/post-login?roleHint=${role}` : "/post-login");
 
-  const identifier = method === "phone" ? phone : email;
-
-  function switchMethod(next: Method) {
-    setMethod(next);
+  function changeNumber() {
     setStep("input");
     setError(null);
     setCode("");
@@ -50,10 +39,15 @@ export default function LoginPage() {
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // Accept what people actually type ("0300 1234567") and store the
+    // E.164 form Supabase needs, so the OTP step and the code we verify
+    // against use the exact same number.
+    const normalized = normalizePhone(phone);
+    setPhone(normalized);
     setPending(true);
 
-    if (role && method === "email") {
-      const eligible = await checkRoleEligibility(email, role);
+    if (role) {
+      const eligible = await checkRoleEligibility(normalized, role);
       if (!eligible) {
         setPending(false);
         setError(
@@ -68,26 +62,13 @@ export default function LoginPage() {
     }
 
     const supabase = createClient();
-    const { error: sendError } =
-      method === "phone"
-        ? await supabase.auth.signInWithOtp({ phone })
-        : await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              // The typed-code flow below never uses this — only a clicked
-              // link does, landing on the callback route to exchange its
-              // PKCE code for a session server-side.
-              emailRedirectTo: `${window.location.origin}/${locale}/auth/callback?next=${encodeURIComponent(effectiveNext)}`,
-            },
-          });
+    const { error: sendError } = await supabase.auth.signInWithOtp({ phone: normalized });
     setPending(false);
     if (sendError) {
-      // Temporarily showing Supabase's actual message alongside the
-      // friendly one — this call started failing right after switching to
-      // custom SMTP, and the generic string alone gives no way to tell
-      // whether that's a bad host/port/credential, an unverified sender,
-      // or something else entirely. Revert to just t("error") once this is
-      // sorted.
+      // Supabase's own message is kept alongside the friendly one while
+      // phone auth is being set up — "Unsupported phone provider" or
+      // "Invalid phone number" tells you exactly which dashboard setting
+      // is missing, the generic string alone doesn't.
       setError(`${t("error")} (${sendError.message})`);
       return;
     }
@@ -99,10 +80,11 @@ export default function LoginPage() {
     setError(null);
     setPending(true);
     const supabase = createClient();
-    const { error: verifyError } =
-      method === "phone"
-        ? await supabase.auth.verifyOtp({ phone, token: code, type: "sms" })
-        : await supabase.auth.verifyOtp({ email, token: code, type: "email" });
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      phone,
+      token: code,
+      type: "sms",
+    });
     setPending(false);
     if (verifyError) {
       setError(t("invalidCode"));
@@ -168,35 +150,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {step === "input" && PHONE_LOGIN_ENABLED && (
-          <div className="mt-4 flex gap-2">
-            <button
-              type="button"
-              onClick={() => switchMethod("phone")}
-              aria-pressed={method === "phone"}
-              className={`tap-target rounded-md border px-3 py-1.5 text-sm font-medium transition ${
-                method === "phone"
-                  ? "border-primary-600 bg-primary-50 text-primary-800"
-                  : "border-border text-text-muted hover:border-primary-500"
-              }`}
-            >
-              {t("methodPhone")}
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMethod("email")}
-              aria-pressed={method === "email"}
-              className={`tap-target rounded-md border px-3 py-1.5 text-sm font-medium transition ${
-                method === "email"
-                  ? "border-primary-600 bg-primary-50 text-primary-800"
-                  : "border-border text-text-muted hover:border-primary-500"
-              }`}
-            >
-              {t("methodEmail")}
-            </button>
-          </div>
-        )}
-
         {error && (
           <div className="mt-4">
             <Alert tone="danger" title={error} />
@@ -205,40 +158,31 @@ export default function LoginPage() {
 
         {step === "input" ? (
           <form onSubmit={handleSendCode} className="mt-6 flex flex-col gap-4">
-            {method === "phone" ? (
-              <FormField label={t("phoneLabel")}>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t("phonePlaceholder")}
-                  className={inputClasses}
-                />
-              </FormField>
-            ) : (
-              <FormField label={t("emailLabel")}>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("emailPlaceholder")}
-                  className={inputClasses}
-                />
-              </FormField>
-            )}
+            <FormField label={t("phoneLabel")} hint={t("phoneHint")}>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t("phonePlaceholder")}
+                className={inputClasses}
+              />
+            </FormField>
             <button type="submit" disabled={pending} className={primaryButtonClasses}>
               {t("sendCode")}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerify} className="mt-6 flex flex-col gap-4">
-            <p className="text-sm text-text-muted">{t("sentCodeTo", { identifier })}</p>
+            <p className="text-sm text-text-muted">{t("sentCodeTo", { identifier: phone })}</p>
             <FormField label={t("codeLabel")}>
               <input
                 type="text"
                 inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -251,10 +195,10 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => switchMethod(method)}
+              onClick={changeNumber}
               className="text-xs font-medium text-text-muted hover:text-text"
             >
-              {method === "phone" ? t("changeNumber") : t("changeEmail")}
+              {t("changeNumber")}
             </button>
           </form>
         )}

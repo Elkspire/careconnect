@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { normalizePhone } from "@careconnect/validation";
 import { redirect } from "next/navigation";
 import {
   BLOOD_GROUP,
@@ -102,15 +103,15 @@ export async function inviteStaffAction(
 ): Promise<void> {
   const roleRaw = formData.get("role");
   const role: AssignableStaffRole = roleRaw === "junior_doctor" ? roleRaw : "receptionist";
-  const phone = String(formData.get("phone") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim();
+  // Same normalization the login page applies, so "0300 1234567" here
+  // finds the account created by logging in as +923001234567.
+  const phone = normalizePhone(String(formData.get("phone") ?? ""));
   const staffPath = `/${locale}/clinic/${clinicSlug}/staff`;
 
   try {
     await inviteStaff(clinicId, {
       clinicId,
-      phone: phone || undefined,
-      email: email || undefined,
+      phone,
       fullName: String(formData.get("fullName") ?? ""),
       role,
       deniedPermissions: formData

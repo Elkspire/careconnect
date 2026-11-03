@@ -74,8 +74,8 @@ export class AuthService {
 
   /**
    * Lets the login page reject a role pick before sending an OTP, e.g. a
-   * doctor selecting "I'm looking for a doctor" with their practice email.
-   * A brand-new email (no CareConnect account yet) is always eligible for
+   * doctor selecting "I'm looking for a doctor" with their practice phone.
+   * A brand-new number (no CareConnect account yet) is always eligible for
    * either role — the role only matters once an account actually exists.
    * Clinic staff (receptionist etc., no practitioners row of their own)
    * also count as the provider side for the practitioner card.
@@ -87,13 +87,15 @@ export class AuthService {
    * account and ended up as a patient.
    */
   async checkRoleEligibility(
-    email: string,
+    phone: string,
     role: 'patient' | 'practitioner' | 'staff',
   ): Promise<{ ok: boolean }> {
+    // phoneSchema guarantees E.164 with a leading '+'; Supabase Auth stores
+    // auth.users.phone without it.
     const [authUser] = await this.db
       .select({ id: authUsers.id })
       .from(authUsers)
-      .where(eq(authUsers.email, email.toLowerCase()))
+      .where(eq(authUsers.phone, phone.replace(/^\+/, '')))
       .limit(1);
     if (!authUser) {
       return { ok: role !== 'staff' };

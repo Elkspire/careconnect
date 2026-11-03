@@ -2,12 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Handles a clicked email magic link. The rest of the app's auth flow never
- * needed this — signing in by typing the OTP code (phone or email) resolves
- * a session directly in the browser via verifyOtp(), no redirect involved.
- * But Supabase's default email template always includes a clickable link
- * alongside the code, and clicking it lands here with a PKCE `?code=` to
- * exchange for a session server-side (see login/page.tsx's emailRedirectTo).
+ * Handles a clicked email magic link. Sign-in is phone-only now and the
+ * typed SMS code resolves a session directly in the browser via
+ * verifyOtp(), so nothing in the app sends people here anymore — kept so
+ * any magic link already sitting in someone's inbox from the email-login
+ * era still lands somewhere sensible instead of a 404.
  */
 export async function GET(
   request: Request,

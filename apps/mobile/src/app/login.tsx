@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { router } from "expo-router";
+import { normalizePhone } from "@careconnect/validation";
 
 import { supabase } from "@/lib/supabase";
 import { Screen } from "@/components/ui/screen";
@@ -17,33 +18,7 @@ import { Spacing } from "@/constants/theme";
  * there's no explicit "redirect to home" here beyond going back if this
  * was reached as a modal push.
  */
-// Temporarily off, same reason and same flip-back-to-true fix as apps/web's
-// PHONE_LOGIN_ENABLED — phone OTP has no reliable SMS delivery right now.
-// Mobile has no alternative sign-in method yet (unlike web's email option),
-// so this shows a clear "unavailable" state rather than a form that can
-// never succeed.
-const PHONE_LOGIN_ENABLED = false;
-
 export default function LoginScreen() {
-  if (!PHONE_LOGIN_ENABLED) {
-    return (
-      <Screen>
-        <Card>
-          <ThemedText type="title" color="onSurface">
-            Sign-in unavailable
-          </ThemedText>
-          <ThemedText color="onSurfaceMuted" style={{ marginTop: Spacing.two }}>
-            Phone sign-in is temporarily unavailable. Please check back soon.
-          </ThemedText>
-        </Card>
-      </Screen>
-    );
-  }
-
-  return <LoginScreenPhoneFlow />;
-}
-
-function LoginScreenPhoneFlow() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -52,11 +27,15 @@ function LoginScreenPhoneFlow() {
 
   async function sendCode() {
     setError(null);
+    // Same normalization as web's login, so "0300 1234567" works and the
+    // verify step uses the exact number the code was sent to.
+    const normalized = normalizePhone(phone);
+    setPhone(normalized);
     setPending(true);
-    const { error: sendError } = await supabase.auth.signInWithOtp({ phone });
+    const { error: sendError } = await supabase.auth.signInWithOtp({ phone: normalized });
     setPending(false);
     if (sendError) {
-      setError("Couldn't send a code to that number. Check it's in +92... format and try again.");
+      setError("Couldn't send a code to that number. Check it and try again (03... or +92...).");
       return;
     }
     setStep("otp");
@@ -99,7 +78,7 @@ function LoginScreenPhoneFlow() {
               label="Phone number"
               keyboardType="phone-pad"
               autoComplete="tel"
-              placeholder="+923001234567"
+              placeholder="0300 1234567"
               value={phone}
               onChangeText={setPhone}
               style={{ marginTop: Spacing.three }}

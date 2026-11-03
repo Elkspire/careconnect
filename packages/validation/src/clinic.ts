@@ -10,12 +10,9 @@ import { phoneSchema } from "./auth";
 export const inviteStaffSchema = z
   .object({
     clinicId: z.string().uuid(),
-    // Whichever identifier the invitee actually signed up with — phone
-    // login is currently disabled app-wide (see PHONE_LOGIN_ENABLED in
-    // apps/web and apps/mobile's login screens), so an invite needs to be
-    // able to find someone by email too, not just phone.
-    phone: phoneSchema.optional(),
-    email: z.string().email().optional(),
+    // Phone is the only sign-in method, so it's also the only way to
+    // identify who's being invited.
+    phone: phoneSchema,
     fullName: z.string().min(1).max(120),
     role: z.enum(CLINIC_STAFF_ROLE).refine((r) => r !== "owner", {
       message: "Cannot invite a second owner; owner is set at clinic creation",
@@ -25,10 +22,6 @@ export const inviteStaffSchema = z
     // widening it (see ROLE_PERMISSION_CEILING). Defaults to none, i.e.
     // the role's full default permission set.
     deniedPermissions: z.array(z.enum(STAFF_PERMISSION_KEY)).default([]),
-  })
-  .refine((input) => !!input.phone || !!input.email, {
-    message: "Provide a phone number or an email address",
-    path: ["email"],
   })
   .refine(
     (input) => {
