@@ -3,7 +3,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
 import { CheckRoleEligibilityQueryDto } from './auth.dto';
-import { AuthService, type MeResponse } from './auth.service';
+import { AuthService, type LoginRole, type MeResponse } from './auth.service';
 
 @Controller()
 export class AuthController {
@@ -21,7 +21,7 @@ export class AuthController {
   @Public()
   checkRoleEligibility(
     @Query() query: CheckRoleEligibilityQueryDto,
-  ): Promise<{ ok: boolean }> {
+  ): Promise<{ ok: boolean; suggestedRole?: LoginRole }> {
     return this.authService.checkRoleEligibility(query.phone, query.role);
   }
 }

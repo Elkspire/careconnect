@@ -6,11 +6,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { normalizePhone } from "@careconnect/validation";
 import { createClient } from "@/lib/supabase/client";
-import { checkRoleEligibility } from "@/lib/api/auth";
+import { checkRoleEligibility, type LoginRole } from "@/lib/api/auth";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 
-type Role = "patient" | "practitioner" | "staff";
+type Role = LoginRole;
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -47,15 +47,17 @@ export default function LoginPage() {
     setPending(true);
 
     if (role) {
-      const eligible = await checkRoleEligibility(normalized, role);
-      if (!eligible) {
+      const { ok, suggestedRole } = await checkRoleEligibility(normalized, role);
+      if (!ok) {
         setPending(false);
         setError(
-          role === "patient"
-            ? t("roleMismatchPatient")
-            : role === "practitioner"
-              ? t("roleMismatchPractitioner")
-              : t("roleMismatchStaff"),
+          suggestedRole === "patient"
+            ? t("roleUsePatient")
+            : suggestedRole === "practitioner"
+              ? t("roleUseProvider")
+              : suggestedRole === "staff"
+                ? t("roleUseStaff")
+                : t("roleNotInvitedStaff"),
         );
         return;
       }

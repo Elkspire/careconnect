@@ -7,17 +7,24 @@ import { API_URL } from "./config";
  * them to their real dashboard. A brand-new number is eligible for every
  * role except staff, who must be invited first.
  */
+export type LoginRole = "patient" | "practitioner" | "staff";
+
+export interface RoleEligibility {
+  ok: boolean;
+  /** When ok is false: the card this number actually belongs to, if any. */
+  suggestedRole?: LoginRole;
+}
+
 export async function checkRoleEligibility(
   phone: string,
-  role: "patient" | "practitioner" | "staff",
-): Promise<boolean> {
+  role: LoginRole,
+): Promise<RoleEligibility> {
   const params = new URLSearchParams({ phone, role });
   const res = await fetch(`${API_URL}/auth/check-role?${params.toString()}`);
   if (!res.ok) {
     // Fail open — a transient API error shouldn't block login itself, only
-    // the extra role-mismatch hint.
-    return true;
+    // the extra role-mismatch hint. post-login still routes by real role.
+    return { ok: true };
   }
-  const data: { ok: boolean } = await res.json();
-  return data.ok;
+  return (await res.json()) as RoleEligibility;
 }

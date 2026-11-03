@@ -9,6 +9,8 @@ import {
   practitioners,
 } from '../../common/database/schema';
 
+export type LoginRole = 'patient' | 'practitioner' | 'staff';
+
 export interface MeResponse {
   id: string;
   phone?: string;
@@ -73,23 +75,21 @@ export class AuthService {
   }
 
   /**
-   * Lets the login page reject a role pick before sending an OTP, e.g. a
-   * doctor selecting "I'm looking for a doctor" with their practice phone.
-   * A brand-new number (no CareConnect account yet) is always eligible for
-   * either role — the role only matters once an account actually exists.
-   * Clinic staff (receptionist etc., no practitioners row of their own)
-   * also count as the provider side for the practitioner card.
-   *
-   * 'staff' is the exception to "brand-new is always eligible": staff
-   * can't sign themselves up — a clinic owner has to invite them first —
-   * so with no active clinic_staff row there's nowhere for them to land.
-   * Without this check they fell through post-login as a brand-new
-   * account and ended up as a patient.
+   * Lets the login page reject a role pick before sending an OTP, and say
+   * which card the number actually belongs to. Each login card maps to one
+   * kind of account:
+   *   - 'patient'      → has a patients row
+   *   - 'practitioner' → a doctor: a practitioners row, or active staff as
+   *                      owner / junior_doctor
+   *   - 'staff'        → active staff as receptionist
+   * A brand-new number (or one with none of the above) may pick patient or
+   * practitioner — onboarding takes it from there — but not staff:
+   * receptionists can't sign themselves up, a clinic owner invites them.
    */
   async checkRoleEligibility(
     phone: string,
-    role: 'patient' | 'practitioner' | 'staff',
-  ): Promise<{ ok: boolean }> {
+    role: LoginRole,
+  ): Promise<{ ok: boolean; suggestedRole?: LoginRole }> {
     // phoneSchema guarantees E.164 with a leading '+'; Supabase Auth stores
     // auth.users.phone without it.
     const [authUser] = await this.db
@@ -99,20 +99,6 @@ export class AuthService {
       .limit(1);
     if (!authUser) {
       return { ok: role !== 'staff' };
-    }
-
-    if (role === 'staff') {
-      const [activeStaff] = await this.db
-        .select({ id: clinicStaff.id })
-        .from(clinicStaff)
-        .where(
-          and(
-            eq(clinicStaff.userId, authUser.id),
-            eq(clinicStaff.status, 'active'),
-          ),
-        )
-        .limit(1);
-      return { ok: !!activeStaff };
     }
 
     const [patient, practitioner, staffRows] = await Promise.all([
@@ -129,17 +115,39 @@ export class AuthService {
         .limit(1)
         .then((rows) => rows[0] ?? null),
       this.db
-        .select({ id: clinicStaff.id })
+        .select({ role: clinicStaff.role })
         .from(clinicStaff)
-        .where(eq(clinicStaff.userId, authUser.id))
-        .limit(1),
+        .where(
+          and(
+            eq(clinicStaff.userId, authUser.id),
+            eq(clinicStaff.status, 'active'),
+          ),
+        ),
     ]);
 
-    const hasPatient = !!patient;
-    const isProvider = !!practitioner || staffRows.length > 0;
-    if (!hasPatient && !isProvider) {
+    const held: Record<LoginRole, boolean> = {
+      patient: !!patient,
+      practitioner:
+        !!practitioner ||
+        staffRows.some((s) => s.role === 'owner' || s.role === 'junior_doctor'),
+      staff: staffRows.some((s) => s.role === 'receptionist'),
+    };
+
+    if (held[role]) {
       return { ok: true };
     }
-    return { ok: role === 'patient' ? hasPatient : isProvider };
+    // An account that holds nothing yet is effectively brand new.
+    if (
+      role !== 'staff' &&
+      !held.patient &&
+      !held.practitioner &&
+      !held.staff
+    ) {
+      return { ok: true };
+    }
+    const suggestedRole = (['practitioner', 'staff', 'patient'] as const).find(
+      (r) => held[r],
+    );
+    return { ok: false, suggestedRole };
   }
 }
