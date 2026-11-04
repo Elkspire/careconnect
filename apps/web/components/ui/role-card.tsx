@@ -1,18 +1,15 @@
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 
 /** Promotes the RoleCard previously duplicated inline in onboarding/page.tsx. */
 export function RoleCard({
   href,
-  locale,
   icon: Icon,
   title,
   description,
   selected = false,
 }: {
   href: string;
-  locale: AppLocale;
   icon: LucideIcon;
   title: string;
   description: string;
@@ -21,7 +18,6 @@ export function RoleCard({
   return (
     <Link
       href={href}
-      locale={locale}
       aria-pressed={selected}
       className={`tap-target rounded-lg border-2 p-5 text-center transition ${
         selected

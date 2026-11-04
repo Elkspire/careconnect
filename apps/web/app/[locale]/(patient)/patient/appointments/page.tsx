@@ -75,7 +75,6 @@ export default async function AppointmentsPage(
                 {REVIEWABLE_STATUSES.includes(appt.status) && (
                   <Link
                     href={`/practitioners/${appt.practitionerSlug}#review-form`}
-                    locale={locale}
                     className="tap-target mt-1 inline-flex w-fit items-center rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
                   >
                     {t("leaveReview")}

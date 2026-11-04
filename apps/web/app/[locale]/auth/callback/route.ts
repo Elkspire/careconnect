@@ -8,11 +8,7 @@ import { createClient } from "@/lib/supabase/server";
  * any magic link already sitting in someone's inbox from the email-login
  * era still lands somewhere sensible instead of a 404.
  */
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ locale: string }> },
-) {
-  const { locale } = await params;
+export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/post-login";
@@ -21,7 +17,7 @@ export async function GET(
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}/${locale}${next}`);
+      return NextResponse.redirect(`${origin}${next}`);
     }
 
     // iOS (Mail/Safari link prefetching) commonly hits this route twice for
@@ -34,9 +30,9 @@ export async function GET(
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      return NextResponse.redirect(`${origin}/${locale}${next}`);
+      return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/${locale}/login`);
+  return NextResponse.redirect(`${origin}/login`);
 }

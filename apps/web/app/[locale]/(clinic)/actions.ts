@@ -108,7 +108,7 @@ export async function inviteStaffAction(
   // Same normalization the login page applies, so "0300 1234567" here
   // finds the account created by logging in as +923001234567.
   const phone = normalizePhone(String(formData.get("phone") ?? ""));
-  const staffPath = `/${locale}/clinic/${clinicSlug}/staff`;
+  const staffPage = `/clinic/${clinicSlug}/staff`;
 
   try {
     await inviteStaff(clinicId, {
@@ -128,15 +128,15 @@ export async function inviteStaffAction(
     // this crashed the whole page with a generic error screen instead of
     // showing the invitee-facing reason (wrong phone/email, not signed up
     // yet, no practitioner profile for a junior doctor) next to the form.
-    redirect(`${staffPath}?inviteError=${encodeURIComponent(extractApiErrorMessage(err))}`);
+    redirect(`${staffPage}?inviteError=${encodeURIComponent(extractApiErrorMessage(err))}`);
   }
   // A plain revalidatePath (no redirect) left a successful invite re-render
   // at whatever URL the form was submitted from — if that still carried an
   // ?inviteError= from a prior failed attempt, the error alert kept showing
   // even though this submission succeeded. Redirecting to a clean "?invited"
   // URL both clears that stale error and shows an explicit success alert.
-  revalidatePath(staffPath);
-  redirect(`${staffPath}?invited=1`);
+  revalidatePath(`/${locale}${staffPage}`);
+  redirect(`${staffPage}?invited=1`);
 }
 
 function extractApiErrorMessage(err: unknown): string {
@@ -294,7 +294,7 @@ export async function saveClinicalPrescriptionAction(
   }
 
   const { allergyWarnings } = await savePrescription(clinicId, appointmentId, items);
-  const basePath = `/${locale}/clinic/${clinicSlug}/clinical-notes/${appointmentId}`;
+  const basePath = `/clinic/${clinicSlug}/clinical-notes/${appointmentId}`;
   redirect(
     allergyWarnings.length > 0
       ? `${basePath}?warned=${encodeURIComponent(allergyWarnings.join(","))}`
@@ -334,9 +334,9 @@ export async function saveWorkingHoursAction(
   formData: FormData,
 ): Promise<void> {
   const t = await getTranslations({ locale, namespace: "clinic.workingHours" });
-  const schedulePath = `/${locale}/clinic/${clinicSlug}/schedule`;
+  const schedulePage = `/clinic/${clinicSlug}/schedule`;
   const fail = (message: string) =>
-    redirect(`${schedulePath}?error=${encodeURIComponent(message)}`);
+    redirect(`${schedulePage}?error=${encodeURIComponent(message)}`);
 
   const timings = {} as WeeklyTimings;
   for (const day of WEEKDAY_KEYS) {
@@ -374,7 +374,7 @@ export async function saveWorkingHoursAction(
     fail(extractApiErrorMessage(err));
   }
 
-  revalidatePath(schedulePath);
+  revalidatePath(`/${locale}${schedulePage}`);
   revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
-  redirect(`${schedulePath}?saved=1`);
+  redirect(`${schedulePage}?saved=1`);
 }

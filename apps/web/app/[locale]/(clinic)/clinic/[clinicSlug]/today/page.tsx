@@ -8,7 +8,6 @@ import {
   listToday,
 } from "@/lib/api/clinic";
 import { Link } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
@@ -82,7 +81,6 @@ export default async function ClinicTodayPage(
             description={
               <Link
                 href={`/clinic/${clinicSlug}/schedule`}
-                locale={locale as AppLocale}
                 className="font-semibold underline"
               >
                 {t("workingHours.setUpLink")}

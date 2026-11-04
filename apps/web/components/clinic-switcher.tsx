@@ -1,6 +1,5 @@
 import { Building2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 
 interface ClinicOption {
   clinicSlug: string;
@@ -19,12 +18,10 @@ export function ClinicSwitcher({
   heading,
   clinics,
   currentSlug,
-  locale,
 }: {
   heading: string;
   clinics: ClinicOption[];
   currentSlug: string;
-  locale: AppLocale;
 }) {
   if (clinics.length < 2) {
     return null;
@@ -42,7 +39,6 @@ export function ClinicSwitcher({
             <li key={c.clinicSlug}>
               <Link
                 href={`/clinic/${c.clinicSlug}/today`}
-                locale={locale}
                 aria-current={active ? "page" : undefined}
                 className={`flex items-start gap-3 rounded-md px-3 py-2 text-sm transition ${
                   active

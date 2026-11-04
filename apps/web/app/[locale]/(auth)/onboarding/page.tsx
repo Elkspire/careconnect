@@ -1,6 +1,5 @@
 import { Stethoscope, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { AppLocale } from "@/i18n/routing";
 import { RoleCard } from "@/components/ui/role-card";
 
 /**
@@ -10,10 +9,7 @@ import { RoleCard } from "@/components/ui/role-card";
  * after login, before either a patients or practitioners row exists (see
  * post-login/page.tsx's redirect logic).
  */
-export default async function OnboardingPage(
-  props: PageProps<"/[locale]/onboarding">,
-) {
-  const { locale } = await props.params;
+export default async function OnboardingPage() {
   const t = await getTranslations("onboarding");
 
   return (
@@ -23,14 +19,12 @@ export default async function OnboardingPage(
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <RoleCard
           href="/patient"
-          locale={locale as AppLocale}
           icon={UserRound}
           title={t("patientOption")}
           description={t("patientOptionDesc")}
         />
         <RoleCard
           href="/onboarding/practitioner"
-          locale={locale as AppLocale}
           icon={Stethoscope}
           title={t("practitionerOption")}
           description={t("practitionerOptionDesc")}

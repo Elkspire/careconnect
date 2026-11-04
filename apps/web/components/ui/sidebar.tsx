@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 
 /**
  * Replaces .dash-shell/.dash-sidebar/.dash-navlink — the sidebar portal
@@ -29,7 +28,6 @@ export function SidebarLink({
   href,
   icon,
   label,
-  locale,
 }: {
   href: string;
   // A rendered element, not a component reference — a bare component type
@@ -39,7 +37,6 @@ export function SidebarLink({
   // `<Icon aria-hidden className="..." />` here, not `icon={Icon}`.
   icon: ReactNode;
   label: string;
-  locale: AppLocale;
 }) {
   const pathname = usePathname();
   const active = pathname === href;
@@ -47,7 +44,6 @@ export function SidebarLink({
   return (
     <Link
       href={href}
-      locale={locale}
       aria-current={active ? "page" : undefined}
       className={`flex shrink-0 items-center gap-3 rounded-md border-s-2 px-3 py-2.5 text-sm font-medium transition ${
         active

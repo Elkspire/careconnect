@@ -278,7 +278,7 @@ function ShareSection({
         <Card>
           {shares.map((s) => {
             const status = shareStatus(s);
-            const shareUrl = `/${locale}/s/${s.token}`;
+            const shareUrl = `/s/${s.token}`;
             return (
               <ListRow
                 key={s.id}

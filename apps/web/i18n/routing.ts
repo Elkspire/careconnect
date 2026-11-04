@@ -11,7 +11,18 @@ import { defineRouting } from "next-intl/routing";
 export const routing = defineRouting({
   locales: ["en", "ur", "ur-Latn"],
   defaultLocale: "en",
+  // URLs carry no language segment ("/patient", not "/en/patient"): the
+  // language lives in next-intl's NEXT_LOCALE cookie (first visit: the
+  // browser's Accept-Language). The middleware still rewrites every request
+  // to /[locale]/... internally, so app/[locale] and revalidatePath paths
+  // keep the locale segment — only what the browser sees drops it. Old
+  // prefixed links (e.g. "/ur/login" in a sent email) redirect to the
+  // unprefixed path and switch to that language.
+  localePrefix: "never",
 });
+
+/** Cookie next-intl reads the language from (its default name). */
+export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 export type AppLocale = (typeof routing.locales)[number];
 

@@ -1,10 +1,8 @@
 import { Bell, CalendarCheck, FolderHeart, LayoutDashboard, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { AppLocale } from "@/i18n/routing";
 import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
 
 export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
-  const { locale } = await props.params;
   const t = await getTranslations("patient");
 
   const navItems = [
@@ -30,7 +28,6 @@ export default async function PatientLayout(props: LayoutProps<"/[locale]">) {
               href={item.href}
               icon={<item.icon aria-hidden className="size-4.5 shrink-0" />}
               label={item.label}
-              locale={locale as AppLocale}
             />
           ))}
         </SidebarNav>

@@ -38,7 +38,7 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
           <NavigationProgress />
-          <SiteHeader locale={locale as AppLocale} />
+          <SiteHeader />
           {props.children}
           <ToastProvider />
         </NextIntlClientProvider>

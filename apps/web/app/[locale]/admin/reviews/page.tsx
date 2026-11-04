@@ -37,7 +37,6 @@ export default async function AdminReviewsPage(
       <nav className="mb-4 flex gap-2">
         <Link
           href="/admin/practitioners"
-          locale={locale}
           className="rounded-md px-3 py-1.5 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
         >
           {t("navPractitioners")}

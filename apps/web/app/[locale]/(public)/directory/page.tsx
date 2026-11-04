@@ -97,7 +97,6 @@ export default async function DirectorySearchPage(
                 pathname: "/directory",
                 query: q ? { city, q, specialty: s.slug } : { city, specialty: s.slug },
               }}
-              locale={locale}
               className={`tap-target inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                 specialty === s.slug
                   ? "border-primary-600 bg-primary-600 text-white"
@@ -116,7 +115,7 @@ export default async function DirectorySearchPage(
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {results.map((listing) => (
             <li key={`${listing.practitionerId}-${listing.clinic.id}`}>
-              <Link href={`/practitioners/${listing.practitionerSlug}`} locale={locale} className="block h-full">
+              <Link href={`/practitioners/${listing.practitionerSlug}`} className="block h-full">
                 <Card interactive className="flex h-full flex-col gap-3">
                   <div className="flex items-start gap-3">
                     <InitialsAvatar name={listing.fullName} size="md" />

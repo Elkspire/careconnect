@@ -22,7 +22,6 @@ type ClinicStaffRow = MeResponse["clinicStaff"][number];
  * account.
  */
 export default async function PostLoginPage(props: PageProps<"/[locale]/post-login">) {
-  const { locale } = await props.params;
   const sp = await props.searchParams;
   const roleHint = typeof sp.roleHint === "string" ? sp.roleHint : undefined;
   const me = await getMe();
@@ -34,7 +33,7 @@ export default async function PostLoginPage(props: PageProps<"/[locale]/post-log
     active.find((s) => s.role === "owner") ?? active.find((s) => s.role === "junior_doctor");
   const receptionistClinic = active.find((s) => s.role === "receptionist");
 
-  const toClinic = (s: ClinicStaffRow) => redirect(`/${locale}/clinic/${s.clinicSlug}/today`);
+  const toClinic = (s: ClinicStaffRow) => redirect(`/clinic/${s.clinicSlug}/today`);
 
   if (roleHint === "staff" && receptionistClinic) {
     toClinic(receptionistClinic);
@@ -45,24 +44,24 @@ export default async function PostLoginPage(props: PageProps<"/[locale]/post-log
     }
     // A practitioner with no clinic yet (clinic creation didn't finish), or
     // a brand-new account registering as one.
-    redirect(`/${locale}/onboarding/practitioner`);
+    redirect(`/onboarding/practitioner`);
   }
   if (roleHint === "patient") {
-    redirect(`/${locale}/patient`);
+    redirect(`/patient`);
   }
 
   if (doctorClinic) {
     toClinic(doctorClinic);
   }
   if (me.practitioner) {
-    redirect(`/${locale}/onboarding/practitioner`);
+    redirect(`/onboarding/practitioner`);
   }
   if (receptionistClinic) {
     toClinic(receptionistClinic);
   }
   if (me.patient) {
-    redirect(`/${locale}/patient`);
+    redirect(`/patient`);
   }
   // Brand new account, nothing decided yet, and no card picked.
-  redirect(`/${locale}/onboarding`);
+  redirect(`/onboarding`);
 }

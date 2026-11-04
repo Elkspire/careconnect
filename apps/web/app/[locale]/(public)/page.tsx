@@ -40,7 +40,6 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/directory"
-                  locale={locale}
                   className="tap-target inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-primary-800 transition hover:bg-primary-50"
                 >
                   <Search aria-hidden className="size-4" />
@@ -48,7 +47,6 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
                 </Link>
                 <Link
                   href={user ? "/post-login" : "/login"}
-                  locale={locale}
                   className="tap-target inline-flex items-center gap-2 rounded-md border-2 border-white/50 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
                 >
                   {user ? tSite("myAccount") : tSite("login")}
@@ -106,7 +104,6 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
                 <Link
                   key={s.id}
                   href={{ pathname: "/directory", query: { specialty: s.slug } }}
-                  locale={locale}
                   className="tap-target inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
                 >
                   <Stethoscope aria-hidden className="size-4" />

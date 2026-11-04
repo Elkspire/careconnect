@@ -63,7 +63,7 @@ export async function proxy(request: NextRequest) {
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) => pathWithoutLocale.startsWith(prefix));
   if (isProtected && !user) {
-    const loginUrl = new URL(`/${locale}/login`, request.url);
+    const loginUrl = new URL("/login", request.url);
     // Locale-less path: the login page's `next` redirect goes through
     // next-intl's locale-aware router, which re-prepends the locale itself.
     // Storing the already-prefixed pathname here produced `/en/en/...` 404s.

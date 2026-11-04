@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { HeartPulse, LoaderCircle, Stethoscope, UserCog, UserRound } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { normalizePhone } from "@careconnect/validation";
 import { createClient } from "@/lib/supabase/client";
@@ -15,7 +15,6 @@ type Role = LoginRole;
 export default function LoginPage() {
   const t = useTranslations("auth");
   const tOnboarding = useTranslations("onboarding");
-  const locale = useLocale();
   const searchParams = useSearchParams();
   const explicitNext = searchParams.get("next");
 
@@ -99,8 +98,7 @@ export default function LoginPage() {
     // re-running proxy.ts with the now-fresh session cookie. A full page
     // load guarantees the browser sends the real cookie jar and proxy.ts
     // re-evaluates from scratch.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    window.location.href = `/${locale}${effectiveNext}`;
+    window.location.href = effectiveNext;
   }
 
   const inputClasses =

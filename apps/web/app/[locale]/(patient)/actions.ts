@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { hasLocale } from "next-intl";
-import { routing, type AppLocale } from "@/i18n/routing";
+import { LOCALE_COOKIE, routing, type AppLocale } from "@/i18n/routing";
 import { BLOOD_GROUP, type BloodGroup } from "@careconnect/shared-types";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
 import {
@@ -55,10 +56,15 @@ export async function saveProfileAction(locale: string, formData: FormData): Pro
   });
   revalidatePath(`/${locale}/patient`);
   // The saved language used to only reach notifications — the site stayed
-  // in whatever the URL said. Switching the URL is what changes the UI
-  // (next-intl then remembers it in its NEXT_LOCALE cookie).
+  // in its old language. The site's language is next-intl's cookie, so set
+  // that too and reload the page in the new language.
   if (preferredLanguage !== locale) {
-    redirect(`/${preferredLanguage}/patient`);
+    (await cookies()).set(LOCALE_COOKIE, preferredLanguage, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+    redirect("/patient");
   }
 }
 
@@ -98,7 +104,7 @@ export async function createAppointmentAction(
   }
 
   revalidatePath(`/${locale}/patient/appointments`);
-  redirect(`/${locale}/patient/appointments`);
+  redirect(`/patient/appointments`);
 }
 
 export async function rescheduleAppointmentAction(
@@ -136,7 +142,7 @@ export async function joinWaitlistAction(locale: string, formData: FormData): Pr
   }
 
   revalidatePath(`/${locale}/patient/appointments`);
-  redirect(`/${locale}/patient/appointments`);
+  redirect(`/patient/appointments`);
 }
 
 export async function leaveWaitlistAction(locale: string, formData: FormData): Promise<void> {

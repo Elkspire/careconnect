@@ -2,7 +2,6 @@ import { ArrowLeft, ChevronDown, FileText, User } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 import {
   getClinicFamilyMemberDetail,
   getFamilyMemberMedicalSummary,
@@ -64,7 +63,6 @@ export default async function ClinicFamilyMemberDetailPage(
     <div className="max-w-3xl">
       <Link
         href={`/clinic/${clinicSlug}/patients/${patientId}`}
-        locale={locale as AppLocale}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800"
       >
         <ArrowLeft aria-hidden className="size-4 rtl:rotate-180" />
@@ -238,7 +236,6 @@ export default async function ClinicFamilyMemberDetailPage(
               (appt.status === "checked_in" || appt.status === "completed") && (
                 <Link
                   href={`/clinic/${clinicSlug}/clinical-notes/${appt.appointmentId}`}
-                  locale={locale as AppLocale}
                   className={secondaryButtonClasses}
                 >
                   {t("viewClinicalNote")}

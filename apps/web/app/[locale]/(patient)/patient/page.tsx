@@ -1,7 +1,7 @@
 import { CalendarCheck, FolderHeart, LayoutDashboard, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { LOCALE_LABELS, routing, type AppLocale } from "@/i18n/routing";
+import { LOCALE_LABELS, routing } from "@/i18n/routing";
 import { getMyProfile, listFamilyMembers } from "@/lib/api/patients";
 import { listMyAppointments } from "@/lib/api/booking";
 import { listVaultRecords } from "@/lib/api/vault";
@@ -86,7 +86,6 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
 
       <Link
         href="/onboarding/practitioner"
-        locale={locale as AppLocale}
         className="mt-6 inline-block text-xs font-medium text-text-muted hover:text-text"
       >
         {tOnboarding("becomeProviderLink")}

@@ -39,7 +39,6 @@ export default async function PractitionerProfilePage(
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
       <Link
         href="/directory"
-        locale={locale}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:text-primary-800"
       >
         <ArrowLeft aria-hidden className="size-4 rtl:rotate-180" />
@@ -97,7 +96,7 @@ export default async function PractitionerProfilePage(
               </p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="font-bold text-text">{clinic.consultationFee}</span>
-                <Link href={`/patient/book/${profile.slug}/${clinic.slug}`} locale={locale}>
+                <Link href={`/patient/book/${profile.slug}/${clinic.slug}`}>
                   <span className="tap-target inline-flex items-center rounded-md bg-primary-700 px-3 py-1.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800">
                     {t("bookAt")}
                   </span>
@@ -166,7 +165,7 @@ export default async function PractitionerProfilePage(
           </form>
         ) : (
           <p className="text-sm text-text-muted">
-            <Link href="/login" locale={locale} className="font-medium text-primary-700 hover:text-primary-800">
+            <Link href="/login" className="font-medium text-primary-700 hover:text-primary-800">
               {t("loginToReview")}
             </Link>
           </p>

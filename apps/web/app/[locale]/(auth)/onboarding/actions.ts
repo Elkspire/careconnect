@@ -18,7 +18,7 @@ export async function registerPractitionerAction(
   formData: FormData,
 ): Promise<void> {
   const me = await getMe();
-  const formUrl = `/${locale}/onboarding/practitioner`;
+  const formUrl = "/onboarding/practitioner";
 
   // A plain HTML form can't require "at least one of these checkboxes", and
   // the API rejects an empty list with a 400 — which, thrown from here,
@@ -65,5 +65,5 @@ export async function registerPractitionerAction(
 
   // Outside the try: redirect() works by throwing, and the catch above
   // would otherwise swallow it.
-  redirect(`/${locale}/clinic/${clinicSlug}/today`);
+  redirect(`/clinic/${clinicSlug}/today`);
 }

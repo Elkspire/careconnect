@@ -2,7 +2,6 @@ import { Users } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import type { AppLocale } from "@/i18n/routing";
 import { listClinicPatients } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate } from "@/lib/format-time";
@@ -40,7 +39,6 @@ export default async function ClinicPatientsPage(
                     ? `/clinic/${clinicSlug}/patients/${p.patientId}/family/${p.familyMemberId}`
                     : `/clinic/${clinicSlug}/patients/${p.patientId}`
                 }
-                locale={locale as AppLocale}
                 className="block h-full"
               >
                 <Card interactive className="flex h-full items-start gap-3">

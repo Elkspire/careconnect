@@ -1,6 +1,5 @@
 import { BarChart3, Bell, CalendarDays, Clock, ShieldCheck, Star, UserCog, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { AppLocale } from "@/i18n/routing";
 import { getMe } from "@/lib/api/me";
 import { ClinicSwitcher } from "@/components/clinic-switcher";
 import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
@@ -8,7 +7,7 @@ import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/s
 export default async function ClinicLayout(
   props: LayoutProps<"/[locale]/clinic/[clinicSlug]">,
 ) {
-  const { locale, clinicSlug } = await props.params;
+  const { clinicSlug } = await props.params;
   const [t, me] = await Promise.all([getTranslations("clinic"), getMe()]);
   // Same lookup resolveClinicStaffBySlug does, inlined so the one /me call
   // also feeds the clinic switcher below.
@@ -51,7 +50,6 @@ export default async function ClinicLayout(
               roleLabel: t(`roles.${s.role}` as "roles.owner"),
             }))}
             currentSlug={clinicSlug}
-            locale={locale as AppLocale}
           />
           <SidebarNav>
             {navItems.map((item) => (
@@ -60,7 +58,6 @@ export default async function ClinicLayout(
                 href={item.href}
                 icon={<item.icon aria-hidden className="size-4.5 shrink-0" />}
                 label={item.label}
-                locale={locale as AppLocale}
               />
             ))}
           </SidebarNav>

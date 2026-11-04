@@ -1,13 +1,11 @@
-import { Suspense } from "react";
-import { Languages, Stethoscope } from "lucide-react";
+import { Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import type { AppLocale } from "@/i18n/routing";
 
-export async function SiteHeader({ locale }: { locale: AppLocale }) {
+export async function SiteHeader() {
   const [t, tPatient, supabase] = await Promise.all([
     getTranslations("site"),
     getTranslations("patient"),
@@ -20,7 +18,7 @@ export async function SiteHeader({ locale }: { locale: AppLocale }) {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" locale={locale} className="flex items-center gap-2 font-bold text-primary-700">
+        <Link href="/" className="flex items-center gap-2 font-bold text-primary-700">
           <Stethoscope aria-hidden className="size-6" />
           <span>
             Care<span className="text-text">Connect</span>
@@ -28,25 +26,15 @@ export async function SiteHeader({ locale }: { locale: AppLocale }) {
         </Link>
         <Link
           href="/directory"
-          locale={locale}
           className="tap-target hidden items-center rounded-md px-3 py-2 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text sm:flex"
         >
           {tPatient("findDoctor")}
         </Link>
         <div className="hidden text-sm text-text-muted md:block">{t("kicker")}</div>
         <div className="flex items-center gap-1 sm:gap-2">
-          <Suspense
-            fallback={
-              <span className="tap-target flex items-center px-2 text-text-muted">
-                <Languages aria-hidden className="size-4" />
-              </span>
-            }
-          >
-            <LanguageSwitcher label={t("language")} />
-          </Suspense>
+          <LanguageSwitcher label={t("language")} />
           <Link
             href={user ? "/post-login" : "/login"}
-            locale={locale}
             className={
               user
                 ? "tap-target flex items-center rounded-md px-3 py-2 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
