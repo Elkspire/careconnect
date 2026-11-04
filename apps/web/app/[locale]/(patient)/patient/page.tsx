@@ -16,6 +16,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
   const { locale } = await props.params;
+  const profileError = (await props.searchParams).profileError === "1";
   const [t, tOnboarding, profile, familyMembers, appointments, records] = await Promise.all([
     getTranslations("patient"),
     getTranslations("onboarding"),
@@ -42,6 +43,11 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
           {!profile && (
             <div className="mb-5">
               <Alert tone="warning" title={t("createProfilePrompt")} />
+            </div>
+          )}
+          {profileError && (
+            <div className="mb-5">
+              <Alert tone="danger" title={t("profileSaveError")} />
             </div>
           )}
 

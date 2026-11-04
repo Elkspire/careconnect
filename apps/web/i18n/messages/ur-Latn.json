@@ -80,6 +80,7 @@
     "fullNameLabel": "Poora naam",
     "preferredLanguageLabel": "Pasandeeda zubaan",
     "saveProfile": "Save karein",
+    "profileSaveError": "Aap ki settings save nahin ho sakin. Dobara koshish karein.",
     "preferencesHeading": "Tarjeehaat",
     "familyMembersHeading": "Ghar walay",
     "addFamilyMember": "Ghar ka fard shaamil karein",

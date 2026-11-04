@@ -80,6 +80,7 @@
     "fullNameLabel": "پورا نام",
     "preferredLanguageLabel": "پسندیدہ زبان",
     "saveProfile": "محفوظ کریں",
+    "profileSaveError": "آپ کی ترتیبات محفوظ نہیں ہو سکیں۔ دوبارہ کوشش کریں۔",
     "preferencesHeading": "ترجیحات",
     "familyMembersHeading": "خاندان کے افراد",
     "addFamilyMember": "خاندان کا فرد شامل کریں",

@@ -50,10 +50,18 @@ function toClinicIso(datetimeLocal: string): string {
 export async function saveProfileAction(locale: string, formData: FormData): Promise<void> {
   const requested = String(formData.get("preferredLanguage") ?? "");
   const preferredLanguage: AppLocale = hasLocale(routing.locales, requested) ? requested : locale as AppLocale;
-  await upsertMyProfile({
-    fullName: String(formData.get("fullName") ?? ""),
-    preferredLanguage,
-  });
+  try {
+    await upsertMyProfile({
+      fullName: String(formData.get("fullName") ?? ""),
+      preferredLanguage,
+    });
+  } catch (err) {
+    // Left uncaught this replaced the whole page with a bare "Update
+    // patient profile failed: 500". Logged for the server console; the
+    // patient gets a message on the form instead.
+    console.error(err);
+    redirect("/patient?profileError=1");
+  }
   revalidatePath(`/${locale}/patient`);
   // The saved language used to only reach notifications — the site stayed
   // in its old language. The site's language is next-intl's cookie, so set

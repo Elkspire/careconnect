@@ -80,6 +80,7 @@
     "fullNameLabel": "Full name",
     "preferredLanguageLabel": "Preferred language",
     "saveProfile": "Save",
+    "profileSaveError": "Couldn't save your settings. Please try again.",
     "preferencesHeading": "Preferences",
     "familyMembersHeading": "Family members",
     "addFamilyMember": "Add family member",
