@@ -8,6 +8,7 @@ import { clinicTodayIso, formatClinicTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
+import { BookingDatePicker } from "@/components/booking-date-picker";
 import { createAppointmentAction, joinWaitlistAction } from "../../../../actions";
 
 const inputClasses =
@@ -18,7 +19,8 @@ export default async function BookAppointmentPage(
 ) {
   const { locale, practitionerSlug, clinicSlug } = await props.params;
   const sp = await props.searchParams;
-  const date = typeof sp.date === "string" && sp.date ? sp.date : clinicTodayIso();
+  const today = clinicTodayIso();
+  const date = typeof sp.date === "string" && sp.date ? sp.date : today;
 
   const [t, profile] = await Promise.all([
     getTranslations("patient"),
@@ -48,16 +50,25 @@ export default async function BookAppointmentPage(
       <PageHeader icon={CalendarPlus} kicker="CareConnect" title={t("bookingHeading")} />
 
       <Card padding="lg">
+        {/* Choosing a date loads its times straight away (see
+            BookingDatePicker). The GET form and its button only matter
+            without JavaScript, so the button is in <noscript>. */}
         <form method="get" className="flex flex-wrap items-end gap-3">
-          <FormField label={t("pickDate")}>
-            <input type="date" name="date" defaultValue={date} className={inputClasses} />
-          </FormField>
-          <button
-            type="submit"
-            className="tap-target rounded-md border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
-          >
-            {t("pickDate")}
-          </button>
+          <BookingDatePicker
+            label={t("pickDate")}
+            loadingLabel={t("loadingSlots")}
+            date={date}
+            minDate={today}
+            className={inputClasses}
+          />
+          <noscript>
+            <button
+              type="submit"
+              className="tap-target rounded-md border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
+            >
+              {t("pickDate")}
+            </button>
+          </noscript>
         </form>
 
         <div className="my-4 border-t border-border" />

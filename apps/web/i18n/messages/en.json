@@ -113,6 +113,7 @@
     "forSelf": "Myself",
     "forFamilyMember": "A family member",
     "pickDate": "Pick a date",
+    "loadingSlots": "Loading times…",
     "availableSlots": "Available slots (Pakistan time)",
     "newTimeLabelPkt": "New time (Pakistan time)",
     "noSlots": "No available slots for this date.",
