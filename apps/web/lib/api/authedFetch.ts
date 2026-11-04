@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export class UnauthenticatedError extends Error {
   constructor() {
@@ -21,7 +21,7 @@ export async function authedFetch(path: string, init?: RequestInit): Promise<Res
   // fetch sets the multipart boundary itself only when it's left unset.
   const isFormData = init?.body instanceof FormData;
 
-  return fetch(`${API_URL}${path}`, {
+  return apiFetch(path, {
     ...init,
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),

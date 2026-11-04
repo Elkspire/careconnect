@@ -1,4 +1,4 @@
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 /**
  * Checked from the login page before sending an OTP, so a doctor entering
@@ -20,7 +20,7 @@ export async function checkRoleEligibility(
   role: LoginRole,
 ): Promise<RoleEligibility> {
   const params = new URLSearchParams({ phone, role });
-  const res = await fetch(`${API_URL}/auth/check-role?${params.toString()}`);
+  const res = await apiFetch(`/auth/check-role?${params.toString()}`);
   if (!res.ok) {
     // Fail open — a transient API error shouldn't block login itself, only
     // the extra role-mismatch hint. post-login still routes by real role.

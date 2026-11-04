@@ -1,7 +1,7 @@
 import type { RegisterPractitionerInput } from "@careconnect/validation";
 import type { PractitionerType } from "@careconnect/shared-types";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export interface Practitioner {
   id: string;
@@ -34,6 +34,6 @@ export async function listSpecialties(
   practitionerType?: PractitionerType,
 ): Promise<Specialty[]> {
   const qs = practitionerType ? `?practitionerType=${practitionerType}` : "";
-  const res = await fetch(`${API_URL}/directory/specialties${qs}`);
+  const res = await apiFetch(`/directory/specialties${qs}`);
   return parseJsonOrThrow(res, "List specialties");
 }

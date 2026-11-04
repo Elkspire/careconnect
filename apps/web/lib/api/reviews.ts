@@ -1,6 +1,6 @@
 import type { ReportReviewInput, SubmitReviewInput } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export interface Review {
   id: string;
@@ -21,7 +21,7 @@ export interface PractitionerReviews {
 
 // Public — signed-out visitors see ratings too.
 export async function getPractitionerReviews(practitionerId: string): Promise<PractitionerReviews> {
-  const res = await fetch(`${API_URL}/practitioners/${practitionerId}/reviews`, {
+  const res = await apiFetch(`/practitioners/${practitionerId}/reviews`, {
     cache: "no-store",
   });
   return parseJsonOrThrow(res, "Get practitioner reviews");

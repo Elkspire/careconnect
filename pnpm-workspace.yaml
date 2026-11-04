@@ -7,3 +7,8 @@ allowBuilds:
   esbuild: true
   sharp: false
   unrs-resolver: true
+# pnpm otherwise runs a full `pnpm install` (with registry round-trips)
+# before every `pnpm run` whenever it thinks deps are stale. Under
+# `turbo run dev` that meant three concurrent installs and a 20s+ API
+# start. Warn instead; run `pnpm install` yourself when it says so.
+verifyDepsBeforeRun: warn

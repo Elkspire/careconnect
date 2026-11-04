@@ -1,6 +1,6 @@
 import type { CreateShareInput } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export interface RecordShare {
   id: string;
@@ -86,7 +86,7 @@ export async function revokeShare(shareId: string): Promise<void> {
 
 /** No session involved — this is the link a doctor opens without a CareConnect account. */
 export async function getSharedBundle(token: string): Promise<SharedBundle | null> {
-  const res = await fetch(`${API_URL}/shares/view/${token}`, { cache: "no-store" });
+  const res = await apiFetch(`/shares/view/${token}`, { cache: "no-store" });
   if (res.status === 404) {
     return null;
   }

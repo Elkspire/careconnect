@@ -6,7 +6,7 @@ import type {
   RescheduleAppointmentInput,
 } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export interface DayAvailability {
   date: string;
@@ -53,7 +53,7 @@ export async function getAvailability(query: AvailabilityQuery): Promise<DayAvai
     fromDate: query.fromDate,
     toDate: query.toDate,
   });
-  const res = await fetch(`${API_URL}/booking/availability?${params.toString()}`, {
+  const res = await apiFetch(`/booking/availability?${params.toString()}`, {
     cache: "no-store",
   });
   return parseJsonOrThrow(res, "Get availability");

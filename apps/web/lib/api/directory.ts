@@ -1,5 +1,5 @@
 import type { DirectorySearchQuery } from "@careconnect/validation";
-import { API_URL } from "./config";
+import { apiFetch } from "./config";
 
 export interface DirectoryListing {
   practitionerId: string;
@@ -67,7 +67,7 @@ export async function searchPractitioners(
   query: Partial<DirectorySearchQuery> & { city: string },
 ): Promise<DirectorySearchResult> {
   const params = toSearchParams(query);
-  const res = await fetch(`${API_URL}/directory/practitioners?${params.toString()}`, {
+  const res = await apiFetch(`/directory/practitioners?${params.toString()}`, {
     next: { revalidate: DIRECTORY_REVALIDATE_SECONDS },
   });
   if (!res.ok) {
@@ -77,7 +77,7 @@ export async function searchPractitioners(
 }
 
 export async function getPractitionerProfile(slug: string): Promise<PractitionerProfile | null> {
-  const res = await fetch(`${API_URL}/directory/practitioners/${slug}`, {
+  const res = await apiFetch(`/directory/practitioners/${slug}`, {
     next: { revalidate: DIRECTORY_REVALIDATE_SECONDS },
   });
   if (res.status === 404) {
