@@ -39,8 +39,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (!isHttpException || status >= 500) {
       const message =
         exception instanceof Error ? exception.stack : String(exception);
+      // Drizzle wraps driver errors ("Failed query: insert into ...") and
+      // keeps Postgres's actual reason — e.g. `invalid input value for enum
+      // preferred_language: "ur-Latn"` — on .cause, which the stack alone
+      // never showed.
+      const cause =
+        exception instanceof Error && exception.cause instanceof Error
+          ? `
+  caused by: ${exception.cause.message}`
+          : '';
       this.logger.error(
-        `${request.method ?? ''} ${request.url ?? ''} -> ${status}: ${message}`,
+        `${request.method ?? ''} ${request.url ?? ''} -> ${status}: ${message}${cause}`,
       );
     }
 
