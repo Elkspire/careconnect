@@ -5,7 +5,11 @@ import {
   type Database,
 } from '../../../common/database/database.module';
 import { expoPushTokens } from '../../../common/database/schema';
-import { renderTemplate, type TemplateKey } from '../templates';
+import {
+  renderTemplate,
+  type TemplateKey,
+  type NotificationLocale,
+} from '../templates';
 import type {
   ChannelAdapter,
   DeliveryResult,
@@ -46,7 +50,7 @@ export class ExpoPushAdapter implements ChannelAdapter {
     recipient: NotificationRecipient,
     templateKey: string,
     payload: Record<string, string>,
-    locale: 'en' | 'ur',
+    locale: NotificationLocale,
   ): Promise<DeliveryResult> {
     const tokens = await this.db
       .select()

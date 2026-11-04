@@ -8,6 +8,11 @@ import { getSupabaseEnv } from "./lib/supabase/env";
 // AGENTS.md) — next-intl's own API is unchanged, only the file/export name.
 const intlMiddleware = createMiddleware(routing);
 
+// Longest first, so "/ur-Latn/..." isn't read as "/ur" + "-Latn/...".
+const LOCALE_PREFIX = new RegExp(
+  `^\/(${[...routing.locales].sort((a, b) => b.length - a.length).join("|")})(\/|$)`,
+);
+
 /** Locale-stripped path prefixes that require a signed-in session. */
 const PROTECTED_PREFIXES = ["/patient", "/clinic", "/post-login", "/onboarding"];
 
@@ -50,10 +55,10 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const localeMatch = request.nextUrl.pathname.match(/^\/(en|ur)(\/|$)/);
+  const localeMatch = request.nextUrl.pathname.match(LOCALE_PREFIX);
   const locale = localeMatch?.[1] ?? routing.defaultLocale;
   const pathWithoutLocale = localeMatch
-    ? request.nextUrl.pathname.slice(localeMatch[0].length - 1) || "/"
+    ? request.nextUrl.pathname.slice(1 + locale.length) || "/"
     : request.nextUrl.pathname;
 
   const isProtected = PROTECTED_PREFIXES.some((prefix) => pathWithoutLocale.startsWith(prefix));

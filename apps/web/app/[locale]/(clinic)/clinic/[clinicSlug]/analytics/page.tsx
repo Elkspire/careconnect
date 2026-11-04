@@ -1,4 +1,5 @@
 import { BarChart3 } from "lucide-react";
+import { intlLocale } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getClinicAnalytics } from "@/lib/api/clinic";
@@ -52,7 +53,7 @@ export default async function ClinicAnalyticsPage(
         <StatTile value={analytics.totals.cancelled} label={t("cancelledLabel")} />
         <StatTile value={analytics.totals.noShows} label={t("noShowsLabel")} />
         <StatTile
-          value={analytics.totals.estimatedRevenue.toLocaleString(locale)}
+          value={analytics.totals.estimatedRevenue.toLocaleString(intlLocale(locale))}
           label={t("estimatedRevenueLabel")}
         />
       </StatGrid>
@@ -75,7 +76,7 @@ export default async function ClinicAnalyticsPage(
                 meta={
                   <>
                     {d.visits} · {t("cancelledLabel")} {d.cancelled} · {t("noShowsLabel")} {d.noShows} ·{" "}
-                    {Number(d.estimatedRevenue).toLocaleString(locale)}
+                    {Number(d.estimatedRevenue).toLocaleString(intlLocale(locale))}
                   </>
                 }
               />

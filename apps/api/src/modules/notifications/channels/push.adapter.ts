@@ -7,7 +7,11 @@ import {
   type Database,
 } from '../../../common/database/database.module';
 import { pushSubscriptions } from '../../../common/database/schema';
-import { renderTemplate, type TemplateKey } from '../templates';
+import {
+  renderTemplate,
+  type TemplateKey,
+  type NotificationLocale,
+} from '../templates';
 import type {
   ChannelAdapter,
   DeliveryResult,
@@ -53,7 +57,7 @@ export class PushAdapter implements ChannelAdapter {
     recipient: NotificationRecipient,
     templateKey: string,
     payload: Record<string, string>,
-    locale: 'en' | 'ur',
+    locale: NotificationLocale,
   ): Promise<DeliveryResult> {
     if (!this.ensureVapid()) {
       return { status: 'failed', error: 'not_configured' };

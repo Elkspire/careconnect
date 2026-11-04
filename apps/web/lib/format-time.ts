@@ -1,3 +1,5 @@
+import { intlLocale } from "@/i18n/routing";
+
 /**
  * v1 is Pakistan-only (see apps/api's availability.ts CLINIC_UTC_OFFSET and
  * notification-listener.service.ts's formatWhen) — every displayed
@@ -12,7 +14,7 @@
 const CLINIC_TIME_ZONE = "Asia/Karachi";
 
 export function formatClinicDateTime(iso: string, locale: string): string {
-  return new Date(iso).toLocaleString(locale, {
+  return new Date(iso).toLocaleString(intlLocale(locale), {
     timeZone: CLINIC_TIME_ZONE,
     dateStyle: "medium",
     timeStyle: "short",
@@ -20,7 +22,7 @@ export function formatClinicDateTime(iso: string, locale: string): string {
 }
 
 export function formatClinicTime(iso: string, locale: string): string {
-  return new Date(iso).toLocaleTimeString(locale, {
+  return new Date(iso).toLocaleTimeString(intlLocale(locale), {
     timeZone: CLINIC_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
@@ -28,7 +30,7 @@ export function formatClinicTime(iso: string, locale: string): string {
 }
 
 export function formatClinicDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale, { timeZone: CLINIC_TIME_ZONE });
+  return new Date(iso).toLocaleDateString(intlLocale(locale), { timeZone: CLINIC_TIME_ZONE });
 }
 
 /** Today's date (YYYY-MM-DD) in the clinic's own timezone, not the server's. */

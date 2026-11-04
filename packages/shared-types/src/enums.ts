@@ -7,7 +7,7 @@
 export const GENDER = ["male", "female", "other"] as const;
 export type Gender = (typeof GENDER)[number];
 
-export const PREFERRED_LANGUAGE = ["en", "ur"] as const;
+export const PREFERRED_LANGUAGE = ["en", "ur", "ur-Latn"] as const;
 export type PreferredLanguage = (typeof PREFERRED_LANGUAGE)[number];
 
 export const FAMILY_RELATIONSHIP = [

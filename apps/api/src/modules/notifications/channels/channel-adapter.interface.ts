@@ -1,3 +1,4 @@
+import type { NotificationLocale } from '../templates';
 export interface NotificationRecipient {
   userId: string;
   phone?: string;
@@ -16,6 +17,6 @@ export interface ChannelAdapter {
     recipient: NotificationRecipient,
     templateKey: string,
     payload: Record<string, string>,
-    locale: 'en' | 'ur',
+    locale: NotificationLocale,
   ): Promise<DeliveryResult>;
 }

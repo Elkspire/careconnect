@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { submitReviewAction } from "../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { localizedName } from "@/i18n/routing";
 
 export default async function PractitionerProfilePage(
   props: PageProps<"/[locale]/practitioners/[slug]">,
@@ -59,7 +60,7 @@ export default async function PractitionerProfilePage(
               {t("specialtiesLabel")}
             </p>
             <p className="mt-1 text-sm text-text">
-              {profile.specialties.map((s) => s.nameEn).join(", ")}
+              {profile.specialties.map((s) => localizedName(s, locale)).join(", ")}
             </p>
           </div>
         )}

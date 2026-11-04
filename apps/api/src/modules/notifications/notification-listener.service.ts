@@ -1,3 +1,4 @@
+import { toNotificationLocale, type NotificationLocale } from './templates';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { eq } from 'drizzle-orm';
@@ -39,11 +40,11 @@ function formatWhen(date: Date): string {
 interface AppointmentContext {
   patientId: string;
   patientPhone: string | undefined;
-  patientLocale: 'en' | 'ur';
+  patientLocale: NotificationLocale;
   practitionerName: string;
   practitionerUserId: string;
   practitionerPhone: string | undefined;
-  practitionerLocale: 'en' | 'ur';
+  practitionerLocale: NotificationLocale;
   clinicName: string;
 }
 
@@ -272,11 +273,11 @@ export class NotificationListenerService {
     return {
       patientId: appointment.patientId,
       patientPhone: row.patientPhone ?? undefined,
-      patientLocale: row.patientLocale ?? 'en',
+      patientLocale: toNotificationLocale(row.patientLocale),
       practitionerName: row.practitionerName,
       practitionerUserId: appointment.practitionerId,
       practitionerPhone: practitionerUser?.phone ?? undefined,
-      practitionerLocale: (row.practitionerLanguages[0] as 'en' | 'ur') ?? 'en',
+      practitionerLocale: toNotificationLocale(row.practitionerLanguages[0]),
       clinicName: row.clinicName,
     };
   }

@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { FormField } from "@/components/ui/form-field";
 import { registerPractitionerAction } from "../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { localizedName } from "@/i18n/routing";
 
 const GENDERS = ["male", "female", "other"] as const;
 
@@ -98,7 +99,7 @@ export default async function PractitionerOnboardingPage(
                       className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm text-text transition has-checked:border-primary-600 has-checked:bg-primary-50 has-checked:text-primary-800"
                     >
                       <input type="checkbox" name="specialtyIds" value={s.id} className="accent-primary-600" />
-                      {s.nameEn}
+                      {localizedName(s, locale)}
                     </label>
                   ))}
                 </div>

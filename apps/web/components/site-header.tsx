@@ -1,8 +1,10 @@
-import { Stethoscope } from "lucide-react";
+import { Suspense } from "react";
+import { Languages, Stethoscope } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import type { AppLocale } from "@/i18n/routing";
 
 export async function SiteHeader({ locale }: { locale: AppLocale }) {
@@ -32,7 +34,16 @@ export async function SiteHeader({ locale }: { locale: AppLocale }) {
           {tPatient("findDoctor")}
         </Link>
         <div className="hidden text-sm text-text-muted md:block">{t("kicker")}</div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Suspense
+            fallback={
+              <span className="tap-target flex items-center px-2 text-text-muted">
+                <Languages aria-hidden className="size-4" />
+              </span>
+            }
+          >
+            <LanguageSwitcher label={t("language")} />
+          </Suspense>
           <Link
             href={user ? "/post-login" : "/login"}
             locale={locale}

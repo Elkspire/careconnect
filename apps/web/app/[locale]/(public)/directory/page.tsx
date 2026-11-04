@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InitialsAvatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { localizedName } from "@/i18n/routing";
 
 const DEFAULT_CITY = "Lahore";
 
@@ -103,7 +104,7 @@ export default async function DirectorySearchPage(
                   : "border-border text-text-muted hover:border-primary-500 hover:text-primary-700"
               }`}
             >
-              {s.nameEn}
+              {localizedName(s, locale)}
             </Link>
           ))}
         </div>
@@ -122,7 +123,7 @@ export default async function DirectorySearchPage(
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-text">{listing.fullName}</p>
                       <p className="truncate text-sm font-medium text-primary-700">
-                        {listing.specialties.map((s) => s.nameEn).join(", ")}
+                        {listing.specialties.map((s) => localizedName(s, locale)).join(", ")}
                       </p>
                       <p className="truncate text-xs text-text-muted">
                         {listing.clinic.name} — {listing.clinic.area}, {listing.clinic.city}

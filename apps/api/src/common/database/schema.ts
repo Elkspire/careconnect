@@ -42,7 +42,11 @@ export const authUsers = authSchema.table('users', {
 // ---- enums ----
 
 export const genderEnum = pgEnum('gender', ['male', 'female', 'other']);
-export const preferredLanguageEnum = pgEnum('preferred_language', ['en', 'ur']);
+export const preferredLanguageEnum = pgEnum('preferred_language', [
+  'en',
+  'ur',
+  'ur-Latn',
+]);
 export const familyRelationshipEnum = pgEnum('family_relationship', [
   'spouse',
   'child',

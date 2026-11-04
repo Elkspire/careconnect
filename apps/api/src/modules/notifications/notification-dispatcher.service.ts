@@ -11,14 +11,18 @@ import type {
 import { PushAdapter } from './channels/push.adapter';
 import { SmsAdapter } from './channels/sms.adapter';
 import { WhatsAppAdapter } from './channels/whatsapp.adapter';
-import { renderTemplate, type TemplateKey } from './templates';
+import {
+  renderTemplate,
+  type TemplateKey,
+  type NotificationLocale,
+} from './templates';
 
 export interface DispatchParams {
   eventType: string;
   templateKey: TemplateKey;
   recipient: NotificationRecipient;
   payload: Record<string, string>;
-  locale: 'en' | 'ur';
+  locale: NotificationLocale;
   relatedAppointmentId?: string;
 }
 

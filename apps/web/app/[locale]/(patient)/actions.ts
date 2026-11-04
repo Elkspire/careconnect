@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { hasLocale } from "next-intl";
+import { routing, type AppLocale } from "@/i18n/routing";
 import { BLOOD_GROUP, type BloodGroup } from "@careconnect/shared-types";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
 import {
@@ -45,11 +47,19 @@ function toClinicIso(datetimeLocal: string): string {
 }
 
 export async function saveProfileAction(locale: string, formData: FormData): Promise<void> {
+  const requested = String(formData.get("preferredLanguage") ?? "");
+  const preferredLanguage: AppLocale = hasLocale(routing.locales, requested) ? requested : locale as AppLocale;
   await upsertMyProfile({
     fullName: String(formData.get("fullName") ?? ""),
-    preferredLanguage: (formData.get("preferredLanguage") as "en" | "ur") ?? "en",
+    preferredLanguage,
   });
   revalidatePath(`/${locale}/patient`);
+  // The saved language used to only reach notifications — the site stayed
+  // in whatever the URL said. Switching the URL is what changes the UI
+  // (next-intl then remembers it in its NEXT_LOCALE cookie).
+  if (preferredLanguage !== locale) {
+    redirect(`/${preferredLanguage}/patient`);
+  }
 }
 
 export async function addFamilyMemberAction(locale: string, formData: FormData): Promise<void> {

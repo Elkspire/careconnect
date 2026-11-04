@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { renderTemplate, type TemplateKey } from '../templates';
+import {
+  renderTemplate,
+  type TemplateKey,
+  type NotificationLocale,
+} from '../templates';
 import type {
   ChannelAdapter,
   DeliveryResult,
@@ -27,7 +31,7 @@ export class SmsAdapter implements ChannelAdapter {
     recipient: NotificationRecipient,
     templateKey: string,
     payload: Record<string, string>,
-    locale: 'en' | 'ur',
+    locale: NotificationLocale,
   ): Promise<DeliveryResult> {
     if (!recipient.phone) {
       return { status: 'failed', error: 'no_phone' };

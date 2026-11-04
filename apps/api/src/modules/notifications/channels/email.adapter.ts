@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import { renderTemplate, type TemplateKey } from '../templates';
+import {
+  renderTemplate,
+  type TemplateKey,
+  type NotificationLocale,
+} from '../templates';
 import type {
   ChannelAdapter,
   DeliveryResult,
@@ -11,18 +15,21 @@ import type {
 const SUBJECTS: Partial<
   Record<
     TemplateKey,
-    Record<'en' | 'ur', (p: Record<string, string>) => string>
+    Record<NotificationLocale, (p: Record<string, string>) => string>
   >
 > = {
   staff_invited: {
     en: (p) => `You've been added to ${p.clinicName} on CareConnect`,
     ur: (p) => `آپ کو کیئر کنیکٹ پر ${p.clinicName} میں شامل کیا گیا ہے`,
+    'ur-Latn': (p) =>
+      `Aap ko CareConnect par ${p.clinicName} mein shaamil kiya gaya hai`,
   },
 };
 
-const SIGN_IN_LINE: Record<'en' | 'ur', string> = {
+const SIGN_IN_LINE: Record<NotificationLocale, string> = {
   en: 'Sign in here:',
   ur: 'یہاں سائن ان کریں:',
+  'ur-Latn': 'Yahan sign in karein:',
 };
 
 /**
@@ -42,7 +49,7 @@ export class EmailAdapter implements ChannelAdapter {
     recipient: NotificationRecipient,
     templateKey: string,
     payload: Record<string, string>,
-    locale: 'en' | 'ur',
+    locale: NotificationLocale,
   ): Promise<DeliveryResult> {
     if (!recipient.email) {
       return { status: 'failed', error: 'no_email' };

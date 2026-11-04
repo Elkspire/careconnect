@@ -8,6 +8,7 @@
     "login": "Log in",
     "myAccount": "My account",
     "logout": "Log out",
+    "language": "Language",
     "enableNotifications": "Push notifications",
     "notificationsBlocked": "Blocked in your browser's site settings",
     "notificationsError": "Something went wrong — try again"

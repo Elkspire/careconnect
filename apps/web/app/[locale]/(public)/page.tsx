@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { listSpecialties } from "@/lib/api/practitioners";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
+import { localizedName } from "@/i18n/routing";
 
 export default async function HomePage(props: PageProps<"/[locale]">) {
   const { locale } = await props.params;
@@ -109,7 +110,7 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
                   className="tap-target inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
                 >
                   <Stethoscope aria-hidden className="size-4" />
-                  {s.nameEn}
+                  {localizedName(s, locale)}
                 </Link>
               ))}
             </div>
