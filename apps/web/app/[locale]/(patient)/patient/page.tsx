@@ -1,4 +1,4 @@
-import { CalendarCheck, FolderHeart, LayoutDashboard, Users } from "lucide-react";
+import { CalendarCheck, FolderHeart, LayoutDashboard, UserX, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
@@ -18,9 +18,10 @@ import { LanguageSelectField } from "@/components/language-select-field";
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
   const { locale } = await props.params;
   const profileError = (await props.searchParams).profileError === "1";
-  const [t, tOnboarding, profile, familyMembers, appointments, records] = await Promise.all([
+  const [t, tOnboarding, tAccount, profile, familyMembers, appointments, records] = await Promise.all([
     getTranslations("patient"),
     getTranslations("onboarding"),
+    getTranslations("account"),
     getMyProfile(),
     listFamilyMembers(),
     listMyAppointments(),
@@ -83,6 +84,12 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
             {t("preferencesHeading")}
           </h4>
           <PushNotifications />
+          <div className="mt-5 border-t border-border pt-4">
+            <Link href="/account/delete" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition hover:text-danger-fg">
+              <UserX aria-hidden className="size-4" />
+              {tAccount("link")}
+            </Link>
+          </div>
         </Card>
       </div>
 

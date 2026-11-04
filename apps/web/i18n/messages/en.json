@@ -463,5 +463,26 @@
     },
     "error": "Something went wrong. Please try again.",
     "becomeProviderLink": "Register as a healthcare provider instead"
+  },
+  "account": {
+    "heading": "Delete your account",
+    "permanentTitle": "This is permanent",
+    "permanentBody": "Your account is deleted straight away and can't be recovered. If you sign up again with the same number you'll start a brand-new account.",
+    "whatHappens": "What will happen",
+    "ownerClinics": "Your clinic ({clinics}) will be closed and removed from CareConnect, along with its appointments and staff access.",
+    "ownerUpcoming": "{count, plural, one {# upcoming appointment} other {# upcoming appointments}} at your clinic will be cancelled, and those patients will be notified.",
+    "practitionerProfile": "Your doctor profile, reviews and verification documents will be deleted, and you'll be removed from the directory.",
+    "staffAccess": "You'll lose access to the clinics you work at. Notes and vitals you recorded stay with those clinics.",
+    "patientData": "Your profile, your family members' details, the records you uploaded, your share links and your reviews will be deleted.",
+    "patientUpcoming": "{count, plural, one {Your # upcoming appointment} other {Your # upcoming appointments}} will be cancelled.",
+    "patientRecordsKept": "Clinics that treated you keep their own visit records (notes, prescriptions, vitals), with your name removed.",
+    "login": "Your login is deleted and you'll be signed out.",
+    "confirmLabel": "Type <word>DELETE</word> to confirm",
+    "confirmMismatch": "Please type DELETE exactly to confirm.",
+    "deleteFailed": "Your account couldn't be deleted. Please try again.",
+    "deleteButton": "Permanently delete my account",
+    "cancel": "Cancel",
+    "link": "Delete account",
+    "deletedNotice": "Your account has been deleted."
   }
 }

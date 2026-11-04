@@ -463,5 +463,26 @@
     },
     "error": "Kuch ghalat ho gaya. Dobara koshish karein.",
     "becomeProviderLink": "Is ki jagah healthcare provider ke taur par register karein"
+  },
+  "account": {
+    "heading": "Apna account delete karein",
+    "permanentTitle": "Yeh mustaqil hai",
+    "permanentBody": "Aap ka account foran delete ho jaayega aur wapas nahin aa sakta. Agar aap isi number se dobara sign up karenge to bilkul naya account banega.",
+    "whatHappens": "Kya hoga",
+    "ownerClinics": "Aap ka clinic ({clinics}) band kar ke CareConnect se hata diya jaayega, us ki appointments aur staff ki access samait.",
+    "ownerUpcoming": "Aap ke clinic ki {count, plural, one {# aane wali appointment} other {# aane wali appointments}} cancel kar di jaayengi aur un mareezon ko ittila di jaayegi.",
+    "practitionerProfile": "Aap ki doctor profile, reviews aur verification documents delete ho jaayenge, aur aap directory se hata diye jaayenge.",
+    "staffAccess": "Jin clinics mein aap kaam karte hain un tak aap ki access khatam ho jaayegi. Aap ke likhe notes aur vitals unhi clinics ke paas rahenge.",
+    "patientData": "Aap ki profile, ghar walon ki tafseelaat, aap ke upload kiye records, share links aur reviews delete ho jaayenge.",
+    "patientUpcoming": "{count, plural, one {Aap ki # aane wali appointment} other {Aap ki # aane wali appointments}} cancel kar di jaayengi.",
+    "patientRecordsKept": "Jin clinics ne aap ka ilaaj kiya woh apne visit records (notes, nuskhe, vitals) rakhenge, aap ka naam hata kar.",
+    "login": "Aap ka login delete ho jaayega aur aap sign out ho jaayenge.",
+    "confirmLabel": "Confirm karne ke liye <word>DELETE</word> likhein",
+    "confirmMismatch": "Confirm karne ke liye bilkul DELETE likhein.",
+    "deleteFailed": "Aap ka account delete nahin ho saka. Dobara koshish karein.",
+    "deleteButton": "Mera account mustaqil taur par delete karein",
+    "cancel": "Cancel",
+    "link": "Account delete karein",
+    "deletedNotice": "Aap ka account delete kar diya gaya hai."
   }
 }

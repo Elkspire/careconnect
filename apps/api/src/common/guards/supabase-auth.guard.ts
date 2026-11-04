@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -8,8 +9,16 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
+import { and, eq } from 'drizzle-orm';
 import type { JWTPayload, JWTVerifyGetKey } from 'jose';
+import { DRIZZLE, type Database } from '../database/database.module';
+import { authSessions } from '../database/schema';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+/** How long a confirmed-live session is trusted before re-checking. */
+const SESSION_CHECK_TTL_MS = 60_000;
+/** Bound on the per-instance cache; cleared wholesale when exceeded. */
+const SESSION_CACHE_MAX = 10_000;
 
 // jose v6 ships ESM-only. This file compiles to CommonJS (no "type": "module"
 // in apps/api/package.json), and Node refuses a require() of a pure-ESM
@@ -31,6 +40,8 @@ export interface SupabaseJwtPayload extends JWTPayload {
   phone?: string;
   email?: string;
   role: string;
+  /** The auth.sessions row this access token belongs to. */
+  session_id?: string;
 }
 
 export interface AuthenticatedUser {
@@ -61,10 +72,13 @@ declare module 'express' {
 export class SupabaseAuthGuard implements CanActivate {
   private readonly logger = new Logger(SupabaseAuthGuard.name);
   private jwks: JWTVerifyGetKey | undefined;
+  /** session_id -> time it was last confirmed to exist (ms). */
+  private readonly liveSessions = new Map<string, number>();
 
   constructor(
     private readonly reflector: Reflector,
     private readonly config: ConfigService,
+    @Inject(DRIZZLE) private readonly db: Database,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -96,7 +110,7 @@ export class SupabaseAuthGuard implements CanActivate {
       // "fetch failed" otherwise.
       const cause =
         err instanceof Error && err.cause
-          ? ` (cause: ${String(err.cause)})`
+          ? ` (cause: ${err.cause instanceof Error ? err.cause.message : JSON.stringify(err.cause)})`
           : '';
       this.logger.warn(
         `Token verification failed against SUPABASE_URL=${this.config.get<string>('SUPABASE_URL')}: ${err instanceof Error ? err.message : String(err)}${cause}`,
@@ -110,12 +124,68 @@ export class SupabaseAuthGuard implements CanActivate {
       );
     }
 
+    if (!(await this.sessionStillExists(payload))) {
+      throw new UnauthorizedException('Session has ended');
+    }
+
     request.user = {
       id: payload.sub,
       phone: payload.phone,
       email: payload.email,
     };
     return true;
+  }
+
+  /**
+   * A signature check alone accepts any unexpired token — including one for
+   * an account that was just deleted (or a session that signed out), for up
+   * to the token's remaining lifetime. Supabase deletes the auth.sessions row
+   * in both cases, so confirm it still exists. Cached per instance for
+   * SESSION_CHECK_TTL_MS, so at most one lookup per session per minute.
+   *
+   * Fails open on a database error: the signature is already verified, and
+   * a DB blip shouldn't sign every user out — it's logged instead.
+   */
+  private async sessionStillExists(
+    payload: SupabaseJwtPayload,
+  ): Promise<boolean> {
+    const sessionId = payload.session_id;
+    if (!sessionId) {
+      return true;
+    }
+    const checkedAt = this.liveSessions.get(sessionId);
+    if (
+      checkedAt !== undefined &&
+      Date.now() - checkedAt < SESSION_CHECK_TTL_MS
+    ) {
+      return true;
+    }
+    try {
+      const [row] = await this.db
+        .select({ id: authSessions.id })
+        .from(authSessions)
+        .where(
+          and(
+            eq(authSessions.id, sessionId),
+            eq(authSessions.userId, payload.sub),
+          ),
+        )
+        .limit(1);
+      if (!row) {
+        this.liveSessions.delete(sessionId);
+        return false;
+      }
+      if (this.liveSessions.size >= SESSION_CACHE_MAX) {
+        this.liveSessions.clear();
+      }
+      this.liveSessions.set(sessionId, Date.now());
+      return true;
+    } catch (err) {
+      this.logger.warn(
+        `Session check failed, allowing request: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return true;
+    }
   }
 
   private async getJwks(): Promise<JWTVerifyGetKey> {

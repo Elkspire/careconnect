@@ -415,7 +415,7 @@ export class ClinicService {
       })
       .from(appointments)
       .innerJoin(patients, eq(patients.id, appointments.patientId))
-      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(authUsers, eq(authUsers.id, patients.id))
       .leftJoin(
         familyMembers,
         eq(familyMembers.id, appointments.familyMemberId),
@@ -495,7 +495,7 @@ export class ClinicService {
         dob: patients.dob,
       })
       .from(patients)
-      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(authUsers, eq(authUsers.id, patients.id))
       .where(eq(patients.id, patientId))
       .limit(1);
     if (!patient) {
@@ -578,7 +578,7 @@ export class ClinicService {
       })
       .from(familyMembers)
       .innerJoin(patients, eq(patients.id, familyMembers.patientId))
-      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(authUsers, eq(authUsers.id, patients.id))
       .innerJoin(
         appointments,
         and(
@@ -806,7 +806,7 @@ export class ClinicService {
       })
       .from(appointments)
       .innerJoin(patients, eq(patients.id, appointments.patientId))
-      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(authUsers, eq(authUsers.id, patients.id))
       .where(
         and(
           eq(appointments.clinicId, clinicId),
@@ -845,7 +845,7 @@ export class ClinicService {
         eq(practitioners.id, waitlistEntries.practitionerId),
       )
       .innerJoin(patients, eq(patients.id, waitlistEntries.patientId))
-      .innerJoin(authUsers, eq(authUsers.id, patients.id))
+      .leftJoin(authUsers, eq(authUsers.id, patients.id))
       .leftJoin(
         familyMembers,
         eq(familyMembers.id, waitlistEntries.familyMemberId),
@@ -1131,7 +1131,7 @@ export class ClinicService {
       })
       .from(vitals)
       .leftJoin(practitioners, eq(practitioners.id, vitals.recordedBy))
-      .innerJoin(authUsers, eq(authUsers.id, vitals.recordedBy))
+      .leftJoin(authUsers, eq(authUsers.id, vitals.recordedBy))
       .where(eq(vitals.appointmentId, appointmentId))
       .limit(1);
     return row ?? null;

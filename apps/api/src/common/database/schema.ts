@@ -39,6 +39,16 @@ export const authUsers = authSchema.table('users', {
   email: text('email'),
 });
 
+/**
+ * Read-only reference to Supabase Auth's sessions. Deleting a user (or
+ * signing out) removes their rows here, which is how SupabaseAuthGuard
+ * notices a still-unexpired access token whose session has ended.
+ */
+export const authSessions = authSchema.table('sessions', {
+  id: uuid('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+});
+
 // ---- enums ----
 
 export const genderEnum = pgEnum('gender', ['male', 'female', 'other']);
@@ -158,9 +168,10 @@ export const notificationStatusEnum = pgEnum('notification_status', [
 // ---- identity ----
 
 export const patients = pgTable('patients', {
-  id: uuid('id')
-    .primaryKey()
-    .references(() => authUsers.id, { onDelete: 'cascade' }),
+  // Same value as the patient's auth.users id, but deliberately no FK (see
+  // 0026_account_deletion.sql): a patient who deletes their account is
+  // anonymised and kept so the clinic's records stay, with no login left.
+  id: uuid('id').primaryKey(),
   fullName: text('full_name').notNull(),
   gender: genderEnum('gender'),
   dob: date('dob'),
@@ -171,6 +182,8 @@ export const patients = pgTable('patients', {
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
+  /** Set when the patient deleted their account; personal details are wiped. */
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });
 
 export const practitioners = pgTable('practitioners', {
@@ -446,12 +459,15 @@ export const appointments = pgTable(
     }).notNull(),
     scheduledEnd: timestamp('scheduled_end', { withTimezone: true }).notNull(),
     status: appointmentStatusEnum('status').notNull().default('booked'),
-    bookedByUserId: uuid('booked_by_user_id')
-      .notNull()
-      .references(() => authUsers.id),
+    bookedByUserId: uuid('booked_by_user_id').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     cancellationReason: text('cancellation_reason'),
     cancelledByUserId: uuid('cancelled_by_user_id').references(
       () => authUsers.id,
+      {
+        onDelete: 'set null',
+      },
     ),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -529,9 +545,9 @@ export const clinicalNotes = pgTable(
       .references(() => practitioners.id, { onDelete: 'cascade' }),
     notes: text('notes').notNull(),
     diagnosis: text('diagnosis'),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => authUsers.id),
+    createdBy: uuid('created_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -588,7 +604,9 @@ export const clinicStaff = pgTable(
       .references(() => authUsers.id, { onDelete: 'cascade' }),
     role: clinicStaffRoleEnum('role').notNull(),
     status: clinicStaffStatusEnum('status').notNull().default('invited'),
-    invitedBy: uuid('invited_by').references(() => authUsers.id),
+    invitedBy: uuid('invited_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     // Set from the invite form at invite time. Only actually displayed for
     // a role with no practitioners row to resolve a real name from
     // (receptionist/assistant) — see ClinicService.listStaff's coalesce.
@@ -636,9 +654,9 @@ export const patientAssignments = pgTable(
       () => familyMembers.id,
       { onDelete: 'cascade' },
     ),
-    assignedBy: uuid('assigned_by')
-      .notNull()
-      .references(() => authUsers.id),
+    assignedBy: uuid('assigned_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -673,9 +691,9 @@ export const vitals = pgTable('vitals', {
   pulseBpm: smallint('pulse_bpm'),
   weightKg: numeric('weight_kg', { precision: 5, scale: 2 }),
   temperatureF: numeric('temperature_f', { precision: 4, scale: 1 }),
-  recordedBy: uuid('recorded_by')
-    .notNull()
-    .references(() => authUsers.id),
+  recordedBy: uuid('recorded_by').references(() => authUsers.id, {
+    onDelete: 'set null',
+  }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -713,9 +731,9 @@ export const patientRecords = pgTable(
         onDelete: 'set null',
       },
     ),
-    uploadedBy: uuid('uploaded_by')
-      .notNull()
-      .references(() => authUsers.id),
+    uploadedBy: uuid('uploaded_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -754,9 +772,9 @@ export const medicalSummaries = pgTable(
     allergies: text('allergies').array().notNull().default([]),
     chronicConditions: text('chronic_conditions').array().notNull().default([]),
     activeMedications: text('active_medications').array().notNull().default([]),
-    updatedBy: uuid('updated_by')
-      .notNull()
-      .references(() => authUsers.id),
+    updatedBy: uuid('updated_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -801,9 +819,9 @@ export const recordShares = pgTable(
       .default(false),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
-    createdBy: uuid('created_by')
-      .notNull()
-      .references(() => authUsers.id),
+    createdBy: uuid('created_by').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -840,9 +858,9 @@ export const auditLog = pgTable(
   'audit_log',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    actorUserId: uuid('actor_user_id')
-      .notNull()
-      .references(() => authUsers.id),
+    actorUserId: uuid('actor_user_id').references(() => authUsers.id, {
+      onDelete: 'set null',
+    }),
     actorRole: text('actor_role').notNull(),
     action: auditActionEnum('action').notNull(),
     resourceType: text('resource_type').notNull(),
@@ -874,7 +892,7 @@ export const notificationLog = pgTable(
     channel: notificationChannelEnum('channel').notNull(),
     recipientUserId: uuid('recipient_user_id')
       .notNull()
-      .references(() => authUsers.id),
+      .references(() => authUsers.id, { onDelete: 'cascade' }),
     relatedAppointmentId: uuid('related_appointment_id').references(
       () => appointments.id,
       {

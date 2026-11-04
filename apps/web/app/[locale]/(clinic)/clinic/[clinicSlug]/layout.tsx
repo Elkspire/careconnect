@@ -1,6 +1,7 @@
-import { BarChart3, Bell, CalendarDays, Clock, ShieldCheck, Star, UserCog, Users } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, Clock, ShieldCheck, Star, UserCog, UserX, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { getMe } from "@/lib/api/me";
+import { Link } from "@/i18n/navigation";
 import { ClinicSwitcher } from "@/components/clinic-switcher";
 import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
 
@@ -8,7 +9,11 @@ export default async function ClinicLayout(
   props: LayoutProps<"/[locale]/clinic/[clinicSlug]">,
 ) {
   const { clinicSlug } = await props.params;
-  const [t, me] = await Promise.all([getTranslations("clinic"), getMe()]);
+  const [t, tAccount, me] = await Promise.all([
+    getTranslations("clinic"),
+    getTranslations("account"),
+    getMe(),
+  ]);
   // Same lookup resolveClinicStaffBySlug does, inlined so the one /me call
   // also feeds the clinic switcher below.
   const activeClinics = me.clinicStaff.filter((s) => s.status === "active");
@@ -61,6 +66,10 @@ export default async function ClinicLayout(
               />
             ))}
           </SidebarNav>
+          <Link href="/account/delete" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition hover:text-danger-fg px-3">
+            <UserX aria-hidden className="size-4" />
+            {tAccount("link")}
+          </Link>
         </div>
         <SidebarMain>{props.children}</SidebarMain>
       </Sidebar>

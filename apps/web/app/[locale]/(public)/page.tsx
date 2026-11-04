@@ -5,12 +5,15 @@ import { listSpecialties } from "@/lib/api/practitioners";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { localizedName } from "@/i18n/routing";
+import { Alert } from "@/components/ui/alert";
 
 export default async function HomePage(props: PageProps<"/[locale]">) {
   const { locale } = await props.params;
-  const [t, tSite, specialties, supabase] = await Promise.all([
+  const accountDeleted = (await props.searchParams).accountDeleted === "1";
+  const [t, tSite, tAccount, specialties, supabase] = await Promise.all([
     getTranslations("directory"),
     getTranslations("site"),
+    getTranslations("account"),
     listSpecialties(),
     createClient(),
   ]);
@@ -24,6 +27,11 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
   return (
     <main className="w-full flex-1 bg-bg">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
+        {accountDeleted && (
+          <div className="mb-6">
+            <Alert tone="success" title={tAccount("deletedNotice")} />
+          </div>
+        )}
         {/* Hero */}
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-accent-600 px-6 py-10 text-text-on-primary sm:px-10 sm:py-14">
           <div
