@@ -200,6 +200,28 @@ export class ClinicService {
       .where(eq(clinics.ownerPractitionerId, ownerPractitionerId));
   }
 
+  /**
+   * null (not 404) when unset: a freshly registered doctor has no row yet,
+   * and the Working hours page treats that as "start from defaults".
+   */
+  async getPractitionerConfig(practitionerId: string, clinicId: string) {
+    const [row] = await this.db
+      .select()
+      .from(practitionerClinic)
+      .where(
+        and(
+          eq(practitionerClinic.practitionerId, practitionerId),
+          eq(practitionerClinic.clinicId, clinicId),
+        ),
+      )
+      .limit(1);
+    if (!row) {
+      return null;
+    }
+    // numeric columns come back from postgres as strings.
+    return { ...row, consultationFee: Number(row.consultationFee) };
+  }
+
   async upsertPractitionerConfig(
     practitionerId: string,
     clinicId: string,

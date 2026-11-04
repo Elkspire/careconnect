@@ -3,6 +3,8 @@ import type {
   InviteStaffInput,
   RecordVitalsInput,
   UpsertMedicalSummaryInput,
+  UpsertPractitionerClinicInput,
+  WeeklyTimings,
 } from "@careconnect/validation";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 import type { MedicalSummary } from "./medical-summary";
@@ -376,4 +378,33 @@ export async function attachRecord(
     body: formData,
   });
   return parseJsonOrThrow(res, "Attach record");
+}
+
+/** One practitioner's working hours and booking settings at one clinic. */
+export interface PractitionerConfig {
+  clinicId: string;
+  practitionerId: string;
+  consultationFee: number;
+  slotLengthMinutes: number;
+  dailyPatientCap: number | null;
+  timings: WeeklyTimings;
+  isActive: boolean;
+  cancellationWindowHours: number;
+}
+
+/** The signed-in owner's own config at this clinic, or null if never set. */
+export async function getPractitionerConfig(clinicId: string): Promise<PractitionerConfig | null> {
+  const res = await authedFetch(`/clinics/${clinicId}/practitioner-config`);
+  return parseJsonOrThrow(res, "Get working hours");
+}
+
+export async function upsertPractitionerConfig(
+  clinicId: string,
+  input: UpsertPractitionerClinicInput,
+): Promise<PractitionerConfig> {
+  const res = await authedFetch(`/clinics/${clinicId}/practitioner-config`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return parseJsonOrThrow(res, "Save working hours");
 }

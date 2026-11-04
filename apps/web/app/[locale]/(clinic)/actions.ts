@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { normalizePhone } from "@careconnect/validation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { normalizePhone, WEEKDAY_KEYS, type WeeklyTimings } from "@careconnect/validation";
 import {
   BLOOD_GROUP,
   STAFF_PERMISSION_KEY,
@@ -21,6 +22,7 @@ import {
   unassignPatient,
   upsertFamilyMemberMedicalSummary,
   upsertPatientMedicalSummary,
+  upsertPractitionerConfig,
 } from "@/lib/api/clinic";
 import {
   createClinicalNote,
@@ -316,4 +318,63 @@ export async function deleteVerificationDocumentAction(
 ): Promise<void> {
   await deleteVerificationDocument(String(formData.get("documentId")));
   revalidatePath(`/${locale}/clinic/${clinicSlug}/verification`);
+}
+
+/**
+ * The Working hours form posts, per weekday, an "open" checkbox plus up to
+ * two start/end pairs (e.g. a morning and an evening sitting). Closed days
+ * and blank pairs are dropped; a half-filled pair or an open day with no
+ * times is sent back with a message rather than silently ignored, since
+ * either would quietly remove bookable slots the doctor thinks they have.
+ */
+export async function saveWorkingHoursAction(
+  locale: string,
+  clinicSlug: string,
+  clinicId: string,
+  formData: FormData,
+): Promise<void> {
+  const t = await getTranslations({ locale, namespace: "clinic.workingHours" });
+  const schedulePath = `/${locale}/clinic/${clinicSlug}/schedule`;
+  const fail = (message: string) =>
+    redirect(`${schedulePath}?error=${encodeURIComponent(message)}`);
+
+  const timings = {} as WeeklyTimings;
+  for (const day of WEEKDAY_KEYS) {
+    const dayName = t(`days.${day}`);
+    timings[day] = [];
+    if (formData.get(`${day}.open`) !== "on") {
+      continue;
+    }
+    for (const n of [1, 2]) {
+      const start = String(formData.get(`${day}.start${n}`) ?? "");
+      const end = String(formData.get(`${day}.end${n}`) ?? "");
+      if (!start && !end) continue;
+      if (!start || !end) {
+        fail(t("errorHalfRange", { day: dayName }));
+      }
+      timings[day].push({ start, end });
+    }
+    if (timings[day].length === 0) {
+      fail(t("errorNoTimes", { day: dayName }));
+    }
+  }
+
+  const dailyCapRaw = String(formData.get("dailyPatientCap") ?? "").trim();
+  try {
+    await upsertPractitionerConfig(clinicId, {
+      clinicId,
+      consultationFee: Number(formData.get("consultationFee")),
+      slotLengthMinutes: Number(formData.get("slotLengthMinutes")),
+      dailyPatientCap: dailyCapRaw ? Number(dailyCapRaw) : undefined,
+      cancellationWindowHours: Number(formData.get("cancellationWindowHours")),
+      isActive: formData.get("isActive") === "on",
+      timings,
+    });
+  } catch (err) {
+    fail(extractApiErrorMessage(err));
+  }
+
+  revalidatePath(schedulePath);
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  redirect(`${schedulePath}?saved=1`);
 }

@@ -48,6 +48,16 @@ export class ClinicController {
     return this.clinicService.listMyClinics(user.id);
   }
 
+  /** The caller's own working hours / booking settings at this clinic, or null if never set. */
+  @Get(':clinicId/practitioner-config')
+  @RequireClinicRole('owner')
+  getPractitionerConfig(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.getPractitionerConfig(user.id, clinicId);
+  }
+
   @Put(':clinicId/practitioner-config')
   @RequireClinicRole('owner')
   upsertPractitionerConfig(

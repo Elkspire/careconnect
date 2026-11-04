@@ -1,7 +1,14 @@
 import { ChevronDown, Clock3, ListChecks, Upload, Users } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { listAppointmentsForAttach, listClinicWaitlist, listToday } from "@/lib/api/clinic";
+import {
+  getPractitionerConfig,
+  listAppointmentsForAttach,
+  listClinicWaitlist,
+  listToday,
+} from "@/lib/api/clinic";
+import { Link } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
@@ -10,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
+import { Alert } from "@/components/ui/alert";
 import { attachRecordAction, checkInAction, recordVitalsAction } from "../../../actions";
 
 const inputClasses =
@@ -45,11 +53,16 @@ export default async function ClinicTodayPage(
   // (attachRecords) — kept as its own check since they could diverge.
   const canAttachRecords = staffCtx.role === "owner" || staffCtx.role === "junior_doctor";
 
-  const [appointments, waitlist, attachableAppointments] = await Promise.all([
+  const [appointments, waitlist, attachableAppointments, practitionerConfig] = await Promise.all([
     listToday(clinicId),
     listClinicWaitlist(clinicId),
     canAttachRecords ? listAppointmentsForAttach(clinicId) : Promise.resolve([]),
+    // Only owners have hours to set here (see the schedule page).
+    staffCtx.role === "owner" ? getPractitionerConfig(clinicId) : Promise.resolve(undefined),
   ]);
+  // A doctor who just registered lands here first, with no slots and no
+  // directory listing until they save working hours — say so up front.
+  const needsWorkingHours = staffCtx.role === "owner" && practitionerConfig === null;
   const action = checkInAction.bind(null, locale, clinicSlug, clinicId);
   const vitalsAction = recordVitalsAction.bind(null, locale, clinicSlug, clinicId);
   const attachAction = attachRecordAction.bind(null, locale, clinicSlug, clinicId);
@@ -59,6 +72,24 @@ export default async function ClinicTodayPage(
   return (
     <div>
       <PageHeader icon={ListChecks} kicker={staffCtx.clinicName} title={t("todayHeading")} />
+
+      {needsWorkingHours && (
+        <div className="mb-5">
+          <Alert
+            tone="warning"
+            title={t("workingHours.notSetTitle")}
+            description={
+              <Link
+                href={`/clinic/${clinicSlug}/schedule`}
+                locale={locale as AppLocale}
+                className="font-semibold underline"
+              >
+                {t("workingHours.setUpLink")}
+              </Link>
+            }
+          />
+        </div>
+      )}
 
       <StatGrid>
         <StatTile icon={Clock3} value={appointments.length} label={t("todayHeading")} />

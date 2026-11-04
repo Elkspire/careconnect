@@ -24,20 +24,42 @@ export const setVerificationStatusSchema = z.object({
 });
 export type SetVerificationStatusInput = z.infer<typeof setVerificationStatusSchema>;
 
-const dayTimeRange = z.object({
-  start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:mm"),
-  end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:mm"),
-});
+// Clinic-local (Asia/Karachi) wall-clock times; "HH:mm" compares correctly
+// as a string, so no parsing is needed for the ordering checks below.
+const dayTimeRange = z
+  .object({
+    start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:mm"),
+    end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:mm"),
+  })
+  .refine((r) => r.end > r.start, {
+    message: "Each time range must end after it starts",
+    path: ["end"],
+  });
+
+const dayRanges = z
+  .array(dayTimeRange)
+  .default([])
+  .refine(
+    (ranges) => {
+      const sorted = [...ranges].sort((a, b) => a.start.localeCompare(b.start));
+      return sorted.every((r, i) => i === 0 || r.start >= sorted[i - 1]!.end);
+    },
+    { message: "Time ranges on the same day can't overlap" },
+  );
+
+export const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+export type WeekdayKey = (typeof WEEKDAY_KEYS)[number];
 
 const weeklyTimings = z.object({
-  mon: z.array(dayTimeRange).default([]),
-  tue: z.array(dayTimeRange).default([]),
-  wed: z.array(dayTimeRange).default([]),
-  thu: z.array(dayTimeRange).default([]),
-  fri: z.array(dayTimeRange).default([]),
-  sat: z.array(dayTimeRange).default([]),
-  sun: z.array(dayTimeRange).default([]),
+  mon: dayRanges,
+  tue: dayRanges,
+  wed: dayRanges,
+  thu: dayRanges,
+  fri: dayRanges,
+  sat: dayRanges,
+  sun: dayRanges,
 });
+export type WeeklyTimings = z.infer<typeof weeklyTimings>;
 
 export const upsertPractitionerClinicSchema = z.object({
   clinicId: z.string().uuid(),

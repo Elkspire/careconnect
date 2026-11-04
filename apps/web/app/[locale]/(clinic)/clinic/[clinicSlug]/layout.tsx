@@ -1,4 +1,4 @@
-import { BarChart3, Bell, CalendarDays, ShieldCheck, Star, UserCog, Users } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, Clock, ShieldCheck, Star, UserCog, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
 import { getMe } from "@/lib/api/me";
@@ -24,6 +24,7 @@ export default async function ClinicLayout(
     { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients"), icon: Users },
     ...(!staffCtx || staffCtx.role === "owner"
       ? [
+          { href: `/clinic/${clinicSlug}/schedule`, label: t("nav.schedule"), icon: Clock },
           { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff"), icon: UserCog },
           { href: `/clinic/${clinicSlug}/analytics`, label: t("nav.analytics"), icon: BarChart3 },
           { href: `/clinic/${clinicSlug}/reviews`, label: t("nav.reviews"), icon: Star },
