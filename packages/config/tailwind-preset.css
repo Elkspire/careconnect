@@ -14,6 +14,15 @@
    typical marketing teal for better contrast and a more trustworthy
    register. Inter for UI text. */
 
+/* rtl:/ltr: follow the page's actual dir attribute, not its language.
+   Tailwind's built-in rtl: matches a list of RTL *languages* via :lang(),
+   and :lang(ur) also matches "ur-Latn" (Roman Urdu, which is written
+   left-to-right) — so on Roman Urdu pages every rtl: style applied: the
+   toggle-switch knob slid off its track, back arrows pointed the wrong
+   way. app/[locale]/layout.tsx sets dir from the locale, so key off that. */
+@custom-variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
+@custom-variant ltr (&:where([dir="ltr"], [dir="ltr"] *));
+
 @theme {
   --color-primary-50: #f0fdfa;
   --color-primary-100: #ccfbf1;
