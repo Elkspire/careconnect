@@ -1,7 +1,7 @@
 import { CalendarCheck, FolderHeart, LayoutDashboard, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { LOCALE_LABELS, routing } from "@/i18n/routing";
+import type { AppLocale } from "@/i18n/routing";
 import { getMyProfile, listFamilyMembers } from "@/lib/api/patients";
 import { listMyAppointments } from "@/lib/api/booking";
 import { listVaultRecords } from "@/lib/api/vault";
@@ -13,6 +13,7 @@ import { Alert } from "@/components/ui/alert";
 import { FormField } from "@/components/ui/form-field";
 import { saveProfileAction } from "../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { LanguageSelectField } from "@/components/language-select-field";
 
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
   const { locale } = await props.params;
@@ -61,22 +62,14 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
                 className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               />
             </FormField>
-            <FormField label={t("preferredLanguageLabel")}>
-              <select
-                name="preferredLanguage"
-                // The site's current language, not the saved one: the two are
-                // kept in sync (see saveLocaleAction), and this way Settings
-                // can never disagree with the header.
-                defaultValue={locale}
-                className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
-              >
-                {routing.locales.map((l) => (
-                  <option key={l} value={l} lang={l}>
-                    {LOCALE_LABELS[l]}
-                  </option>
-                ))}
-              </select>
-            </FormField>
+            <LanguageSelectField
+              name="preferredLanguage"
+              label={t("preferredLanguageLabel")}
+              // The site's current language, not the saved one: the two are
+              // kept in sync (see saveLocaleAction), and this way Settings
+              // can never disagree with the header.
+              defaultValue={locale as AppLocale}
+            />
             <SubmitButton
               className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
             >
