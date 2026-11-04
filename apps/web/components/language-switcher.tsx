@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown, Languages, LoaderCircle } from "lucide-react";
 import { useLocale } from "next-intl";
 import { LOCALE_COOKIE, LOCALE_LABELS, routing, type AppLocale } from "@/i18n/routing";
+import { saveLocaleAction } from "@/lib/locale-actions";
 
 /** Shown under each language's own name, so everyone can find theirs. */
 const ENGLISH_NAMES: Record<AppLocale, string> = {
@@ -19,10 +20,19 @@ const SHORT_LABELS: Record<AppLocale, string> = {
   "ur-Latn": "Roman",
 };
 
-/** Saves the language where next-intl reads it, then reloads into it. */
-function switchLocale(next: AppLocale) {
+/**
+ * Saves the language (cookie, plus a signed-in patient's profile so
+ * Settings matches — see saveLocaleAction), then reloads into it. The
+ * cookie is also written here so the switch still happens if the server
+ * call fails.
+ */
+async function switchLocale(next: AppLocale) {
   document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-  window.location.reload();
+  try {
+    await saveLocaleAction(next);
+  } finally {
+    window.location.reload();
+  }
 }
 
 /**
@@ -65,7 +75,7 @@ export function LanguageSwitcher({ label }: { label: string }) {
     }
     setSwitchingTo(next);
     setOpen(false);
-    switchLocale(next);
+    void switchLocale(next);
   }
 
   // Move focus onto the highlighted option whenever the menu opens or the

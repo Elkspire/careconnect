@@ -64,7 +64,10 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
             <FormField label={t("preferredLanguageLabel")}>
               <select
                 name="preferredLanguage"
-                defaultValue={profile?.preferredLanguage ?? locale}
+                // The site's current language, not the saved one: the two are
+                // kept in sync (see saveLocaleAction), and this way Settings
+                // can never disagree with the header.
+                defaultValue={locale}
                 className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               >
                 {routing.locales.map((l) => (
