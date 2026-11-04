@@ -18,6 +18,7 @@ import {
   saveClinicalNoteAction,
   saveClinicalPrescriptionAction,
 } from "../../../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const PRESCRIPTION_ROWS = 8;
 const inputClasses =
@@ -154,12 +155,11 @@ export default async function ClinicalNotePage(
               className={inputClasses}
             />
           </FormField>
-          <button
-            type="submit"
+          <SubmitButton
             className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
           >
             {t("saveNote")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
 
@@ -219,12 +219,11 @@ export default async function ClinicalNotePage(
               </span>
             </label>
 
-            <button
-              type="submit"
+            <SubmitButton
               className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
             >
               {t("savePrescription")}
-            </button>
+            </SubmitButton>
           </form>
         </Card>
       )}

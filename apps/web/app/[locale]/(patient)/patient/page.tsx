@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { FormField } from "@/components/ui/form-field";
 import { saveProfileAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function PatientDashboardPage(props: PageProps<"/[locale]/patient">) {
   const { locale } = await props.params;
@@ -64,12 +65,11 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
                 <option value="ur">اردو</option>
               </select>
             </FormField>
-            <button
-              type="submit"
+            <SubmitButton
               className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
             >
               {t("saveProfile")}
-            </button>
+            </SubmitButton>
           </form>
         </Card>
 

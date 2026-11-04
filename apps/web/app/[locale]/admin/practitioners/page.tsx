@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ListRow } from "@/components/ui/list-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function AdminPractitionersPage(
   props: PageProps<"/[locale]/admin/practitioners">,
@@ -96,13 +97,12 @@ export default async function AdminPractitionersPage(
                         <li key={doc.id}>
                           <form action={viewVerificationDocumentAction} className="inline">
                             <input type="hidden" name="documentId" value={doc.id} />
-                            <button
-                              type="submit"
+                            <SubmitButton
                               className="tap-target text-xs font-medium text-primary-700 hover:text-primary-800"
                             >
                               {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
                               {doc.fileName}
-                            </button>
+                            </SubmitButton>
                           </form>
                         </li>
                       ))}
@@ -113,12 +113,11 @@ export default async function AdminPractitionersPage(
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <form action={verify}>
                     <input type="hidden" name="practitionerId" value={p.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
                       className="tap-target rounded-md bg-primary-700 px-3 py-1.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
                     >
                       {t("verify")}
-                    </button>
+                    </SubmitButton>
                   </form>
                   <details className="group">
                     <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-danger-fg">
@@ -138,12 +137,11 @@ export default async function AdminPractitionersPage(
                           className="tap-target rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                         />
                       </label>
-                      <button
-                        type="submit"
+                      <SubmitButton
                         className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
                       >
                         {t("confirmReject")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   </details>
                 </div>

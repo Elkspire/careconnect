@@ -17,6 +17,7 @@ import { ListRow } from "@/components/ui/list-row";
 import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClasses =
   "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
@@ -94,9 +95,9 @@ export default async function ClinicStaffPage(
               member.role !== "owner" && (
                 <form action={revoke}>
                   <input type="hidden" name="staffId" value={member.id} />
-                  <button type="submit" className={secondaryButtonClasses}>
+                  <SubmitButton className={secondaryButtonClasses}>
                     {t("revoke")}
-                  </button>
+                  </SubmitButton>
                 </form>
               )
             }
@@ -134,9 +135,9 @@ export default async function ClinicStaffPage(
             <input type="text" name="fullName" required className={inputClasses} />
           </FormField>
           <StaffInviteFields />
-          <button type="submit" className={primaryButtonClasses}>
+          <SubmitButton className={primaryButtonClasses}>
             {t("invite")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
 
@@ -161,9 +162,9 @@ export default async function ClinicStaffPage(
                   action={
                     <form action={unassign}>
                       <input type="hidden" name="assignmentId" value={a.id} />
-                      <button type="submit" className={secondaryButtonClasses}>
+                      <SubmitButton className={secondaryButtonClasses}>
                         {t("unassign")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   }
                 />
@@ -199,9 +200,9 @@ export default async function ClinicStaffPage(
                 ))}
               </select>
             </FormField>
-            <button type="submit" className={primaryButtonClasses}>
+            <SubmitButton className={primaryButtonClasses}>
               {t("assign")}
-            </button>
+            </SubmitButton>
           </form>
         )}
       </Card>

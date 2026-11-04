@@ -14,6 +14,7 @@ import {
   leaveWaitlistAction,
   rescheduleAppointmentAction,
 } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const REVIEWABLE_STATUSES = ["checked_in", "completed"];
 const ACTIVE_WAITLIST_STATUSES = ["waiting", "offered"];
@@ -93,22 +94,20 @@ export default async function AppointmentsPage(
                           className="tap-target rounded-md border border-border px-2 py-1.5 text-xs text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                         />
                       </FormField>
-                      <button
-                        type="submit"
+                      <SubmitButton
                         className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
                       >
                         {t("reschedule")}
-                      </button>
+                      </SubmitButton>
                     </form>
 
                     <form action={cancelAction}>
                       <input type="hidden" name="appointmentId" value={appt.id} />
-                      <button
-                        type="submit"
+                      <SubmitButton
                         className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
                       >
                         {t("cancel")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   </div>
                 )}
@@ -146,12 +145,11 @@ export default async function AppointmentsPage(
                   </p>
                   <form action={leaveWaitlist} className="mt-auto border-t border-border pt-3">
                     <input type="hidden" name="waitlistEntryId" value={entry.id} />
-                    <button
-                      type="submit"
+                    <SubmitButton
                       className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
                     >
                       {t("leaveWaitlist")}
-                    </button>
+                    </SubmitButton>
                   </form>
                 </Card>
               </li>

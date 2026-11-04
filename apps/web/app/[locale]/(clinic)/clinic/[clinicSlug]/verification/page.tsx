@@ -15,6 +15,7 @@ import { ListRow } from "@/components/ui/list-row";
 import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const DOCUMENT_TYPES = ["cnic", "degree", "council_registration", "other"] as const;
 const STATUS_TONE = { verified: "green", pending: "orange", unverified: "gray" } as const;
@@ -75,12 +76,11 @@ export default async function ClinicVerificationPage(
               action={
                 <form action={remove}>
                   <input type="hidden" name="documentId" value={doc.id} />
-                  <button
-                    type="submit"
+                  <SubmitButton
                     className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
                   >
                     {t("removeDocument")}
-                  </button>
+                  </SubmitButton>
                 </form>
               }
             />
@@ -111,13 +111,12 @@ export default async function ClinicVerificationPage(
               className="tap-target text-sm"
             />
           </FormField>
-          <button
-            type="submit"
+          <SubmitButton
             className="tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
           >
             <Upload aria-hidden className="size-4" />
             {t("uploadDocument")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
     </div>

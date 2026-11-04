@@ -24,6 +24,7 @@ import {
   uploadVaultRecordAction,
   viewVaultRecordAction,
 } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -59,9 +60,9 @@ function RecordGroup({
             action={
               <form action={view}>
                 <input type="hidden" name="recordId" value={record.id} />
-                <button type="submit" className={secondaryButtonClasses}>
+                <SubmitButton className={secondaryButtonClasses}>
                   {t("view")}
-                </button>
+                </SubmitButton>
               </form>
             }
           />
@@ -173,9 +174,9 @@ function MedicalSummaryCard({
               className={inputClasses}
             />
           </FormField>
-          <button type="submit" className={primaryButtonClasses}>
+          <SubmitButton className={primaryButtonClasses}>
             {t("saveMedicalSummary")}
-          </button>
+          </SubmitButton>
         </form>
       </details>
     </Card>
@@ -313,9 +314,9 @@ function ShareSection({
                   status !== "revoked" && (
                     <form action={revoke}>
                       <input type="hidden" name="shareId" value={s.id} />
-                      <button type="submit" className={secondaryButtonClasses}>
+                      <SubmitButton className={secondaryButtonClasses}>
                         {t("revokeShare")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   )
                 }
@@ -378,9 +379,9 @@ function ShareSection({
               <option value="forever">{t("durationForever")}</option>
             </select>
           </FormField>
-          <button type="submit" className={primaryButtonClasses}>
+          <SubmitButton className={primaryButtonClasses}>
             {t("createShare")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
     </div>
@@ -497,10 +498,10 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
               className="tap-target text-sm"
             />
           </FormField>
-          <button type="submit" className="tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800">
+          <SubmitButton className="tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800">
             <Upload aria-hidden className="size-4" />
             {t("upload")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
 

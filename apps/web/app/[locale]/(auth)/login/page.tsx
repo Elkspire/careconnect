@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HeartPulse, Stethoscope, UserCog, UserRound } from "lucide-react";
+import { HeartPulse, LoaderCircle, Stethoscope, UserCog, UserRound } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { normalizePhone } from "@careconnect/validation";
@@ -106,7 +106,7 @@ export default function LoginPage() {
   const inputClasses =
     "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
   const primaryButtonClasses =
-    "tap-target w-full rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:opacity-60";
+    "tap-target w-full rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:cursor-wait disabled:opacity-60";
 
   return (
     <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center px-4 py-10">
@@ -172,8 +172,16 @@ export default function LoginPage() {
                 className={inputClasses}
               />
             </FormField>
-            <button type="submit" disabled={pending} className={primaryButtonClasses}>
-              {t("sendCode")}
+            <button
+              type="submit"
+              disabled={pending}
+              aria-busy={pending || undefined}
+              className={primaryButtonClasses}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                {pending && <LoaderCircle aria-hidden className="size-4 animate-spin" />}
+                {t("sendCode")}
+              </span>
             </button>
           </form>
         ) : (
@@ -192,8 +200,16 @@ export default function LoginPage() {
                 className={inputClasses}
               />
             </FormField>
-            <button type="submit" disabled={pending} className={primaryButtonClasses}>
-              {t("verify")}
+            <button
+              type="submit"
+              disabled={pending}
+              aria-busy={pending || undefined}
+              className={primaryButtonClasses}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                {pending && <LoaderCircle aria-hidden className="size-4 animate-spin" />}
+                {t("verify")}
+              </span>
             </button>
             <button
               type="button"

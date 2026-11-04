@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 import { attachRecordAction, checkInAction, recordVitalsAction } from "../../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClasses =
   "tap-target rounded-md border border-border px-2.5 py-1.5 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
@@ -121,9 +122,9 @@ export default async function ClinicTodayPage(
                   ) : canCheckIn ? (
                     <form action={action}>
                       <input type="hidden" name="appointmentId" value={appt.appointmentId} />
-                      <button type="submit" className={secondaryButtonClasses}>
+                      <SubmitButton className={secondaryButtonClasses}>
                         {t("checkIn")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   ) : (
                     <Badge tone="gray">{t("notCheckedIn")}</Badge>
@@ -162,9 +163,9 @@ export default async function ClinicTodayPage(
                           className={`${inputClasses} w-28`}
                         />
                       </FormField>
-                      <button type="submit" className={primaryButtonClasses}>
+                      <SubmitButton className={primaryButtonClasses}>
                         {t("saveVitals")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   </details>
                 )}
@@ -208,10 +209,10 @@ export default async function ClinicTodayPage(
                 className="tap-target text-sm"
               />
             </FormField>
-            <button type="submit" className={primaryButtonClasses}>
+            <SubmitButton className={primaryButtonClasses}>
               <Upload aria-hidden className="size-4" />
               {t("attachRecord")}
-            </button>
+            </SubmitButton>
           </form>
         </Card>
       )}

@@ -49,3 +49,11 @@ body {
     transform: translateY(0);
   }
 }
+
+/* NavigationProgress: grows fast at first, then crawls towards 85% until
+   the new page arrives (it never "finishes" on its own). */
+@keyframes nav-progress {
+  from { width: 0; }
+  15% { width: 45%; }
+  to { width: 85%; }
+}

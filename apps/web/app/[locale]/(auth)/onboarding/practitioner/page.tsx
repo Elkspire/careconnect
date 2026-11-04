@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { FormField } from "@/components/ui/form-field";
 import { registerPractitionerAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const GENDERS = ["male", "female", "other"] as const;
 
@@ -136,12 +137,11 @@ export default async function PractitionerOnboardingPage(
             />
           </FormField>
 
-          <button
-            type="submit"
+          <SubmitButton
             className="tap-target rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
           >
             {t("submit")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
     </main>

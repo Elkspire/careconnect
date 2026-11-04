@@ -17,6 +17,7 @@ import { ListRow } from "@/components/ui/list-row";
 import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { upsertClinicMedicalSummaryAction, viewClinicRecordAction } from "../../../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const inputClasses =
@@ -164,12 +165,11 @@ export default async function ClinicPatientDetailPage(
                   className={inputClasses}
                 />
               </FormField>
-              <button
-                type="submit"
+              <SubmitButton
                 className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
               >
                 {tVault("saveMedicalSummary")}
-              </button>
+              </SubmitButton>
             </form>
           </details>
         </Card>
@@ -218,9 +218,9 @@ export default async function ClinicPatientDetailPage(
                   action={
                     <form action={viewRecord}>
                       <input type="hidden" name="recordId" value={record.id} />
-                      <button type="submit" className={secondaryButtonClasses}>
+                      <SubmitButton className={secondaryButtonClasses}>
                         {tVault("view")}
-                      </button>
+                      </SubmitButton>
                     </form>
                   }
                 />

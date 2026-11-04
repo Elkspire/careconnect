@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function AdminReviewsPage(
   props: PageProps<"/[locale]/admin/reviews">,
@@ -70,12 +71,11 @@ export default async function AdminReviewsPage(
                 <p className="mt-2 text-sm text-danger-fg">{r.reason}</p>
                 <form action={hide} className="mt-3">
                   <input type="hidden" name="reviewId" value={r.reviewId} />
-                  <button
-                    type="submit"
+                  <SubmitButton
                     className="tap-target rounded-md bg-primary-700 px-3 py-1.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
                   >
                     {t("hide")}
-                  </button>
+                  </SubmitButton>
                 </form>
               </Card>
             </li>
@@ -100,12 +100,11 @@ export default async function AdminReviewsPage(
                 {r.comment && <p className="mt-1 text-sm text-text">{r.comment}</p>}
                 <form action={unhide} className="mt-3">
                   <input type="hidden" name="reviewId" value={r.id} />
-                  <button
-                    type="submit"
+                  <SubmitButton
                     className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
                   >
                     {t("unhide")}
-                  </button>
+                  </SubmitButton>
                 </form>
               </Card>
             </li>

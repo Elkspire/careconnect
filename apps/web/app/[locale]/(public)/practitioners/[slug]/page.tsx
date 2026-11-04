@@ -10,6 +10,7 @@ import { formatClinicDate } from "@/lib/format-time";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { submitReviewAction } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function PractitionerProfilePage(
   props: PageProps<"/[locale]/practitioners/[slug]">,
@@ -155,12 +156,11 @@ export default async function PractitionerProfilePage(
                 className="w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               />
             </FormField>
-            <button
-              type="submit"
+            <SubmitButton
               className="tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
             >
               {t("submitReview")}
-            </button>
+            </SubmitButton>
             <p className="text-xs text-text-faint">{t("reviewEligibilityNote")}</p>
           </form>
         ) : (

@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function ClinicReviewsPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/reviews">,
@@ -80,12 +81,11 @@ export default async function ClinicReviewsPage(
                         className="w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                       />
                     </label>
-                    <button
-                      type="submit"
+                    <SubmitButton
                       className="tap-target self-start rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
                     >
                       {t("submitReport")}
-                    </button>
+                    </SubmitButton>
                   </form>
                 </details>
               </div>

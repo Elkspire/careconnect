@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { addFamilyMemberAction } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function FamilyMembersPage(
   props: PageProps<"/[locale]/patient/family">,
@@ -65,12 +66,11 @@ export default async function FamilyMembersPage(
               </optgroup>
             </select>
           </FormField>
-          <button
-            type="submit"
+          <SubmitButton
             className="tap-target rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
           >
             {t("addFamilyMember")}
-          </button>
+          </SubmitButton>
         </form>
       </Card>
     </div>

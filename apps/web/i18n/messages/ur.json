@@ -185,7 +185,8 @@
     "roles": {
       "owner": "مالک",
       "receptionist": "ریسیپشنسٹ",
-      "junior_doctor": "جونیئر ڈاکٹر"
+      "junior_doctor": "جونیئر ڈاکٹر",
+      "assistant": "اسسٹنٹ"
     },
     "permissionsHeading": "کردار منتخب کریں تاکہ معلوم ہو وہ کیا کر سکتا ہے",
     "permissionsToggleHeading": "جو کام یہ نہیں کر سکتے، انہیں بند کر دیں",
@@ -200,7 +201,8 @@
       "clinicalNotes": "طبی نوٹس پڑھیں اور لکھیں",
       "manageStaff": "عملے کو مدعو کریں یا ہٹائیں",
       "manageFeesSchedule": "فیس یا شیڈول تبدیل کریں",
-      "recordVitals": "مریض کے وائٹلز درج کریں"
+      "recordVitals": "مریض کے وائٹلز درج کریں",
+      "attachRecords": "اپائنٹمنٹس کے ساتھ ریکارڈ منسلک کریں"
     },
     "invite": "مدعو کریں",
     "revoke": "رسائی منسوخ کریں",

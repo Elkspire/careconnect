@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { BookingDatePicker } from "@/components/booking-date-picker";
 import { createAppointmentAction, joinWaitlistAction } from "../../../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClasses =
   "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
@@ -106,26 +107,24 @@ export default async function BookAppointmentPage(
           {slots.length === 0 ? (
             <div>
               <p className="text-sm text-text-muted">{t("noSlots")}</p>
-              <button
-                type="submit"
+              <SubmitButton
                 formAction={waitlistAction}
                 className="tap-target mt-3 rounded-md border border-border px-4 py-2 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700"
               >
                 {t("joinWaitlist")}
-              </button>
+              </SubmitButton>
             </div>
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2">
               {slots.map((slot) => (
-                <button
+                <SubmitButton
                   key={slot.start}
-                  type="submit"
                   name="scheduledStart"
                   value={slot.start}
                   className="tap-target rounded-md border border-border bg-surface py-2.5 text-sm font-medium text-text transition hover:border-primary-500 hover:bg-primary-50"
                 >
                   {formatClinicTime(slot.start, locale)}
-                </button>
+                </SubmitButton>
               ))}
             </div>
           )}

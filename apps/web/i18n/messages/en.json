@@ -185,7 +185,8 @@
     "roles": {
       "owner": "Owner",
       "receptionist": "Receptionist",
-      "junior_doctor": "Junior doctor"
+      "junior_doctor": "Junior doctor",
+      "assistant": "Assistant"
     },
     "permissionsHeading": "Pick a role to see exactly what it can reach",
     "permissionsToggleHeading": "Turn off anything they shouldn't be able to do",
@@ -200,7 +201,8 @@
       "clinicalNotes": "Read and write clinical notes",
       "manageStaff": "Invite or remove staff",
       "manageFeesSchedule": "Change fees or schedule",
-      "recordVitals": "Record patient vitals"
+      "recordVitals": "Record patient vitals",
+      "attachRecords": "Attach records to appointments"
     },
     "invite": "Invite",
     "revoke": "Revoke access",

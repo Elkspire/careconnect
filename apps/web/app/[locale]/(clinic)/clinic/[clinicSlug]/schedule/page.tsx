@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClasses =
   "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
@@ -161,9 +162,9 @@ export default async function ClinicSchedulePage(
           </div>
         </Card>
 
-        <button type="submit" className={primaryButtonClasses}>
+        <SubmitButton className={primaryButtonClasses}>
           {t("save")}
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );
