@@ -1,15 +1,18 @@
 /**
- * Canvas helpers for the document scanner: grabbing a camera frame,
- * rotating it, and the "Document" enhancement that makes a photo of paper
- * look like a scan.
+ * Turns a captured photo into a finished scan page: crop and flatten the
+ * detected page (warp.ts), clean it up, rotate, encode as JPEG. Also
+ * grabs camera frames and runs page detection on them (detect.ts).
  */
+import { DETECT_MAX_SIDE, detectQuad, scaleQuad, type Quad } from "./detect";
+import { cleanUpDocument } from "./cleanup";
+import { flattenedSize, warpToRect } from "./warp";
 
 export type ScanMode = "document" | "color";
 
 /** Quarter turns clockwise. */
 export type Rotation = 0 | 90 | 180 | 270;
 
-/** Captured pages are stored at most this size; export may scale further. */
+/** Captured photos are kept at most this size; export may scale further. */
 export const CAPTURE_MAX_SIDE = 2400;
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
@@ -27,92 +30,122 @@ function fit(width: number, height: number, maxSide: number) {
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
+function context(canvas: HTMLCanvasElement) {
+  return canvas.getContext("2d", { willReadFrequently: true })!;
+}
+
 /** Freezes the current video frame as a high-quality JPEG. */
 export async function captureFrame(video: HTMLVideoElement): Promise<Blob> {
   const { width, height } = fit(video.videoWidth, video.videoHeight, CAPTURE_MAX_SIDE);
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext("2d")!.drawImage(video, 0, 0, width, height);
+  context(canvas).drawImage(video, 0, 0, width, height);
   return canvasToBlob(canvas, 0.92);
 }
 
 /**
- * Greyscale plus an automatic levels stretch: the darkest ~1% of pixels
- * become black and the brightest ~1% white, so grey paper photographed
- * under room light comes out white with crisp text. Percentiles (rather
- * than plain min/max) keep a single shadow or glare spot from flattening
- * the whole page.
+ * Looks for a page in any drawable source (a video frame, a photo) and
+ * returns its corners in that source's own pixel coordinates.
  */
-function enhanceDocument(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  const image = ctx.getImageData(0, 0, width, height);
-  const px = image.data;
-  const gray = new Uint8ClampedArray(width * height);
-  const histogram = new Uint32Array(256);
-  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
-    const y = (px[i]! * 299 + px[i + 1]! * 587 + px[i + 2]! * 114) / 1000;
-    gray[p] = y;
-    histogram[gray[p]!]!++;
-  }
+const detectCanvas = typeof document !== "undefined" ? document.createElement("canvas") : null;
+export function detectInSource(
+  source: CanvasImageSource,
+  sourceWidth: number,
+  sourceHeight: number,
+): Quad | null {
+  if (!detectCanvas || !sourceWidth || !sourceHeight) return null;
+  const { width, height } = fit(sourceWidth, sourceHeight, DETECT_MAX_SIDE);
+  detectCanvas.width = width;
+  detectCanvas.height = height;
+  const ctx = context(detectCanvas);
+  ctx.drawImage(source, 0, 0, width, height);
+  const quad = detectQuad(ctx.getImageData(0, 0, width, height).data, width, height);
+  return quad ? scaleQuad(quad, sourceWidth / width) : null;
+}
 
-  const total = width * height;
-  const percentile = (fraction: number) => {
-    let seen = 0;
-    for (let v = 0; v < 256; v++) {
-      seen += histogram[v]!;
-      if (seen >= total * fraction) return v;
-    }
-    return 255;
-  };
-  const low = percentile(0.01);
-  const high = Math.max(low + 1, percentile(0.99));
-  const range = high - low;
-
-  for (let i = 0, p = 0; i < px.length; i += 4, p++) {
-    // Stretch, then a gentle curve that pushes paper towards white while
-    // keeping ink dark.
-    const t = Math.min(1, Math.max(0, (gray[p]! - low) / range));
-    const v = Math.round(255 * Math.pow(t, 0.8));
-    px[i] = px[i + 1] = px[i + 2] = v;
-  }
-  ctx.putImageData(image, 0, 0);
+/** Pixel size of a captured photo (for corner coordinates). */
+export async function imageSize(blob: Blob): Promise<{ width: number; height: number }> {
+  const bitmap = await createImageBitmap(blob);
+  const size = { width: bitmap.width, height: bitmap.height };
+  bitmap.close();
+  return size;
 }
 
 /**
- * Produces the final JPEG for one page: rotated, scaled to fit `maxSide`,
- * and enhanced if `mode` is "document".
+ * The finished JPEG for one page: cropped and flattened to `quad` (or the
+ * whole photo when there's none), cleaned up in "document" mode, rotated,
+ * and scaled to fit `maxSide`.
  */
 export async function renderPage(
   source: Blob,
+  quad: Quad | null,
   rotation: Rotation,
   mode: ScanMode,
   maxSide: number,
   quality: number,
 ): Promise<{ jpeg: Uint8Array; width: number; height: number }> {
   const bitmap = await createImageBitmap(source);
-  const drawn = fit(bitmap.width, bitmap.height, maxSide);
-  const sideways = rotation === 90 || rotation === 270;
-  const width = sideways ? drawn.height : drawn.width;
-  const height = sideways ? drawn.width : drawn.height;
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: mode === "document" })!;
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, width, height);
-  ctx.translate(width / 2, height / 2);
-  ctx.rotate((rotation * Math.PI) / 180);
-  ctx.drawImage(bitmap, -drawn.width / 2, -drawn.height / 2, drawn.width, drawn.height);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // 1. Crop + flatten (or just scale the whole photo).
+  const flat = document.createElement("canvas");
+  const flatCtx = context(flat);
+  if (quad) {
+    const full = document.createElement("canvas");
+    full.width = bitmap.width;
+    full.height = bitmap.height;
+    const fullCtx = context(full);
+    fullCtx.drawImage(bitmap, 0, 0);
+    const size = flattenedSize(quad, maxSide);
+    const pixels = warpToRect(
+      fullCtx.getImageData(0, 0, bitmap.width, bitmap.height).data,
+      bitmap.width,
+      bitmap.height,
+      quad,
+      size.width,
+      size.height,
+    );
+    flat.width = size.width;
+    flat.height = size.height;
+    flatCtx.putImageData(new ImageData(pixels as Uint8ClampedArray<ArrayBuffer>, size.width, size.height), 0, 0);
+  } else {
+    const size = fit(bitmap.width, bitmap.height, maxSide);
+    flat.width = size.width;
+    flat.height = size.height;
+    flatCtx.drawImage(bitmap, 0, 0, size.width, size.height);
+  }
   bitmap.close();
 
+  // 2. Clean up.
   if (mode === "document") {
-    enhanceDocument(ctx, width, height);
+    const image = flatCtx.getImageData(0, 0, flat.width, flat.height);
+    cleanUpDocument(image.data, flat.width, flat.height);
+    flatCtx.putImageData(image, 0, 0);
   }
 
-  const blob = await canvasToBlob(canvas, quality);
-  return { jpeg: new Uint8Array(await blob.arrayBuffer()), width, height };
+  // 3. Rotate.
+  const sideways = rotation === 90 || rotation === 270;
+  const out = document.createElement("canvas");
+  out.width = sideways ? flat.height : flat.width;
+  out.height = sideways ? flat.width : flat.height;
+  const outCtx = context(out);
+  outCtx.translate(out.width / 2, out.height / 2);
+  outCtx.rotate((rotation * Math.PI) / 180);
+  outCtx.drawImage(flat, -flat.width / 2, -flat.height / 2);
+
+  const blob = await canvasToBlob(out, quality);
+  return { jpeg: new Uint8Array(await blob.arrayBuffer()), width: out.width, height: out.height };
+}
+
+/** Preview of a finished page, as an object URL (caller revokes it). */
+export async function renderPreview(
+  source: Blob,
+  quad: Quad | null,
+  rotation: Rotation,
+  mode: ScanMode,
+): Promise<string> {
+  const page = await renderPage(source, quad, rotation, mode, 1100, 0.85);
+  return URL.createObjectURL(new Blob([page.jpeg as BlobPart], { type: "image/jpeg" }));
 }
 
 /**
