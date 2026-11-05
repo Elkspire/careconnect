@@ -25,6 +25,7 @@ import {
   viewVaultRecordAction,
 } from "../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { DocumentScanner } from "@/components/document-scanner";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -469,7 +470,19 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
       )}
 
       <Card padding="lg" className="mt-8 max-w-2xl">
-        <form action={upload} className="flex flex-wrap items-end gap-3">
+        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-bold text-text">{t("addRecordHeading")}</h2>
+            <p className="mt-1 text-sm text-text-muted">{t("addRecordHint")}</p>
+          </div>
+          <div className="shrink-0">
+            <DocumentScanner
+              familyMembers={familyMembers.map((m) => ({ id: m.id, fullName: m.fullName }))}
+              uploadAction={upload}
+            />
+          </div>
+        </div>
+        <form action={upload} className="flex flex-wrap items-end gap-3 border-t border-border pt-5">
           <FormField label={t("recordTypeLabel")}>
             <select name="recordType" className={inputClasses}>
               <option value="prescription_photo">{t("types.prescription_photo")}</option>
