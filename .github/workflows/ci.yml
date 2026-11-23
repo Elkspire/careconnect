@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: ${{ matrix.task }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [lint, typecheck, test]
+    env:
+      # typecheck depends on `next build` (turbo.json); placeholders are enough
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6          # reads pnpm@11.22.0 from package.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run ${{ matrix.task }} --continue --ui=stream
+
+  api-e2e:
+    name: api e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # config.toml references this; test_otp means Twilio is never called
+      SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN: unused
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.115.0                  # same as your local CLI
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@careconnect/api^... --ui=stream
+      - name: Start local Supabase (applies migrations + seed)
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,realtime,postgres-meta,supavisor,mailpit
+      - name: Point the API at local Supabase
+        run: |
+          eval "$(supabase status -o env)"
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "DATABASE_URL=$DB_URL"
+          } >> "$GITHUB_ENV"
+      - run: pnpm --filter @careconnect/api test:e2e

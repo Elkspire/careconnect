@@ -11,6 +11,13 @@
     "outDir": "./dist",
     "baseUrl": "./"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "api"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "api"
+  ]
 }
