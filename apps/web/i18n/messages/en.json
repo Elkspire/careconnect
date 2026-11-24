@@ -119,6 +119,11 @@
     "availableSlots": "Available slots (Pakistan time)",
     "newTimeLabelPkt": "New time (Pakistan time)",
     "noSlots": "No available slots for this date.",
+    "bookingError": {
+      "unavailable": "That time isn't available. Please choose an open slot.",
+      "window": "It's too close to this appointment to change it online. Please call the clinic.",
+      "changed": "This appointment can no longer be changed."
+    },
     "confirmBooking": "Confirm booking",
     "bookingConfirmed": "Appointment booked.",
     "joinWaitlist": "Join the waitlist for this date",

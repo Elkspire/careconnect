@@ -119,6 +119,11 @@
     "availableSlots": "Available slots (Pakistan time)",
     "newTimeLabelPkt": "Naya waqt (Pakistan time)",
     "noSlots": "Is tareekh ke liye koi slot available nahin.",
+    "bookingError": {
+      "unavailable": "Yeh waqt available nahin hai. Barah-e-karam koi khali slot chunein.",
+      "window": "Appointment ka waqt bohat qareeb hai, ise online tabdeel nahin kiya ja sakta. Barah-e-karam clinic ko call karein.",
+      "changed": "Is appointment mein ab tabdeeli nahin ho sakti."
+    },
     "confirmBooking": "Booking confirm karein",
     "bookingConfirmed": "Appointment book ho gayi.",
     "joinWaitlist": "Is tareekh ki waitlist mein shaamil hon",

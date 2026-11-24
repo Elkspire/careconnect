@@ -28,6 +28,8 @@ import {
   isNull,
   lt,
   max,
+  ne,
+  type SQL,
   sql,
 } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
@@ -66,6 +68,21 @@ export class ClinicService {
     private readonly vaultService: VaultService,
     private readonly medicalSummaryService: MedicalSummaryService,
   ) {}
+
+  private async isOwner(clinicId: string, userId: string): Promise<boolean> {
+    const [row] = await this.db
+      .select({ id: clinicStaff.id })
+      .from(clinicStaff)
+      .where(
+        and(
+          eq(clinicStaff.clinicId, clinicId),
+          eq(clinicStaff.userId, userId),
+          eq(clinicStaff.role, 'owner'),
+        ),
+      )
+      .limit(1);
+    return !!row;
+  }
 
   private async isActiveJuniorDoctor(
     clinicId: string,
@@ -122,6 +139,34 @@ export class ClinicService {
     if (!assigned) {
       throw onUnassigned();
     }
+  }
+
+  /**
+   * The same scoping for a list query: a condition keeping only rows whose
+   * patient/family member is assigned to the caller. undefined (no
+   * filtering) for anyone but a junior doctor.
+   */
+  private async assignedOnly(
+    clinicId: string,
+    callerId: string,
+    subject: typeof appointments | typeof waitlistEntries,
+  ): Promise<SQL | undefined> {
+    if (!(await this.isActiveJuniorDoctor(clinicId, callerId))) {
+      return undefined;
+    }
+    return exists(
+      this.db
+        .select({ id: patientAssignments.id })
+        .from(patientAssignments)
+        .where(
+          and(
+            eq(patientAssignments.clinicId, clinicId),
+            eq(patientAssignments.juniorDoctorUserId, callerId),
+            eq(patientAssignments.patientId, subject.patientId),
+            sql`${patientAssignments.familyMemberId} is not distinct from ${subject.familyMemberId}`,
+          ),
+        ),
+    );
   }
 
   /**
@@ -280,6 +325,14 @@ export class ClinicService {
       .limit(1);
     let user = existing;
 
+    // The upsert below would otherwise turn the owner's own row into the
+    // invited role, locking them out of their clinic.
+    if (user && (await this.isOwner(clinicId, user.id))) {
+      throw new ConflictException(
+        `${input.phone} is this clinic's owner and cannot be invited as staff`,
+      );
+    }
+
     // A junior doctor co-authors clinical notes under this clinic (see
     // ClinicalService), which requires a real practitioner profile — catch
     // the mismatch here with a clear message instead of a raw FK error
@@ -385,7 +438,12 @@ export class ClinicService {
       .update(clinicStaff)
       .set({ status: 'revoked' })
       .where(
-        and(eq(clinicStaff.id, staffId), eq(clinicStaff.clinicId, clinicId)),
+        and(
+          eq(clinicStaff.id, staffId),
+          eq(clinicStaff.clinicId, clinicId),
+          // Same lock-out as inviting the owner: they can't remove themself.
+          ne(clinicStaff.role, 'owner'),
+        ),
       )
       .returning({ id: clinicStaff.id });
     if (!row) {
@@ -790,8 +848,14 @@ export class ClinicService {
    * completed/no-show ones would just clutter the check-in queue with
    * nothing useful to do about them (and a "Check in" button on a
    * cancelled appointment would be actively misleading, not just noise).
+   * A junior doctor only sees their assigned patients.
    */
-  listToday(clinicId: string) {
+  async listToday(clinicId: string, callerId: string) {
+    const assignedOnly = await this.assignedOnly(
+      clinicId,
+      callerId,
+      appointments,
+    );
     const startOfToday = sql<Date>`date_trunc('day', now())`;
     const startOfTomorrow = sql<Date>`date_trunc('day', now()) + interval '1 day'`;
 
@@ -813,6 +877,7 @@ export class ClinicService {
           gte(appointments.scheduledStart, startOfToday),
           lt(appointments.scheduledStart, startOfTomorrow),
           inArray(appointments.status, ['booked', 'checked_in']),
+          assignedOnly,
         ),
       )
       .orderBy(appointments.scheduledStart);
@@ -823,8 +888,14 @@ export class ClinicService {
    * "someone is calling, nothing suits, put them on the list" screen. Only
    * still-active entries (waiting/offered); converted/expired/cancelled
    * ones are done, cluttering the desk view with nothing to act on.
+   * A junior doctor only sees their assigned patients.
    */
-  listClinicWaitlist(clinicId: string) {
+  async listClinicWaitlist(clinicId: string, callerId: string) {
+    const assignedOnly = await this.assignedOnly(
+      clinicId,
+      callerId,
+      waitlistEntries,
+    );
     return this.db
       .select({
         id: waitlistEntries.id,
@@ -854,6 +925,7 @@ export class ClinicService {
         and(
           eq(waitlistEntries.clinicId, clinicId),
           inArray(waitlistEntries.status, ['waiting', 'offered']),
+          assignedOnly,
         ),
       )
       .orderBy(waitlistEntries.requestedDate, waitlistEntries.createdAt);
@@ -1244,7 +1316,11 @@ export class ClinicService {
    */
   async listAppointmentsForAttach(clinicId: string, callerId: string) {
     const since = sql<Date>`date_trunc('day', now()) - interval '30 days'`;
-    const scoped = await this.isActiveJuniorDoctor(clinicId, callerId);
+    const assignedOnly = await this.assignedOnly(
+      clinicId,
+      callerId,
+      appointments,
+    );
     return this.db
       .select({
         appointmentId: appointments.id,
@@ -1263,21 +1339,7 @@ export class ClinicService {
           eq(appointments.clinicId, clinicId),
           gte(appointments.scheduledStart, since),
           inArray(appointments.status, ['checked_in', 'completed']),
-          scoped
-            ? exists(
-                this.db
-                  .select({ id: patientAssignments.id })
-                  .from(patientAssignments)
-                  .where(
-                    and(
-                      eq(patientAssignments.clinicId, clinicId),
-                      eq(patientAssignments.juniorDoctorUserId, callerId),
-                      eq(patientAssignments.patientId, appointments.patientId),
-                      sql`${patientAssignments.familyMemberId} is not distinct from ${appointments.familyMemberId}`,
-                    ),
-                  ),
-              )
-            : undefined,
+          assignedOnly,
         ),
       )
       .orderBy(desc(appointments.scheduledStart));

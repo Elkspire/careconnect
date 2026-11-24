@@ -1,5 +1,13 @@
-import { eq } from 'drizzle-orm';
-import { appointments, clinics } from '../src/common/database/schema';
+import { and, eq } from 'drizzle-orm';
+import {
+  appointments,
+  clinicalNotes,
+  clinics,
+  clinicStaff,
+  patientAssignments,
+  patientRecords,
+  waitlistEntries,
+} from '../src/common/database/schema';
 import {
   bookFirstSlot,
   createClinicWithOwner,
@@ -44,8 +52,10 @@ describe('Clinic data isolation (e2e)', () => {
     await t.close();
   });
 
-  const asOwnerB = (method: 'get' | 'post' | 'put', path: string) =>
-    t.http()[method](path).auth(ownerB.token, { type: 'bearer' });
+  const asOwnerB = (
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
+    path: string,
+  ) => t.http()[method](path).auth(ownerB.token, { type: 'bearer' });
 
   it("clinic A's owner sees the patient (control)", async () => {
     const res = await t
@@ -147,4 +157,251 @@ describe('Clinic data isolation (e2e)', () => {
         .expect(403);
     },
   );
+
+  // Booking routes carry no clinic in the URL, so ClinicRoleGuard never sees
+  // them; the service has to make this check itself.
+  it("clinic B's owner cannot cancel or move clinic A's appointment", async () => {
+    await asOwnerB('post', '/booking/appointments/cancel')
+      .send({ appointmentId: appointmentAtA })
+      .expect(403);
+    await asOwnerB('post', '/booking/appointments/reschedule')
+      .send({
+        appointmentId: appointmentAtA,
+        scheduledStart: new Date(
+          `${daysAhead(10)}T20:00:00+05:00`,
+        ).toISOString(),
+      })
+      .expect(403);
+  });
+
+  describe("clinic A's files, staff and assignments", () => {
+    let recordId: string;
+    let assignmentId: string;
+    let staffId: string;
+
+    beforeAll(async () => {
+      const [record] = await t.db
+        .insert(patientRecords)
+        .values({
+          patientId: patient.id,
+          recordType: 'lab_report',
+          filePath: `${patient.id}/e2e/file.pdf`,
+          fileName: 'report.pdf',
+          mimeType: 'application/pdf',
+          linkedAppointmentId: appointmentAtA,
+          uploadedBy: patient.id,
+        })
+        .returning();
+      recordId = record!.id;
+      const [assignment] = await t.db
+        .insert(patientAssignments)
+        .values({
+          clinicId: SEED.clinicId,
+          juniorDoctorUserId: SEED.receptionistId,
+          patientId: patient.id,
+          assignedBy: SEED.doctorId,
+        })
+        .returning();
+      assignmentId = assignment!.id;
+      // Without a note to find, the clinical-notes checks below would 404 anyway.
+      await t.db.insert(clinicalNotes).values({
+        appointmentId: appointmentAtA,
+        patientId: patient.id,
+        practitionerId: SEED.doctorId,
+        notes: 'Original',
+        createdBy: SEED.doctorId,
+      });
+      const [staff] = await t.db
+        .select({ id: clinicStaff.id })
+        .from(clinicStaff)
+        .where(
+          and(
+            eq(clinicStaff.clinicId, SEED.clinicId),
+            eq(clinicStaff.userId, SEED.receptionistId),
+          ),
+        );
+      staffId = staff!.id;
+    });
+    afterAll(async () => {
+      await t.db
+        .delete(clinicalNotes)
+        .where(eq(clinicalNotes.appointmentId, appointmentAtA));
+      await t.db
+        .delete(patientAssignments)
+        .where(eq(patientAssignments.id, assignmentId));
+      await t.db.delete(patientRecords).where(eq(patientRecords.id, recordId));
+      await t.db
+        .update(clinicStaff)
+        .set({ status: 'active' })
+        .where(eq(clinicStaff.id, staffId));
+    });
+
+    it("clinic A's owner sees the record (control)", async () => {
+      const res = await t
+        .http()
+        .get(`${A}/patients/${patient.id}/records`)
+        .auth(tokens.doctor(), { type: 'bearer' })
+        .expect(200);
+      expect(res.body).toContainEqual(
+        expect.objectContaining({ id: recordId }),
+      );
+    });
+
+    it("clinic B's owner cannot open the file through either clinic", async () => {
+      await asOwnerB('get', `${A}/records/${recordId}/signed-url`).expect(403);
+      await asOwnerB('get', `${B()}/records/${recordId}/signed-url`).expect(
+        404,
+      );
+    });
+
+    it('cannot attach a file to the appointment', () =>
+      asOwnerB('post', `${B()}/records`)
+        .field('appointmentId', appointmentAtA)
+        .field('recordType', 'lab_report')
+        .attach('file', Buffer.from('%PDF-1.4'), {
+          filename: 'x.pdf',
+          contentType: 'application/pdf',
+        })
+        .expect(404));
+
+    it('cannot remove staff, whichever clinic is in the URL', async () => {
+      await asOwnerB('delete', `${A}/staff/${staffId}`).expect(403);
+      await asOwnerB('delete', `${B()}/staff/${staffId}`).expect(404);
+      const [row] = await t.db
+        .select({ status: clinicStaff.status })
+        .from(clinicStaff)
+        .where(eq(clinicStaff.id, staffId));
+      expect(row?.status).toBe('active');
+    });
+
+    it('cannot remove an assignment, whichever clinic is in the URL', async () => {
+      const path = `/patient-assignments/${assignmentId}`;
+      await asOwnerB('delete', `${A}${path}`).expect(403);
+      await asOwnerB('delete', `${B()}${path}`).expect(404);
+      const rows = await t.db
+        .select({ id: patientAssignments.id })
+        .from(patientAssignments)
+        .where(eq(patientAssignments.id, assignmentId));
+      expect(rows).toHaveLength(1);
+    });
+
+    it("cannot assign anyone clinic A's patient", () =>
+      asOwnerB('post', `${B()}/patient-assignments`)
+        .send({
+          juniorDoctorUserId: SEED.receptionistId,
+          patientId: patient.id,
+        })
+        .expect(404));
+
+    it("clinic A's owner can read the note (control)", () =>
+      t
+        .http()
+        .get(`${A}/clinical-notes/${appointmentAtA}`)
+        .auth(tokens.doctor(), { type: 'bearer' })
+        .expect(200));
+
+    it.each(['', '/allergies', '/prescription'])(
+      'cannot read the clinical note%s',
+      (suffix) =>
+        asOwnerB(
+          'get',
+          `${B()}/clinical-notes/${appointmentAtA}${suffix}`,
+        ).expect(404),
+    );
+
+    it('cannot edit a note or prescription for the visit', async () => {
+      await asOwnerB('patch', `${B()}/clinical-notes/${appointmentAtA}`)
+        .send({ notes: 'Changed' })
+        .expect(404);
+      await asOwnerB(
+        'post',
+        `${B()}/clinical-notes/${appointmentAtA}/prescription`,
+      )
+        .send({ items: [{ drugName: 'Aspirin' }] })
+        .expect(404);
+      const [row] = await t.db
+        .select({ notes: clinicalNotes.notes })
+        .from(clinicalNotes)
+        .where(eq(clinicalNotes.appointmentId, appointmentAtA));
+      expect(row?.notes).toBe('Original');
+    });
+
+    it("clinic B's own lists contain nothing of clinic A's", async () => {
+      const [entry] = await t.db
+        .insert(waitlistEntries)
+        .values({
+          patientId: patient.id,
+          practitionerId: SEED.doctorId,
+          clinicId: SEED.clinicId,
+          requestedDate: daysAhead(10),
+        })
+        .returning();
+      try {
+        for (const route of [
+          '/today',
+          '/waitlist',
+          '/patient-assignments',
+          '/appointments/recent',
+        ]) {
+          const res = await asOwnerB('get', `${B()}${route}`).expect(200);
+          expect(res.body).toEqual([]);
+        }
+        const staff = await asOwnerB('get', `${B()}/staff`).expect(200);
+        expect(
+          (staff.body as Array<{ userId: string }>).map((s) => s.userId),
+        ).toEqual([ownerB.id]);
+        const analytics = await asOwnerB('get', `${B()}/analytics`).expect(200);
+        expect(analytics.body).toMatchObject({
+          daily: [],
+          byPractitioner: [],
+          totals: { visits: 0, uniquePatients: 0 },
+        });
+      } finally {
+        await t.db
+          .delete(waitlistEntries)
+          .where(eq(waitlistEntries.id, entry!.id));
+      }
+    });
+
+    it('a role at one clinic does not carry over to another', async () => {
+      const [row] = await t.db
+        .insert(clinicStaff)
+        .values({
+          clinicId: SEED.clinicId,
+          userId: ownerB.id,
+          role: 'receptionist',
+          status: 'active',
+        })
+        .returning();
+      try {
+        // Owner at B, only a receptionist at A.
+        await asOwnerB('get', `${A}/today`).expect(200);
+        await asOwnerB('get', `${A}/staff`).expect(403);
+        await asOwnerB('get', `${A}/patients/${patient.id}/records`).expect(
+          403,
+        );
+        await asOwnerB('get', `${B()}/staff`).expect(200);
+      } finally {
+        await t.db.delete(clinicStaff).where(eq(clinicStaff.id, row!.id));
+      }
+    });
+
+    it('another patient cannot reach the file', async () => {
+      const stranger = await createPatient(t, 'Stranger');
+      const asStranger = (method: 'get' | 'delete', path: string) =>
+        t.http()[method](path).auth(stranger.token, { type: 'bearer' });
+
+      const list = await asStranger('get', '/vault/records').expect(200);
+      expect(list.body).toEqual([]);
+      await asStranger('get', `/vault/records/${recordId}/signed-url`).expect(
+        404,
+      );
+      await asStranger('delete', `/vault/records/${recordId}`).expect(404);
+      const rows = await t.db
+        .select({ id: patientRecords.id })
+        .from(patientRecords)
+        .where(eq(patientRecords.id, recordId));
+      expect(rows).toHaveLength(1);
+    });
+  });
 });

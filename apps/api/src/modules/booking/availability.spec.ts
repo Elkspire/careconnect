@@ -174,4 +174,77 @@ describe('computeAvailableSlots', () => {
     });
     expect(result.map((d) => d.slots.length)).toEqual([0, 0, 1]);
   });
+
+  // 19:00-24:00 UTC is already the next day in Pakistan.
+  it('assigns bookings to the Pakistan calendar day, not the UTC one', () => {
+    const timings: WeeklyTimings = {
+      mon: [{ start: '00:00', end: '00:40' }],
+      tue: [{ start: '00:00', end: '00:40' }],
+    };
+    const justAfterMidnight = {
+      start: new Date('2030-01-07T19:00:00Z'), // Tue 00:00 in Pakistan
+      end: new Date('2030-01-07T19:20:00Z'),
+    };
+    const result = slots({
+      timings,
+      toDate: TUE,
+      dailyPatientCap: 1,
+      busyRanges: [justAfterMidnight],
+    });
+    expect(result.map((d) => d.slots.length)).toEqual([2, 0]);
+  });
+
+  it('offers nothing when a range is shorter than one slot', () => {
+    expect(
+      starts(slots({ timings: { mon: [{ start: '09:00', end: '09:15' }] } })),
+    ).toEqual([]);
+  });
+
+  it('keeps a slot that fits the range exactly', () => {
+    expect(
+      starts(slots({ timings: { mon: [{ start: '09:00', end: '09:20' }] } })),
+    ).toEqual([at(MON, '09:00')]);
+  });
+
+  it('follows the slot length', () => {
+    expect(starts(slots({ slotLengthMinutes: 30 }))).toEqual([
+      at(MON, '09:00'),
+      at(MON, '09:30'),
+    ]);
+  });
+
+  it('hides every slot under a booking longer than the slot length', () => {
+    const result = slots({
+      busyRanges: [
+        { start: new Date(at(MON, '09:00')), end: new Date(at(MON, '10:00')) },
+      ],
+    });
+    expect(starts(result)).toEqual([]);
+  });
+
+  it('applies several leave ranges, including across a month end', () => {
+    const result = slots({
+      timings: {
+        thu: [{ start: '09:00', end: '09:20' }],
+        fri: [{ start: '09:00', end: '09:20' }],
+        sat: [{ start: '09:00', end: '09:20' }],
+      },
+      fromDate: '2030-01-31', // Thursday
+      toDate: '2030-02-02',
+      leaveRanges: [
+        { startsOn: '2030-01-30', endsOn: '2030-02-01' },
+        { startsOn: '2030-03-01', endsOn: '2030-03-02' },
+      ],
+    });
+    expect(result.map((d) => d.slots.length)).toEqual([0, 0, 1]);
+  });
+
+  it('returns nothing when the range is backwards', () => {
+    expect(slots({ fromDate: TUE, toDate: MON })).toEqual([]);
+  });
+
+  it('copes with the last day a date can hold', () => {
+    const result = slots({ fromDate: '9999-12-30', toDate: '9999-12-31' });
+    expect(result.map((d) => d.date)).toEqual(['9999-12-30', '9999-12-31']);
+  });
 });

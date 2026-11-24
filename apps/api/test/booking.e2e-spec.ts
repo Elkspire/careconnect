@@ -94,6 +94,23 @@ describe('Booking (e2e)', () => {
         })
         .expect(400));
 
+    it.each([
+      ['longer than 31 days', '2030-01-01', '2030-02-01'],
+      ['absurdly long', '2030-01-01', '9999-12-31'],
+      ['backwards', '2030-01-02', '2030-01-01'],
+    ])('rejects a range that is %s', (_why, fromDate, toDate) =>
+      t
+        .http()
+        .get('/booking/availability')
+        .query({
+          practitionerId: SEED.doctorId,
+          clinicId: SEED.clinicId,
+          fromDate,
+          toDate,
+        })
+        .expect(400),
+    );
+
     it('closes days the practitioner is on leave', async () => {
       const [leave] = await t.db
         .insert(practitionerLeave)
@@ -167,18 +184,36 @@ describe('Booking (e2e)', () => {
       await book(other.token, tenMinutesIn).expect(409);
     });
 
-    // Known bug: assertSlotFree compares with <= / >=, so a booking that
-    // merely touches an existing one counts as a clash. Availability (which
-    // uses strict comparisons) still offers the slot. `it.failing` passes
-    // while the bug exists; once it is fixed, swap it for `it`.
-    it.failing(
-      'allows booking the slot straight after a booked one',
-      async () => {
-        const [first, second] = await openSlots(t, DATE);
-        await book(patient.token, first!).expect(201);
-        await book(other.token, second!).expect(201);
-      },
-    );
+    it('allows booking the slot straight after a booked one', async () => {
+      const [first, second] = await openSlots(t, DATE);
+      await book(patient.token, first!).expect(201);
+      await book(other.token, second!).expect(201);
+    });
+
+    // Two app instances, as in production: each has its own connection, so
+    // only the database can keep their requests apart.
+    it('gives a slot to one of many simultaneous requests', async () => {
+      const second = await createTestApp();
+      try {
+        const slot = (await openSlots(t, DATE))[0]!;
+        const attempts = [t, second, t, second, t, second].map((app, n) =>
+          app
+            .http()
+            .post('/booking/appointments')
+            .auth(n % 4 < 2 ? patient.token : other.token, { type: 'bearer' })
+            .send({
+              subjectType: 'self',
+              practitionerId: SEED.doctorId,
+              clinicId: SEED.clinicId,
+              scheduledStart: slot,
+            }),
+        );
+        const statuses = (await Promise.all(attempts)).map((r) => r.status);
+        expect(statuses.sort()).toEqual([201, 409, 409, 409, 409, 409]);
+      } finally {
+        await second.close();
+      }
+    });
 
     it('lets a slot be booked again once cancelled', async () => {
       const { appointmentId, slot } = await bookFirstSlot(t, patient, DATE);
@@ -234,7 +269,6 @@ describe('Booking (e2e)', () => {
 
     it('refuses to reschedule into a taken slot', async () => {
       const { slot: taken } = await bookFirstSlot(t, other, DATE);
-      // Not the next slot: see the adjacent-booking bug below.
       const res = await book(
         patient.token,
         (await openSlots(t, DATE)).at(-1)!,
@@ -272,6 +306,10 @@ describe('Booking (e2e)', () => {
       await post('appointments/cancel', patient.token, {
         appointmentId,
       }).expect(403);
+      await post('appointments/reschedule', patient.token, {
+        appointmentId,
+        scheduledStart: (await openSlots(t, DATE)).at(-1)!,
+      }).expect(403);
       await post('appointments/cancel', tokens.receptionist(), {
         appointmentId,
       }).expect(201);
@@ -295,6 +333,268 @@ describe('Booking (e2e)', () => {
         .from(waitlistEntries)
         .where(eq(waitlistEntries.id, (joined.body as { id: string }).id));
       expect(entry?.status).toBe('offered');
+    });
+
+    it('lets clinic staff reschedule for a patient', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      const target = (await openSlots(t, DATE)).at(-1)!;
+      await post('appointments/reschedule', tokens.receptionist(), {
+        appointmentId,
+        scheduledStart: target,
+      }).expect(201);
+      expect(await openSlots(t, DATE)).not.toContain(target);
+    });
+
+    it('404s for an appointment that does not exist', async () => {
+      const appointmentId = '00000000-0000-0000-0000-000000000000';
+      await post('appointments/cancel', patient.token, {
+        appointmentId,
+      }).expect(404);
+      await post('appointments/reschedule', patient.token, {
+        appointmentId,
+        scheduledStart: new Date(`${DATE}T09:00:00+05:00`).toISOString(),
+      }).expect(404);
+    });
+  });
+
+  describe('who and where', () => {
+    it("never lists another patient's appointments", async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      const res = await t
+        .http()
+        .get('/booking/appointments')
+        .auth(other.token, { type: 'bearer' })
+        .expect(200);
+      const ids = (res.body as Array<{ id: string }>).map((a) => a.id);
+      expect(ids).not.toContain(appointmentId);
+    });
+
+    it('books for a family member of the caller', async () => {
+      const member = await t
+        .http()
+        .post('/patients/me/family-members')
+        .auth(patient.token, { type: 'bearer' })
+        .send({ fullName: 'Own Child', relationship: 'child' })
+        .expect(201);
+      const familyMemberId = (member.body as { id: string }).id;
+      const res = await book(patient.token, (await openSlots(t, DATE))[0]!, {
+        subjectType: 'family_member',
+        familyMemberId,
+      }).expect(201);
+      expect(res.body).toMatchObject({
+        patientId: patient.id,
+        subjectType: 'family_member',
+        familyMemberId,
+      });
+    });
+
+    it('closes a clinic the practitioner has stopped practising at', async () => {
+      const slot = (await openSlots(t, DATE))[0]!;
+      const where = eq(practitionerClinic.clinicId, SEED.clinicId);
+      await t.db
+        .update(practitionerClinic)
+        .set({ isActive: false })
+        .where(where);
+      try {
+        await book(patient.token, slot).expect(404);
+        await t
+          .http()
+          .get('/booking/availability')
+          .query({
+            practitionerId: SEED.doctorId,
+            clinicId: SEED.clinicId,
+            fromDate: DATE,
+            toDate: DATE,
+          })
+          .expect(404);
+      } finally {
+        await t.db
+          .update(practitionerClinic)
+          .set({ isActive: true })
+          .where(where);
+      }
+    });
+
+    it('applies leave with no clinic to every clinic', async () => {
+      const [leave] = await t.db
+        .insert(practitionerLeave)
+        .values({
+          practitionerId: SEED.doctorId,
+          clinicId: null,
+          startsOn: DATE,
+          endsOn: DATE,
+        })
+        .returning();
+      try {
+        expect(await openSlots(t, DATE)).toEqual([]);
+      } finally {
+        await t.db
+          .delete(practitionerLeave)
+          .where(eq(practitionerLeave.id, leave!.id));
+      }
+    });
+  });
+
+  describe('waitlist', () => {
+    const join = async (user: TestUser) => {
+      const res = await post('waitlist', user.token, {
+        subjectType: 'self',
+        practitionerId: SEED.doctorId,
+        clinicId: SEED.clinicId,
+        requestedDate: DATE,
+      }).expect(201);
+      return (res.body as { id: string }).id;
+    };
+    const leave = (user: TestUser, id: string) =>
+      t
+        .http()
+        .delete(`/booking/waitlist/${id}`)
+        .auth(user.token, { type: 'bearer' });
+    const statusOf = async (id: string) => {
+      const [entry] = await t.db
+        .select({ status: waitlistEntries.status })
+        .from(waitlistEntries)
+        .where(eq(waitlistEntries.id, id));
+      return entry?.status;
+    };
+
+    it('offers a freed date only to whoever joined first', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      const first = await join(other);
+      const second = await join(patient);
+      await post('appointments/cancel', patient.token, {
+        appointmentId,
+      }).expect(201);
+      expect(await statusOf(first)).toBe('offered');
+      expect(await statusOf(second)).toBe('waiting');
+    });
+
+    it('skips someone who has withdrawn', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      const withdrawn = await join(other);
+      const next = await join(patient);
+      await leave(other, withdrawn).expect(200);
+      await post('appointments/cancel', patient.token, {
+        appointmentId,
+      }).expect(201);
+      expect(await statusOf(withdrawn)).toBe('cancelled');
+      expect(await statusOf(next)).toBe('offered');
+    });
+
+    it('is offered the old date when a booking moves', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      const waiting = await join(other);
+      await post('appointments/reschedule', patient.token, {
+        appointmentId,
+        scheduledStart: (await openSlots(t, daysAhead(8)))[0]!,
+      }).expect(201);
+      expect(await statusOf(waiting)).toBe('offered');
+    });
+
+    it("does not let a patient see or withdraw someone else's entry", async () => {
+      const entry = await join(patient);
+      await leave(other, entry).expect(404);
+      expect(await statusOf(entry)).toBe('waiting');
+
+      const res = await t
+        .http()
+        .get('/booking/waitlist')
+        .auth(other.token, { type: 'bearer' })
+        .expect(200);
+      const ids = (res.body as Array<{ id: string }>).map((e) => e.id);
+      expect(ids).not.toContain(entry);
+    });
+
+    it('can only be withdrawn from once', async () => {
+      const entry = await join(patient);
+      await leave(patient, entry).expect(200);
+      await leave(patient, entry).expect(404);
+    });
+  });
+
+  describe('refuses what availability would not offer', () => {
+    it('a time in the past', async () => {
+      const yesterday = new Date(`${daysAhead(-1)}T09:00:00+05:00`);
+      await book(patient.token, yesterday.toISOString()).expect(409);
+    });
+
+    it('a time outside working hours', async () => {
+      const threeAm = new Date(`${DATE}T03:00:00+05:00`);
+      await book(patient.token, threeAm.toISOString()).expect(409);
+    });
+
+    it('a time that is not on the slot grid', async () => {
+      const offGrid = new Date(`${DATE}T09:07:00+05:00`);
+      await book(patient.token, offGrid.toISOString()).expect(409);
+    });
+
+    it('a day the practitioner is on leave', async () => {
+      const slot = (await openSlots(t, DATE))[0]!;
+      const [leave] = await t.db
+        .insert(practitionerLeave)
+        .values({
+          practitionerId: SEED.doctorId,
+          clinicId: SEED.clinicId,
+          startsOn: DATE,
+          endsOn: DATE,
+        })
+        .returning();
+      try {
+        await book(patient.token, slot).expect(409);
+      } finally {
+        await t.db
+          .delete(practitionerLeave)
+          .where(eq(practitionerLeave.id, leave!.id));
+      }
+    });
+
+    it('a booking over the daily cap', async () => {
+      const lastSlot = (await openSlots(t, DATE)).at(-1)!;
+      const where = eq(practitionerClinic.clinicId, SEED.clinicId);
+      const [config] = await t.db
+        .select({ cap: practitionerClinic.dailyPatientCap })
+        .from(practitionerClinic)
+        .where(where);
+      await t.db
+        .update(practitionerClinic)
+        .set({ dailyPatientCap: 1 })
+        .where(where);
+      try {
+        await bookFirstSlot(t, patient, DATE);
+        await book(other.token, lastSlot).expect(409);
+      } finally {
+        await t.db
+          .update(practitionerClinic)
+          .set({ dailyPatientCap: config!.cap })
+          .where(where);
+      }
+    });
+  });
+
+  describe('appointment status', () => {
+    it('a cancelled appointment cannot be changed again', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      await post('appointments/cancel', patient.token, {
+        appointmentId,
+      }).expect(201);
+      await post('appointments/reschedule', patient.token, {
+        appointmentId,
+        scheduledStart: (await openSlots(t, DATE)).at(-1)!,
+      }).expect(409);
+      await post('appointments/cancel', patient.token, {
+        appointmentId,
+      }).expect(409);
+    });
+
+    it('even staff cannot cancel a completed visit', async () => {
+      const { appointmentId } = await bookFirstSlot(t, patient, DATE);
+      await t.db
+        .update(appointments)
+        .set({ status: 'completed' })
+        .where(eq(appointments.id, appointmentId));
+      await post('appointments/cancel', tokens.receptionist(), {
+        appointmentId,
+      }).expect(409);
     });
   });
 });
