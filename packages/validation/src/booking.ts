@@ -11,12 +11,24 @@ const bookingSubject = z
     path: ["familyMemberId"],
   });
 
-export const availabilityQuerySchema = z.object({
-  practitionerId: z.string().uuid(),
-  clinicId: z.string().uuid(),
-  fromDate: z.string().date(),
-  toDate: z.string().date(),
-});
+/** The availability endpoint is public and does work per day asked for. */
+export const MAX_AVAILABILITY_DAYS = 31;
+
+export const availabilityQuerySchema = z
+  .object({
+    practitionerId: z.string().uuid(),
+    clinicId: z.string().uuid(),
+    fromDate: z.string().date(),
+    toDate: z.string().date(),
+  })
+  .refine((v) => v.fromDate <= v.toDate, {
+    message: "fromDate must be on or before toDate",
+    path: ["toDate"],
+  })
+  .refine(
+    (v) => (Date.parse(v.toDate) - Date.parse(v.fromDate)) / 86_400_000 < MAX_AVAILABILITY_DAYS,
+    { message: `Ask for at most ${MAX_AVAILABILITY_DAYS} days at a time`, path: ["toDate"] },
+  );
 export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;
 
 export const createAppointmentSchema = bookingSubject.and(

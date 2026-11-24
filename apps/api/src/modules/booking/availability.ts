@@ -53,10 +53,24 @@ function combineDateAndTime(dateStr: string, hhmm: string): Date {
   return new Date(`${dateStr}T${hhmm}:00${CLINIC_UTC_OFFSET}`);
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function addDays(dateStr: string, days: number): string {
   const { year, month, day } = parseDateParts(dateStr);
   const next = new Date(Date.UTC(year, month - 1, day + days));
   return next.toISOString().slice(0, 10);
+}
+
+/** Whole days from one date to another; negative when `to` is earlier. */
+function daysBetween(from: string, to: string): number {
+  return (Date.parse(to) - Date.parse(from)) / DAY_MS;
+}
+
+/** The "YYYY-MM-DD" an instant falls on in clinic-local time. */
+export function toClinicDateString(date: Date): string {
+  return new Date(date.getTime() + 5 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
 }
 
 function isOnLeave(dateStr: string, leaveRanges: LeaveRange[]): boolean {
@@ -91,11 +105,11 @@ export function computeAvailableSlots(params: {
   const now = params.now ?? new Date();
   const days: DayAvailability[] = [];
 
-  for (
-    let dateStr = fromDate;
-    dateStr <= toDate;
-    dateStr = addDays(dateStr, 1)
-  ) {
+  // Counted rather than compared as strings: the day after 9999-12-31 is
+  // "+010000-01-01", which sorts before it.
+  const dayCount = daysBetween(fromDate, toDate) + 1;
+  for (let i = 0; i < dayCount; i++) {
+    const dateStr = addDays(fromDate, i);
     if (isOnLeave(dateStr, leaveRanges)) {
       days.push({ date: dateStr, slots: [] });
       continue;
@@ -104,10 +118,10 @@ export function computeAvailableSlots(params: {
     const dayKey = DAY_KEYS[dateStringToUtcDayIndex(dateStr)] as DayKey;
     const ranges = timings[dayKey] ?? [];
 
+    const dayStart = combineDateAndTime(dateStr, '00:00');
+    const dayEnd = new Date(dayStart.getTime() + DAY_MS);
     const dayBusy = busyRanges.filter(
-      (b) =>
-        b.start >= combineDateAndTime(dateStr, '00:00') &&
-        b.start < combineDateAndTime(addDays(dateStr, 1), '00:00'),
+      (b) => b.start >= dayStart && b.start < dayEnd,
     );
 
     if (dailyPatientCap !== null && dayBusy.length >= dailyPatientCap) {

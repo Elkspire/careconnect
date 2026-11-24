@@ -270,15 +270,21 @@ export class ClinicController {
   @Get(':clinicId/today')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewTodayQueue')
-  listToday(@Param('clinicId') clinicId: string) {
-    return this.clinicService.listToday(clinicId);
+  listToday(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.listToday(clinicId, user.id);
   }
 
   @Get(':clinicId/waitlist')
   @RequireClinicRole('owner', 'receptionist', 'junior_doctor')
   @RequireStaffPermission('viewTodayQueue')
-  listWaitlist(@Param('clinicId') clinicId: string) {
-    return this.clinicService.listClinicWaitlist(clinicId);
+  listWaitlist(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.listClinicWaitlist(clinicId, user.id);
   }
 
   @Post(':clinicId/check-in')

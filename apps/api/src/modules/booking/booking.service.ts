@@ -24,6 +24,7 @@ import {
   lte,
   ne,
   or,
+  sql,
 } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import {
@@ -46,16 +47,29 @@ import {
   WaitlistOfferedEvent,
 } from '../notifications/events';
 import { PatientsService } from '../patients/patients.service';
-import { computeAvailableSlots, type WeeklyTimings } from './availability';
+import {
+  computeAvailableSlots,
+  type DayAvailability,
+  toClinicDateString,
+  type WeeklyTimings,
+} from './availability';
 
 /** Statuses that occupy a slot and therefore block new bookings. */
 const ACTIVE_APPOINTMENT_STATUSES = ['booked', 'checked_in'] as const;
 
-/** Same fixed Asia/Karachi (UTC+5, no DST) assumption as availability.ts — waitlist_entries.requested_date is a plain "YYYY-MM-DD" in clinic-local time. */
-function toClinicDateString(date: Date): string {
-  return new Date(date.getTime() + 5 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+function isActiveStatus(status: string): boolean {
+  return (ACTIVE_APPOINTMENT_STATUSES as readonly string[]).includes(status);
+}
+
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+type PracticeConfig = typeof practitionerClinic.$inferSelect;
+
+interface SlotParams {
+  practitionerId: string;
+  clinicId: string;
+  scheduledStart: Date;
+  /** The appointment being moved, which must not block its own new time. */
+  excludeAppointmentId?: string;
 }
 
 @Injectable()
@@ -67,28 +81,44 @@ export class BookingService {
   ) {}
 
   async getAvailability(query: AvailabilityQuery) {
-    const [pc] = await this.db
+    const practice = await this.getPracticeOrThrow(this.db, query);
+    return this.computeAvailability(this.db, practice, query);
+  }
+
+  private async getPracticeOrThrow(
+    db: Database | Transaction,
+    where: { practitionerId: string; clinicId: string },
+  ): Promise<PracticeConfig> {
+    const [practice] = await db
       .select()
       .from(practitionerClinic)
       .where(
         and(
-          eq(practitionerClinic.practitionerId, query.practitionerId),
-          eq(practitionerClinic.clinicId, query.clinicId),
+          eq(practitionerClinic.practitionerId, where.practitionerId),
+          eq(practitionerClinic.clinicId, where.clinicId),
           eq(practitionerClinic.isActive, true),
         ),
       )
       .limit(1);
-    if (!pc) {
+    if (!practice) {
       throw new NotFoundException(
         'This practitioner does not practise at this clinic',
       );
     }
+    return practice;
+  }
 
+  private async computeAvailability(
+    db: Database | Transaction,
+    practice: PracticeConfig,
+    query: { fromDate: string; toDate: string },
+    excludeAppointmentId?: string,
+  ): Promise<DayAvailability[]> {
     const fromStart = new Date(`${query.fromDate}T00:00:00+05:00`);
     const toEnd = new Date(`${query.toDate}T23:59:59+05:00`);
 
     const [busy, leave] = await Promise.all([
-      this.db
+      db
         .select({
           scheduledStart: appointments.scheduledStart,
           scheduledEnd: appointments.scheduledEnd,
@@ -96,14 +126,17 @@ export class BookingService {
         .from(appointments)
         .where(
           and(
-            eq(appointments.practitionerId, query.practitionerId),
-            eq(appointments.clinicId, query.clinicId),
+            eq(appointments.practitionerId, practice.practitionerId),
+            eq(appointments.clinicId, practice.clinicId),
             inArray(appointments.status, ACTIVE_APPOINTMENT_STATUSES),
             gte(appointments.scheduledStart, fromStart),
             lte(appointments.scheduledStart, toEnd),
+            excludeAppointmentId
+              ? ne(appointments.id, excludeAppointmentId)
+              : undefined,
           ),
         ),
-      this.db
+      db
         .select({
           startsOn: practitionerLeave.startsOn,
           endsOn: practitionerLeave.endsOn,
@@ -111,10 +144,10 @@ export class BookingService {
         .from(practitionerLeave)
         .where(
           and(
-            eq(practitionerLeave.practitionerId, query.practitionerId),
+            eq(practitionerLeave.practitionerId, practice.practitionerId),
             // clinicId null = leave applies to all of this practitioner's clinics
             or(
-              eq(practitionerLeave.clinicId, query.clinicId),
+              eq(practitionerLeave.clinicId, practice.clinicId),
               isNull(practitionerLeave.clinicId),
             ),
           ),
@@ -122,9 +155,9 @@ export class BookingService {
     ]);
 
     return computeAvailableSlots({
-      timings: pc.timings as WeeklyTimings,
-      slotLengthMinutes: pc.slotLengthMinutes,
-      dailyPatientCap: pc.dailyPatientCap,
+      timings: practice.timings as WeeklyTimings,
+      slotLengthMinutes: practice.slotLengthMinutes,
+      dailyPatientCap: practice.dailyPatientCap,
       fromDate: query.fromDate,
       toDate: query.toDate,
       busyRanges: busy.map((b) => ({
@@ -143,50 +176,34 @@ export class BookingService {
       );
     }
 
-    const [pc] = await this.db
-      .select()
-      .from(practitionerClinic)
-      .where(
-        and(
-          eq(practitionerClinic.practitionerId, input.practitionerId),
-          eq(practitionerClinic.clinicId, input.clinicId),
-          eq(practitionerClinic.isActive, true),
-        ),
-      )
-      .limit(1);
-    if (!pc) {
-      throw new NotFoundException(
-        'This practitioner does not practise at this clinic',
-      );
-    }
-
     const scheduledStart = new Date(input.scheduledStart);
-    const scheduledEnd = new Date(
-      scheduledStart.getTime() + pc.slotLengthMinutes * 60_000,
-    );
-
-    await this.assertSlotFree({
-      practitionerId: input.practitionerId,
-      clinicId: input.clinicId,
-      scheduledStart,
-      scheduledEnd,
-    });
-
-    const [row] = await this.db
-      .insert(appointments)
-      .values({
-        patientId: callerId,
-        subjectType: input.subjectType,
-        familyMemberId:
-          input.subjectType === 'family_member' ? input.familyMemberId : null,
+    const row = await this.withOpenSlot(
+      {
         practitionerId: input.practitionerId,
         clinicId: input.clinicId,
         scheduledStart,
-        scheduledEnd,
-        status: 'booked',
-        bookedByUserId: callerId,
-      })
-      .returning();
+      },
+      async (tx, scheduledEnd) => {
+        const [inserted] = await tx
+          .insert(appointments)
+          .values({
+            patientId: callerId,
+            subjectType: input.subjectType,
+            familyMemberId:
+              input.subjectType === 'family_member'
+                ? input.familyMemberId
+                : null,
+            practitionerId: input.practitionerId,
+            clinicId: input.clinicId,
+            scheduledStart,
+            scheduledEnd,
+            status: 'booked',
+            bookedByUserId: callerId,
+          })
+          .returning();
+        return inserted;
+      },
+    );
     if (!row) {
       throw new Error('Insert did not return the new appointment');
     }
@@ -209,45 +226,40 @@ export class BookingService {
     input: RescheduleAppointmentInput,
   ) {
     const appointment = await this.getAppointmentOrThrow(input.appointmentId);
-    await this.assertCanManage(callerId, appointment);
-
-    const [pc] = await this.db
-      .select({ slotLengthMinutes: practitionerClinic.slotLengthMinutes })
-      .from(practitionerClinic)
-      .where(
-        and(
-          eq(practitionerClinic.practitionerId, appointment.practitionerId),
-          eq(practitionerClinic.clinicId, appointment.clinicId),
-        ),
-      )
-      .limit(1);
-    if (!pc) {
-      throw new NotFoundException(
-        'Practitioner/clinic configuration not found',
-      );
+    const isStaff = await this.assertCanManage(callerId, appointment);
+    if (appointment.status !== 'booked') {
+      throw this.wrongStatus('reschedule', appointment.status);
+    }
+    if (!isStaff) {
+      await this.assertOutsideCancellationWindow(appointment);
     }
 
     const scheduledStart = new Date(input.scheduledStart);
-    const scheduledEnd = new Date(
-      scheduledStart.getTime() + pc.slotLengthMinutes * 60_000,
-    );
-
-    await this.assertSlotFree({
-      practitionerId: appointment.practitionerId,
-      clinicId: appointment.clinicId,
-      scheduledStart,
-      scheduledEnd,
-      excludeAppointmentId: appointment.id,
-    });
-
     const previousStart = appointment.scheduledStart;
-    const [row] = await this.db
-      .update(appointments)
-      .set({ scheduledStart, scheduledEnd })
-      .where(eq(appointments.id, appointment.id))
-      .returning();
+    const row = await this.withOpenSlot(
+      {
+        practitionerId: appointment.practitionerId,
+        clinicId: appointment.clinicId,
+        scheduledStart,
+        excludeAppointmentId: appointment.id,
+      },
+      async (tx, scheduledEnd) => {
+        const [updated] = await tx
+          .update(appointments)
+          .set({ scheduledStart, scheduledEnd })
+          .where(
+            and(
+              eq(appointments.id, appointment.id),
+              // Re-checked: it may have been cancelled since it was read.
+              eq(appointments.status, 'booked'),
+            ),
+          )
+          .returning();
+        return updated;
+      },
+    );
     if (!row) {
-      throw new Error('Update did not return the rescheduled appointment');
+      throw new ConflictException('This appointment can no longer be changed');
     }
 
     this.eventEmitter.emit(
@@ -276,31 +288,11 @@ export class BookingService {
   async cancelAppointment(callerId: string, input: CancelAppointmentInput) {
     const appointment = await this.getAppointmentOrThrow(input.appointmentId);
     const isStaff = await this.assertCanManage(callerId, appointment);
-
-    // The clinic's cancellation window applies to patient-initiated
-    // cancellations only — clinic staff can cancel any time (e.g. doctor
-    // emergency). See product doc 3.2 and practitioner_clinic.cancellation_window_hours.
+    if (!isActiveStatus(appointment.status)) {
+      throw this.wrongStatus('cancel', appointment.status);
+    }
     if (!isStaff) {
-      const [pc] = await this.db
-        .select({
-          cancellationWindowHours: practitionerClinic.cancellationWindowHours,
-        })
-        .from(practitionerClinic)
-        .where(
-          and(
-            eq(practitionerClinic.practitionerId, appointment.practitionerId),
-            eq(practitionerClinic.clinicId, appointment.clinicId),
-          ),
-        )
-        .limit(1);
-
-      const hoursUntil =
-        (appointment.scheduledStart.getTime() - Date.now()) / (60 * 60 * 1000);
-      if (pc && hoursUntil < pc.cancellationWindowHours) {
-        throw new ForbiddenException(
-          `This appointment can no longer be cancelled — it is within the clinic's ${pc.cancellationWindowHours}-hour cancellation window`,
-        );
-      }
+      await this.assertOutsideCancellationWindow(appointment);
     }
 
     const [row] = await this.db
@@ -311,10 +303,16 @@ export class BookingService {
         cancelledByUserId: callerId,
         cancelledAt: new Date(),
       })
-      .where(eq(appointments.id, appointment.id))
+      .where(
+        and(
+          eq(appointments.id, appointment.id),
+          // Re-checked: it may have changed since it was read.
+          inArray(appointments.status, ACTIVE_APPOINTMENT_STATUSES),
+        ),
+      )
       .returning();
     if (!row) {
-      throw new Error('Update did not return the cancelled appointment');
+      throw new ConflictException('This appointment can no longer be changed');
     }
 
     this.eventEmitter.emit(
@@ -491,7 +489,55 @@ export class BookingService {
     return row;
   }
 
-  /** Returns true if the caller is authorized as clinic staff (as opposed to the owning patient). */
+  private wrongStatus(
+    action: 'cancel' | 'reschedule',
+    status: string,
+  ): ConflictException {
+    return new ConflictException(
+      `Cannot ${action} an appointment with status "${status}"`,
+    );
+  }
+
+  /**
+   * The clinic's cancellation window applies to patients only — clinic staff
+   * can act any time (e.g. doctor emergency). It covers rescheduling too:
+   * otherwise moving a visit out and then cancelling it would get around it.
+   * See product doc 3.2 and practitioner_clinic.cancellation_window_hours.
+   */
+  private async assertOutsideCancellationWindow(appointment: {
+    practitionerId: string;
+    clinicId: string;
+    scheduledStart: Date;
+  }): Promise<void> {
+    const [pc] = await this.db
+      .select({
+        cancellationWindowHours: practitionerClinic.cancellationWindowHours,
+      })
+      .from(practitionerClinic)
+      .where(
+        and(
+          eq(practitionerClinic.practitionerId, appointment.practitionerId),
+          eq(practitionerClinic.clinicId, appointment.clinicId),
+        ),
+      )
+      .limit(1);
+
+    const hoursUntil =
+      (appointment.scheduledStart.getTime() - Date.now()) / (60 * 60 * 1000);
+    if (pc && hoursUntil < pc.cancellationWindowHours) {
+      throw new ForbiddenException(
+        `This appointment can no longer be changed — it is within the clinic's ${pc.cancellationWindowHours}-hour cancellation window`,
+      );
+    }
+  }
+
+  /**
+   * Returns true if the caller is authorized as clinic staff (as opposed to
+   * the owning patient). Booking routes name no clinic, so ClinicRoleGuard
+   * never runs for them and this is the only check: the same front-desk
+   * staff who may check patients in — owner, or a receptionist who hasn't
+   * had that permission revoked. Junior doctors have no such permission.
+   */
   private async assertCanManage(
     callerId: string,
     appointment: { patientId: string; clinicId: string },
@@ -500,17 +546,25 @@ export class BookingService {
       return false;
     }
     const [staff] = await this.db
-      .select({ id: clinicStaff.id })
+      .select({
+        role: clinicStaff.role,
+        revokedPermissions: clinicStaff.revokedPermissions,
+      })
       .from(clinicStaff)
       .where(
         and(
           eq(clinicStaff.clinicId, appointment.clinicId),
           eq(clinicStaff.userId, callerId),
           eq(clinicStaff.status, 'active'),
+          inArray(clinicStaff.role, ['owner', 'receptionist']),
         ),
       )
       .limit(1);
-    if (!staff) {
+    const allowed =
+      staff &&
+      (staff.role === 'owner' ||
+        !staff.revokedPermissions.includes('checkInPatients'));
+    if (!allowed) {
       throw new ForbiddenException(
         'You do not have access to this appointment',
       );
@@ -518,32 +572,39 @@ export class BookingService {
     return true;
   }
 
-  private async assertSlotFree(params: {
-    practitionerId: string;
-    clinicId: string;
-    scheduledStart: Date;
-    scheduledEnd: Date;
-    excludeAppointmentId?: string;
-  }): Promise<void> {
-    const conditions = [
-      eq(appointments.practitionerId, params.practitionerId),
-      eq(appointments.clinicId, params.clinicId),
-      inArray(appointments.status, ACTIVE_APPOINTMENT_STATUSES),
-      lte(appointments.scheduledStart, params.scheduledEnd),
-      gte(appointments.scheduledEnd, params.scheduledStart),
-    ];
-    if (params.excludeAppointmentId) {
-      conditions.push(ne(appointments.id, params.excludeAppointmentId));
-    }
+  /**
+   * Runs `write` only if the slot is one availability would offer right now.
+   * The check and the write share a transaction holding a lock on this
+   * practitioner at this clinic, so two simultaneous requests can't both see
+   * the same slot (or the last place under the daily cap) as free.
+   *
+   * Everything in here must use `tx`: the pool has a single connection (see
+   * DatabaseModule), so a query on `this.db` would wait on itself forever.
+   */
+  private withOpenSlot<T>(
+    params: SlotParams,
+    write: (tx: Transaction, scheduledEnd: Date) => Promise<T>,
+  ): Promise<T> {
+    const lockKey = `${params.practitionerId}:${params.clinicId}`;
+    const date = toClinicDateString(params.scheduledStart);
+    const start = params.scheduledStart.toISOString();
 
-    const [conflict] = await this.db
-      .select({ id: appointments.id })
-      .from(appointments)
-      .where(and(...conditions))
-      .limit(1);
-
-    if (conflict) {
-      throw new ConflictException('This slot is no longer available');
-    }
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`,
+      );
+      const practice = await this.getPracticeOrThrow(tx, params);
+      const [day] = await this.computeAvailability(
+        tx,
+        practice,
+        { fromDate: date, toDate: date },
+        params.excludeAppointmentId,
+      );
+      const slot = day?.slots.find((s) => s.start === start);
+      if (!slot) {
+        throw new ConflictException('This slot is not available');
+      }
+      return write(tx, new Date(slot.end));
+    });
   }
 }
