@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { and, eq, gte, lt, notExists } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import { appointments, notificationLog } from '../../common/database/schema';
+import { inBatches } from '../../common/util/in-batches';
+import { DAY_MS, startOfClinicDay } from '../booking/availability';
 import { AppointmentReminderEvent, EVENT_APPOINTMENT_REMINDER } from './events';
 
 /**
@@ -12,12 +13,13 @@ import { AppointmentReminderEvent, EVENT_APPOINTMENT_REMINDER } from './events';
  * AppointmentReminderEvent the rest of the pipeline already handles (see
  * the Phase 1 plan's NotificationsModule notes).
  *
- * Runs every 15 minutes, matching the window width below, so each
- * appointment falls into exactly one run's [from, to) bucket for a given
- * reminder — the notification_log dedup check is what actually prevents
- * double-sends if a run is missed/retried, this just keeps buckets tight.
+ * Runs once a day, in the evening (CronController), and covers the whole of
+ * tomorrow in clinic time. Vercel's Hobby plan allows nothing more frequent, so
+ * the '2h' reminder is not sent: it needs a run every few minutes, as does a
+ * '24h' reminder timed from the appointment instead of by calendar day. The
+ * notification_log check is what stops an appointment being reminded twice.
  */
-const WINDOW_MINUTES = 15;
+const BATCH_SIZE = 10;
 
 @Injectable()
 export class ReminderService {
@@ -28,21 +30,21 @@ export class ReminderService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  @Cron(`*/${WINDOW_MINUTES} * * * *`)
-  async sendReminders(): Promise<void> {
-    await this.remindWindow('24h', 24 * 60);
-    await this.remindWindow('2h', 2 * 60);
+  /** Resolves once every reminder has been attempted, with how many there were. */
+  async sendReminders(): Promise<number> {
+    const tomorrow = startOfClinicDay(new Date(Date.now() + DAY_MS));
+    return this.remindWindow(
+      '24h',
+      tomorrow,
+      new Date(tomorrow.getTime() + DAY_MS),
+    );
   }
 
   private async remindWindow(
     window: '24h' | '2h',
-    minutesAhead: number,
-  ): Promise<void> {
-    const now = new Date();
-    const from = new Date(
-      now.getTime() + (minutesAhead - WINDOW_MINUTES) * 60_000,
-    );
-    const to = new Date(now.getTime() + minutesAhead * 60_000);
+    from: Date,
+    to: Date,
+  ): Promise<number> {
     const eventType = `${EVENT_APPOINTMENT_REMINDER}.${window}`;
 
     const due = await this.db
@@ -73,8 +75,9 @@ export class ReminderService {
         ),
       );
 
-    for (const appointment of due) {
-      this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await inBatches(due, BATCH_SIZE, (appointment) =>
+      this.eventEmitter.emitAsync(
         EVENT_APPOINTMENT_REMINDER,
         new AppointmentReminderEvent(
           {
@@ -86,11 +89,12 @@ export class ReminderService {
           },
           window,
         ),
-      );
-    }
+      ),
+    );
 
     if (due.length > 0) {
       this.logger.log(`Fired ${due.length} ${window} reminder(s)`);
     }
+    return due.length;
   }
 }

@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { RequestMethod, type Type } from '@nestjs/common';
 import {
@@ -18,6 +18,7 @@ import {
 } from '../decorators/require-clinic-role.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AdminGuard } from './admin.guard';
+import { CronSecretGuard } from './cron-secret.guard';
 
 /**
  * Who may call what, read straight off the controllers. Adding a route, or
@@ -29,6 +30,7 @@ interface Route {
   name: string;
   isPublic: boolean;
   isAdmin: boolean;
+  isCron: boolean;
   roles: ClinicStaffRole[];
   permission?: StaffPermissionKey;
 }
@@ -81,6 +83,7 @@ function routesOf(controller: Type): Route[] {
         name: `${RequestMethod[method]} /${path}`,
         isPublic: own<boolean>(IS_PUBLIC_KEY) ?? false,
         isAdmin: guards.includes(AdminGuard),
+        isCron: guards.includes(CronSecretGuard),
         roles: own<ClinicStaffRole[]>(CLINIC_ROLES_KEY) ?? [],
         permission: own<StaffPermissionKey>(CLINIC_PERMISSION_KEY),
       };
@@ -157,7 +160,29 @@ const CLINIC_ROUTES: Record<string, [string, StaffPermissionKey?]> = {
 
 describe('Route permissions', () => {
   it('only these routes work without signing in', () => {
-    expect(names(routes.filter((r) => r.isPublic))).toEqual(PUBLIC_ROUTES);
+    expect(names(routes.filter((r) => r.isPublic && !r.isCron))).toEqual(
+      PUBLIC_ROUTES,
+    );
+  });
+
+  it('every /internal route, and nothing else, needs the cron secret', () => {
+    const cron = names(routes.filter((r) => r.isCron));
+    expect(cron).toEqual([
+      'GET /internal/cron/no-shows',
+      'GET /internal/cron/reminders',
+    ]);
+    expect(names(routes.filter((r) => r.name.includes(' /internal')))).toEqual(
+      cron,
+    );
+  });
+
+  it('vercel.json calls exactly the cron routes', () => {
+    const { crons } = JSON.parse(
+      readFileSync(join(SRC, '../vercel.json'), 'utf8'),
+    ) as { crons: Array<{ path: string }> };
+    expect(crons.map((c) => `GET ${c.path}`).sort()).toEqual(
+      names(routes.filter((r) => r.isCron)),
+    );
   });
 
   it('only these clinic routes exist', () => {

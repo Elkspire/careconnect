@@ -8,5 +8,6 @@ import { NoShowService } from './no-show.service';
   imports: [PatientsModule],
   controllers: [BookingController],
   providers: [BookingService, NoShowService],
+  exports: [NoShowService],
 })
 export class BookingModule {}

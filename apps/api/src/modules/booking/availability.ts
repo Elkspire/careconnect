@@ -53,7 +53,7 @@ function combineDateAndTime(dateStr: string, hhmm: string): Date {
   return new Date(`${dateStr}T${hhmm}:00${CLINIC_UTC_OFFSET}`);
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+export const DAY_MS = 24 * 60 * 60 * 1000;
 
 function addDays(dateStr: string, days: number): string {
   const { year, month, day } = parseDateParts(dateStr);
@@ -71,6 +71,11 @@ export function toClinicDateString(date: Date): string {
   return new Date(date.getTime() + 5 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10);
+}
+
+/** Midnight in the clinic's timezone at the start of the day `date` falls on. */
+export function startOfClinicDay(date: Date): Date {
+  return combineDateAndTime(toClinicDateString(date), '00:00');
 }
 
 function isOnLeave(dateStr: string, leaveRanges: LeaveRange[]): boolean {
