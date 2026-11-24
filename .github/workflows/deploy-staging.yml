@@ -1,0 +1,56 @@
+name: Deploy staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false      # never interrupt a migration halfway
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.115.0
+      - name: Show pending migrations
+        run: supabase db push --db-url "$DB_URL" --dry-run
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      - name: Apply migrations
+        run: supabase db push --db-url "$DB_URL"
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+  deploy:
+    needs: migrate               # only deploys if migrations succeeded
+    runs-on: ubuntu-latest
+    environment: staging
+    strategy:
+      matrix:
+        include:
+          - app: api
+            project: VERCEL_API_PROJECT_ID
+            alias: careconnect-api-staging.vercel.app
+          - app: web
+            project: VERCEL_WEB_PROJECT_ID
+            alias: careconnect-staging.vercel.app
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets[matrix.project] }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+      - run: npm i -g vercel@latest
+      - name: Pull staging env
+        run: vercel pull --yes --environment=preview --git-branch=staging --token="$VERCEL_TOKEN"
+      - name: Deploy
+        run: |
+          url=$(vercel deploy --token="$VERCEL_TOKEN")
+          vercel alias set "$url" ${{ matrix.alias }} --token="$VERCEL_TOKEN"
+          echo "Deployed $url -> https://${{ matrix.alias }}" >> "$GITHUB_STEP_SUMMARY"
