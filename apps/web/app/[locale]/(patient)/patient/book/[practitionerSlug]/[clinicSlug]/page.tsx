@@ -6,6 +6,7 @@ import { getPractitionerProfile } from "@/lib/api/directory";
 import { listFamilyMembers } from "@/lib/api/patients";
 import { clinicTodayIso, formatClinicTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { BookingDatePicker } from "@/components/booking-date-picker";
@@ -42,13 +43,19 @@ export default async function BookAppointmentPage(
     getAvailability({ practitionerId, clinicId, fromDate: date, toDate: date }),
     listFamilyMembers(),
   ]);
-  const action = createAppointmentAction.bind(null, locale);
+  const action = createAppointmentAction.bind(null, locale, practitionerSlug, clinicSlug);
   const waitlistAction = joinWaitlistAction.bind(null, locale);
   const slots = days[0]?.slots ?? [];
 
   return (
     <div className="max-w-2xl">
       <PageHeader icon={CalendarPlus} kicker="CareConnect" title={t("bookingHeading")} />
+
+      {sp.error === "unavailable" && (
+        <div className="mb-5">
+          <Alert tone="danger" title={t("bookingError.unavailable")} />
+        </div>
+      )}
 
       <Card padding="lg">
         {/* Choosing a date loads its times straight away (see

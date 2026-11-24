@@ -47,6 +47,19 @@ function toClinicIso(datetimeLocal: string): string {
   return new Date(`${datetimeLocal}:00${CLINIC_UTC_OFFSET}`).toISOString();
 }
 
+/**
+ * Why the API turned a booking change down, as the code the page shows a
+ * message for. Anything that isn't an ordinary refusal is thrown on, as
+ * before. Returned rather than redirected to: redirect() works by throwing,
+ * so it has to happen outside the caller's try.
+ */
+function bookingRefusal(err: unknown): "unavailable" | "window" {
+  const status = err instanceof Error ? / failed: (\d{3}) /.exec(err.message)?.[1] : undefined;
+  if (status === "409") return "unavailable";
+  if (status === "403") return "window";
+  throw err;
+}
+
 export async function saveProfileAction(locale: string, formData: FormData): Promise<void> {
   const requested = String(formData.get("preferredLanguage") ?? "");
   const preferredLanguage: AppLocale = hasLocale(routing.locales, requested) ? requested : locale as AppLocale;
@@ -92,6 +105,8 @@ export async function addFamilyMemberAction(locale: string, formData: FormData):
 
 export async function createAppointmentAction(
   locale: string,
+  practitionerSlug: string,
+  clinicSlug: string,
   formData: FormData,
 ): Promise<void> {
   const familyMemberId = formData.get("familyMemberId");
@@ -99,16 +114,31 @@ export async function createAppointmentAction(
   const clinicId = String(formData.get("clinicId"));
   const scheduledStart = String(formData.get("scheduledStart"));
 
-  if (familyMemberId) {
-    await createAppointment({
-      subjectType: "family_member",
-      familyMemberId: String(familyMemberId),
-      practitionerId,
-      clinicId,
-      scheduledStart,
+  let refusal: string | undefined;
+  try {
+    if (familyMemberId) {
+      await createAppointment({
+        subjectType: "family_member",
+        familyMemberId: String(familyMemberId),
+        practitionerId,
+        clinicId,
+        scheduledStart,
+      });
+    } else {
+      await createAppointment({ subjectType: "self", practitionerId, clinicId, scheduledStart });
+    }
+  } catch (err) {
+    refusal = bookingRefusal(err);
+  }
+  if (refusal) {
+    // Back to the same day, which reloads what is still open.
+    const query = new URLSearchParams({
+      date: String(formData.get("requestedDate") ?? ""),
+      error: refusal,
     });
-  } else {
-    await createAppointment({ subjectType: "self", practitionerId, clinicId, scheduledStart });
+    redirect(
+      `/patient/book/${encodeURIComponent(practitionerSlug)}/${encodeURIComponent(clinicSlug)}?${query}`,
+    );
   }
 
   revalidatePath(`/${locale}/patient/appointments`);
@@ -119,16 +149,30 @@ export async function rescheduleAppointmentAction(
   locale: string,
   formData: FormData,
 ): Promise<void> {
-  await rescheduleAppointment({
-    appointmentId: String(formData.get("appointmentId")),
-    scheduledStart: toClinicIso(String(formData.get("scheduledStart"))),
-  });
+  let refusal: string | undefined;
+  try {
+    await rescheduleAppointment({
+      appointmentId: String(formData.get("appointmentId")),
+      scheduledStart: toClinicIso(String(formData.get("scheduledStart"))),
+    });
+  } catch (err) {
+    refusal = bookingRefusal(err);
+  }
   revalidatePath(`/${locale}/patient/appointments`);
+  // Redirects on success too, to clear an earlier attempt's ?error=.
+  redirect(`/patient/appointments${refusal ? `?error=${refusal}` : ""}`);
 }
 
 export async function cancelAppointmentAction(locale: string, formData: FormData): Promise<void> {
-  await cancelAppointment({ appointmentId: String(formData.get("appointmentId")) });
+  let refusal: string | undefined;
+  try {
+    await cancelAppointment({ appointmentId: String(formData.get("appointmentId")) });
+  } catch (err) {
+    // A 409 here is about the appointment (already cancelled, or over), not a time.
+    refusal = bookingRefusal(err) === "window" ? "window" : "changed";
+  }
   revalidatePath(`/${locale}/patient/appointments`);
+  redirect(`/patient/appointments${refusal ? `?error=${refusal}` : ""}`);
 }
 
 export async function joinWaitlistAction(locale: string, formData: FormData): Promise<void> {

@@ -5,6 +5,7 @@ import { listMyAppointments, listMyWaitlist } from "@/lib/api/booking";
 import { listFamilyMembers } from "@/lib/api/patients";
 import { formatClinicDate, formatClinicDateTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
+import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,6 +20,8 @@ import { SubmitButton } from "@/components/ui/submit-button";
 const REVIEWABLE_STATUSES = ["checked_in", "completed"];
 const ACTIVE_WAITLIST_STATUSES = ["waiting", "offered"];
 
+const BOOKING_ERRORS = ["unavailable", "window", "changed"] as const;
+
 const STATUS_TONE = {
   booked: "blue",
   checked_in: "purple",
@@ -31,6 +34,8 @@ export default async function AppointmentsPage(
   props: PageProps<"/[locale]/patient/appointments">,
 ) {
   const { locale } = await props.params;
+  const { error: errorCode } = await props.searchParams;
+  const error = BOOKING_ERRORS.find((code) => code === errorCode);
   const [t, appointments, waitlistEntries, familyMembers] = await Promise.all([
     getTranslations("patient"),
     listMyAppointments(),
@@ -48,6 +53,12 @@ export default async function AppointmentsPage(
   return (
     <div>
       <PageHeader icon={CalendarCheck} kicker="CareConnect" title={t("appointmentsHeading")} />
+
+      {error && (
+        <div className="mb-5">
+          <Alert tone="danger" title={t(`bookingError.${error}`)} />
+        </div>
+      )}
 
       {appointments.length === 0 ? (
         <EmptyState icon={CalendarCheck} title={t("noAppointments")} />
