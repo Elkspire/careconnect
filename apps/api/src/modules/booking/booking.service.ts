@@ -64,7 +64,7 @@ export class BookingService {
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly patientsService: PatientsService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async getAvailability(query: AvailabilityQuery) {
     const [pc] = await this.db
