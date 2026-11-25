@@ -46,7 +46,7 @@ import { VerificationModule } from './modules/verification/verification.module';
     VerificationModule,
     NotificationsModule,
     AdminModule,
-    CronModule,
+    CronModule.register(),
   ],
   controllers: [AppController],
   providers: [
