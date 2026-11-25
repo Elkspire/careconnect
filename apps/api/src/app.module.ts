@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './common/database/database.module';
@@ -16,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { ClinicModule } from './modules/clinic/clinic.module';
 import { ClinicalModule } from './modules/clinical/clinical.module';
+import { CronModule } from './modules/cron/cron.module';
 import { DirectoryModule } from './modules/directory/directory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PatientsModule } from './modules/patients/patients.module';
@@ -29,7 +29,6 @@ import { VerificationModule } from './modules/verification/verification.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
-    ScheduleModule.forRoot(),
     DatabaseModule,
     StorageModule,
     SupabaseAdminModule,
@@ -47,6 +46,7 @@ import { VerificationModule } from './modules/verification/verification.module';
     VerificationModule,
     NotificationsModule,
     AdminModule,
+    CronModule,
   ],
   controllers: [AppController],
   providers: [

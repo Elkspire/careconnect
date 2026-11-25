@@ -23,6 +23,6 @@ import { ReminderService } from './reminder.service';
     NotificationListenerService,
     ReminderService,
   ],
-  exports: [NotificationDispatcher],
+  exports: [NotificationDispatcher, ReminderService],
 })
 export class NotificationsModule {}

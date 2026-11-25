@@ -1,13 +1,22 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { and, eq, lt } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import { appointments } from '../../common/database/schema';
+import { inBatches } from '../../common/util/in-batches';
 import {
   AppointmentNoShowEvent,
   EVENT_APPOINTMENT_NO_SHOW,
 } from '../notifications/events';
+
+/**
+ * Older visits are still closed out, but a patient isn't messaged about one
+ * from days ago — the first run after an outage would otherwise do that for
+ * every visit the outage left behind. Over 24 hours because two daily runs on
+ * Vercel's Hobby plan can be up to 25 hours apart.
+ */
+const NOTIFY_WITHIN_MS = 26 * 60 * 60_000;
+const BATCH_SIZE = 10;
 
 /**
  * A patient who never checks in by the end of their own slot
@@ -17,8 +26,8 @@ import {
  * "checked_in" appointments are untouched (that status only applies before
  * scheduled_end anyway — see clinic.service.ts's check-in flow).
  *
- * Runs every 5 minutes rather than exactly at each appointment's
- * scheduled_end — the WHERE clause below only ever matches appointments
+ * Runs once a day, in the evening (CronController), rather than exactly at
+ * each appointment's scheduled_end — the WHERE clause below only ever matches appointments
  * still sitting at "booked" past their own scheduled_end, so a missed or
  * delayed run just catches up on the next tick instead of double-processing
  * anything.
@@ -32,15 +41,16 @@ export class NoShowService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  @Cron('*/5 * * * *')
-  async markNoShows(): Promise<void> {
+  /** Resolves once every notification has been attempted, with how many visits were marked. */
+  async markNoShows(): Promise<number> {
+    const now = new Date();
     const overdue = await this.db
       .update(appointments)
       .set({ status: 'no_show' })
       .where(
         and(
           eq(appointments.status, 'booked'),
-          lt(appointments.scheduledEnd, new Date()),
+          lt(appointments.scheduledEnd, now),
         ),
       )
       .returning({
@@ -49,10 +59,15 @@ export class NoShowService {
         practitionerId: appointments.practitionerId,
         clinicId: appointments.clinicId,
         scheduledStart: appointments.scheduledStart,
+        scheduledEnd: appointments.scheduledEnd,
       });
 
-    for (const appointment of overdue) {
-      this.eventEmitter.emit(
+    const recent = overdue.filter(
+      (a) => now.getTime() - a.scheduledEnd.getTime() < NOTIFY_WITHIN_MS,
+    );
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await inBatches(recent, BATCH_SIZE, (appointment) =>
+      this.eventEmitter.emitAsync(
         EVENT_APPOINTMENT_NO_SHOW,
         new AppointmentNoShowEvent({
           appointmentId: appointment.id,
@@ -61,11 +76,12 @@ export class NoShowService {
           clinicId: appointment.clinicId,
           scheduledStart: appointment.scheduledStart,
         }),
-      );
-    }
+      ),
+    );
 
     if (overdue.length > 0) {
       this.logger.log(`Marked ${overdue.length} appointment(s) as no-show`);
     }
+    return overdue.length;
   }
 }
