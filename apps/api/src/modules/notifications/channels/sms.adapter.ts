@@ -5,10 +5,11 @@ import {
   type TemplateKey,
   type NotificationLocale,
 } from '../templates';
-import type {
-  ChannelAdapter,
-  DeliveryResult,
-  NotificationRecipient,
+import {
+  type ChannelAdapter,
+  type DeliveryResult,
+  type NotificationRecipient,
+  SEND_TIMEOUT_MS,
 } from './channel-adapter.interface';
 
 // See whatsapp.adapter.ts's FetchResponse comment — same ambient `Response`
@@ -53,6 +54,7 @@ export class SmsAdapter implements ChannelAdapter {
         `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
         {
           method: 'POST',
+          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
           headers: {
             Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
             'Content-Type': 'application/x-www-form-urlencoded',

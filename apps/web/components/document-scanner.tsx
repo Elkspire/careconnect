@@ -79,9 +79,10 @@ export function DocumentScanner({
   uploadAction,
 }: {
   familyMembers: Array<{ id: string; fullName: string }>;
-  uploadAction: (formData: FormData) => Promise<void>;
+  uploadAction: (formData: FormData) => Promise<{ recorded: boolean }>;
 }) {
   const t = useTranslations("vault");
+  const tAudit = useTranslations("audit");
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -100,7 +101,7 @@ export function DocumentScanner({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [flash, setFlash] = useState(false);
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<"recorded" | "unrecorded" | null>(null);
 
   const current = pages.find((p) => p.id === currentId) ?? null;
   const full = pages.length >= MAX_PAGES;
@@ -251,7 +252,7 @@ export function DocumentScanner({
 
   function open() {
     setError(null);
-    setSavedNotice(false);
+    setSavedNotice(null);
     setView("camera");
     dialogRef.current?.showModal();
     void startCamera();
@@ -302,11 +303,11 @@ export function DocumentScanner({
       formData.set("recordType", recordType);
       if (familyMemberId) formData.set("familyMemberId", familyMemberId);
       formData.set("file", new File([pdf], `scan-${date}.pdf`, { type: "application/pdf" }));
-      await uploadAction(formData);
+      const { recorded } = await uploadAction(formData);
 
       discardPages();
       dialogRef.current?.close();
-      setSavedNotice(true);
+      setSavedNotice(recorded ? "recorded" : "unrecorded");
       router.refresh();
     } catch (err) {
       console.error(err);
@@ -370,8 +371,11 @@ export function DocumentScanner({
         {t("scanButton")}
       </button>
       {savedNotice && (
-        <p role="status" className="mt-3 text-sm font-medium text-success-fg">
-          {t("scanSaved")}
+        <p
+          role="status"
+          className={`mt-3 max-w-xs text-sm font-medium ${savedNotice === "recorded" ? "text-success-fg" : "text-warning-fg"}`}
+        >
+          {savedNotice === "recorded" ? t("scanSaved") : tAudit("saved.body")}
         </p>
       )}
 

@@ -20,11 +20,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import {
   createShareAction,
   revokeShareAction,
+  uploadScanAction,
   upsertMedicalSummaryAction,
   uploadVaultRecordAction,
   viewVaultRecordAction,
 } from "../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { AuditNotice } from "@/components/audit-notice";
+import { auditNoticeFrom } from "@/lib/api/audit";
 import { DocumentScanner } from "@/components/document-scanner";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -391,6 +394,7 @@ function ShareSection({
 
 export default async function VaultPage(props: PageProps<"/[locale]/patient/vault">) {
   const { locale } = await props.params;
+  const notice = auditNoticeFrom((await props.searchParams).audit);
   const [t, records, familyMembers, myMedicalSummary, history, shares] = await Promise.all([
     getTranslations("vault"),
     listVaultRecords(),
@@ -407,6 +411,7 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
   );
 
   const upload = uploadVaultRecordAction.bind(null, locale);
+  const uploadScan = uploadScanAction.bind(null, locale);
   const view = viewVaultRecordAction.bind(null, locale);
   const saveSummary = upsertMedicalSummaryAction.bind(null, locale);
   const createShareBound = createShareAction.bind(null, locale);
@@ -427,6 +432,8 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
   return (
     <div>
       <PageHeader icon={FolderHeart} kicker="CareConnect" title={t("heading")} />
+
+      {notice && <AuditNotice kind={notice} />}
 
       <MedicalSummaryCard
         heading={t("forSelf")}
@@ -478,7 +485,7 @@ export default async function VaultPage(props: PageProps<"/[locale]/patient/vaul
           <div className="shrink-0">
             <DocumentScanner
               familyMembers={familyMembers.map((m) => ({ id: m.id, fullName: m.fullName }))}
-              uploadAction={upload}
+              uploadAction={uploadScan}
             />
           </div>
         </div>

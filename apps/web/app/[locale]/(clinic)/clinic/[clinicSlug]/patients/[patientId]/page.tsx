@@ -17,6 +17,8 @@ import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { upsertClinicMedicalSummaryAction, viewClinicRecordAction } from "../../../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { AuditNotice } from "@/components/audit-notice";
+import { auditNoticeFrom, unlessRefused } from "@/lib/api/audit";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const inputClasses =
@@ -28,6 +30,7 @@ export default async function ClinicPatientDetailPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/patients/[patientId]">,
 ) {
   const { locale, clinicSlug, patientId } = await props.params;
+  const notice = auditNoticeFrom((await props.searchParams).audit);
   const [t, tPatient, tVault, staffCtx] = await Promise.all([
     getTranslations("clinic"),
     getTranslations("patient"),
@@ -48,13 +51,24 @@ export default async function ClinicPatientDetailPage(
     notFound();
   }
   const { patient, appointments, familyMembers } = detail;
-  const [records, medicalSummary] = canViewClinical
-    ? await Promise.all([
-        listPatientRecords(clinicId, patientId),
-        getPatientMedicalSummary(clinicId, patientId),
-      ])
-    : [[], null];
-  const viewRecord = viewClinicRecordAction.bind(null, clinicId);
+  const clinical = canViewClinical
+    ? await unlessRefused(
+        Promise.all([
+          listPatientRecords(clinicId, patientId),
+          getPatientMedicalSummary(clinicId, patientId),
+        ]),
+      )
+    : null;
+  const [records, medicalSummary] = clinical ?? [[], null];
+  // The API couldn't record the access, so it showed us nothing.
+  const refused = canViewClinical && !clinical;
+  const viewRecord = viewClinicRecordAction.bind(
+    null,
+    clinicSlug,
+    clinicId,
+    patientId,
+    undefined,
+  );
   const saveSummary = upsertClinicMedicalSummaryAction.bind(null, locale, clinicSlug, clinicId, patientId);
 
   return (
@@ -71,6 +85,9 @@ export default async function ClinicPatientDetailPage(
         <PageHeader icon={User} kicker={t("patientsHeading")} title={patient.fullName} />
       </div>
 
+      {notice === "saved" && <AuditNotice kind="saved" />}
+      {(refused || notice === "refused") && <AuditNotice kind="refused" />}
+
       <Card className="-mt-2">
         <ListRow title={t("phoneLabel")} meta={patient.phone ?? "—"} />
         {patient.email && <ListRow title={t("emailLabel")} meta={patient.email} />}
@@ -78,7 +95,7 @@ export default async function ClinicPatientDetailPage(
         {patient.dob && <ListRow title={t("dobLabel")} meta={patient.dob} />}
       </Card>
 
-      {canViewClinical && (
+      {clinical && (
         <Card padding="lg" className="mt-6">
           <b className="font-semibold text-text">{t("medicalSummaryHeading")}</b>
           {medicalSummary &&
@@ -198,7 +215,7 @@ export default async function ClinicPatientDetailPage(
         </>
       )}
 
-      {canViewClinical && (
+      {clinical && (
         <>
           <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
             {t("recordsHeading")}

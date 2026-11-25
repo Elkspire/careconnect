@@ -540,5 +540,15 @@
     "cancel": "Cancel",
     "link": "Delete account",
     "deletedNotice": "Your account has been deleted."
+  },
+  "audit": {
+    "refused": {
+      "title": "Not shown",
+      "body": "We couldn't record this access, so the medical information wasn't shown. Please try again in a moment."
+    },
+    "saved": {
+      "title": "Saved, but not recorded",
+      "body": "Your change was saved, but we couldn't record it in the access log. Please don't submit it again."
+    }
   }
 }

@@ -3,6 +3,7 @@ import type {
   PrescriptionItemInput,
   UpdateClinicalNoteInput,
 } from "@careconnect/validation";
+import { savedEitherWay } from "./audit";
 import { authedFetch, parseJsonOrThrow } from "./authedFetch";
 
 export interface ClinicalNote {
@@ -91,6 +92,10 @@ export async function getPrescription(
   const res = await authedFetch(
     `/clinics/${clinicId}/clinical-notes/${appointmentId}/prescription`,
   );
+  // A prescription belongs to a note; before the first one is saved there is none.
+  if (res.status === 404) {
+    return [];
+  }
   return parseJsonOrThrow(res, "Get prescription");
 }
 
@@ -98,10 +103,15 @@ export async function savePrescription(
   clinicId: string,
   appointmentId: string,
   items: PrescriptionItemInput[],
-): Promise<{ items: PrescriptionItem[]; allergyWarnings: string[] }> {
+): Promise<{ allergyWarnings: string[]; recorded: boolean }> {
   const res = await authedFetch(
     `/clinics/${clinicId}/clinical-notes/${appointmentId}/prescription`,
     { method: "POST", body: JSON.stringify({ items }) },
   );
-  return parseJsonOrThrow(res, "Save prescription");
+  const { result, recorded } = await savedEitherWay(
+    parseJsonOrThrow<{ allergyWarnings: string[] }>(res, "Save prescription"),
+    // The API sends these even when it couldn't record the save.
+    (body) => ({ allergyWarnings: (body.allergyWarnings as string[] | undefined) ?? [] }),
+  );
+  return { allergyWarnings: result.allergyWarnings, recorded };
 }

@@ -11,6 +11,12 @@ export interface DeliveryResult {
   error?: string;
 }
 
+/**
+ * Requests wait for their notifications, so a provider that hangs must not
+ * hang the booking with it.
+ */
+export const SEND_TIMEOUT_MS = 10_000;
+
 export interface ChannelAdapter {
   readonly channel: 'sms' | 'whatsapp' | 'push' | 'in_app' | 'email';
   send(

@@ -51,7 +51,9 @@ export class ClinicRoleGuard implements CanActivate {
 
     const request = context
       .switchToHttp()
-      .getRequest<Request & { resolvedClinicId?: string }>();
+      .getRequest<
+        Request & { resolvedClinicId?: string; clinicRole?: string }
+      >();
     if (!request.user) {
       throw new UnauthorizedException('No authenticated user on request');
     }
@@ -96,6 +98,7 @@ export class ClinicRoleGuard implements CanActivate {
       );
     }
 
+    request.clinicRole = membership.role;
     return true;
   }
 }

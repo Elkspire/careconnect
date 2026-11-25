@@ -7,6 +7,31 @@ export class UnauthenticatedError extends Error {
   }
 }
 
+/** A response the API refused or failed, with the machine-readable `code` if it sent one. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    /** The parsed response, or {} if it wasn't a JSON object. */
+    readonly body: Record<string, unknown> = {},
+  ) {
+    super(message);
+  }
+
+  get code(): unknown {
+    return this.body.code;
+  }
+}
+
+function parseErrorBody(body: string): Record<string, unknown> {
+  try {
+    const parsed: unknown = JSON.parse(body);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
 /** Server-only — attaches the current Supabase session's access token to a NestJS API call. */
 export async function authedFetch(path: string, init?: RequestInit): Promise<Response> {
   const supabase = await createClient();
@@ -35,7 +60,7 @@ export async function authedFetch(path: string, init?: RequestInit): Promise<Res
 export async function parseJsonOrThrow<T>(res: Response, context: string): Promise<T> {
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`${context} failed: ${res.status} ${body}`);
+    throw new ApiError(`${context} failed: ${res.status} ${body}`, res.status, parseErrorBody(body));
   }
   const text = await res.text();
   // Confirmed root cause of a real page crash (patient vault page):

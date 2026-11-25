@@ -1,8 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { AuditAction } from '@careconnect/shared-types';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, type SQL, sql } from 'drizzle-orm';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
-import { auditLog } from '../../common/database/schema';
+import {
+  appointments,
+  auditLog,
+  patientRecords,
+} from '../../common/database/schema';
 
 export interface AuditEntry {
   actorUserId: string;
@@ -12,6 +16,8 @@ export interface AuditEntry {
   resourceId?: string;
   clinicId?: string;
   patientId?: string;
+  /** Where to find the patient, for a route that only names one of these. */
+  patientOf?: { appointmentId: string } | { recordId: string };
   metadata?: Record<string, unknown>;
 }
 
@@ -27,9 +33,18 @@ export class AuditLogService {
       resourceType: entry.resourceType,
       resourceId: entry.resourceId,
       clinicId: entry.clinicId,
-      patientId: entry.patientId,
+      patientId: entry.patientId ?? this.patientOf(entry.patientOf),
       metadata: entry.metadata ?? {},
     });
+  }
+
+  private patientOf(target: AuditEntry['patientOf']): SQL | undefined {
+    if (!target) {
+      return undefined;
+    }
+    return 'recordId' in target
+      ? sql`(select ${patientRecords.patientId} from ${patientRecords} where ${patientRecords.id} = ${target.recordId})`
+      : sql`(select ${appointments.patientId} from ${appointments} where ${appointments.id} = ${target.appointmentId})`;
   }
 
   /** Owner-facing read endpoint per the Phase 1 plan's AuditModule notes. */

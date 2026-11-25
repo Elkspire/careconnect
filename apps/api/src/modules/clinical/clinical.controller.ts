@@ -39,7 +39,7 @@ export class ClinicalController {
   constructor(private readonly clinicalService: ClinicalService) {}
 
   @Post()
-  @Audit('create', 'clinical_note', 'owner')
+  @Audit('create', 'clinical_note')
   createNote(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -49,7 +49,7 @@ export class ClinicalController {
   }
 
   @Get(':appointmentId')
-  @Audit('view', 'clinical_note', 'owner')
+  @Audit('view', 'clinical_note')
   getNote(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -59,7 +59,7 @@ export class ClinicalController {
   }
 
   @Patch(':appointmentId')
-  @Audit('update', 'clinical_note', 'owner')
+  @Audit('update', 'clinical_note')
   updateNote(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -75,7 +75,7 @@ export class ClinicalController {
   }
 
   @Get(':appointmentId/allergies')
-  @Audit('view', 'clinical_note', 'owner')
+  @Audit('view', 'clinical_note')
   getAppointmentAllergies(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -89,7 +89,7 @@ export class ClinicalController {
   }
 
   @Get(':appointmentId/prescription')
-  @Audit('view', 'clinical_note', 'owner')
+  @Audit('view', 'clinical_note')
   getPrescription(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -103,7 +103,7 @@ export class ClinicalController {
   }
 
   @Post(':appointmentId/prescription')
-  @Audit('update', 'clinical_note', 'owner')
+  @Audit('update', 'clinical_note', undefined, ['allergyWarnings'])
   savePrescription(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,

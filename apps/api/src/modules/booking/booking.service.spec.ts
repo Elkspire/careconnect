@@ -8,7 +8,11 @@ import { availabilityQuerySchema } from '@careconnect/validation';
 import { getTableColumns, type Table } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pg-proxy';
 import type { Database } from '../../common/database/database.module';
-import { appointments, practitionerClinic } from '../../common/database/schema';
+import {
+  appointments,
+  practitionerClinic,
+  waitlistEntries,
+} from '../../common/database/schema';
 import type { PatientsService } from '../patients/patients.service';
 import { BookingService } from './booking.service';
 
@@ -30,6 +34,10 @@ interface World {
   status?: string;
   scheduledStart?: string;
   staff?: { role: string; revoked?: string[] };
+  /** Someone is waiting for the date being freed. */
+  waitlisted?: boolean;
+  /** Sends take until this settles. */
+  sending?: (event: string) => Promise<void>;
   /** The guarded UPDATE matches nothing: someone changed the row first. */
   lostRace?: boolean;
 }
@@ -88,6 +96,11 @@ function setup(world: World = {}) {
             }),
           ];
     }
+    if (sql.includes('from "waitlist_entries"')) {
+      return world.waitlisted
+        ? [rowOf(waitlistEntries, { id: 'entry-1', patientId: 'patient-2' })]
+        : [];
+    }
     if (sql.includes('from "practitioner_leave"')) {
       return world.onLeave ? [['2030-01-07', '2030-01-07']] : [];
     }
@@ -117,7 +130,11 @@ function setup(world: World = {}) {
     db as unknown as Database,
     {} as PatientsService,
     {
-      emit: (name: string) => events.push(name),
+      emitAsync: async (name: string) => {
+        events.push(name);
+        queries.push({ sql: `SEND ${name}`, params: [] });
+        await world.sending?.(name);
+      },
     } as unknown as EventEmitter2,
   );
   const wrote = () =>
@@ -148,6 +165,58 @@ describe('BookingService', () => {
     jest.useFakeTimers({ now: NOW, doNotFake: ['nextTick', 'setImmediate'] });
   });
   afterEach(() => jest.useRealTimers());
+
+  describe('notifications', () => {
+    type Test = ReturnType<typeof setup>;
+    const flows: Array<[string, (t: Test) => Promise<unknown>, string[]]> = [
+      ['booking', (t) => t.book(at('09:20')), ['appointment.booked']],
+      [
+        'rescheduling',
+        (t) => t.reschedule(STAFF, at('09:40')),
+        ['appointment.rescheduled', 'waitlist.offered'],
+      ],
+      [
+        'cancelling',
+        (t) => t.cancel(STAFF),
+        ['appointment.cancelled', 'waitlist.offered'],
+      ],
+    ];
+    // Every send along the way, held open in turn.
+    const sends = flows.flatMap(([name, act, events]) =>
+      events.map((event, i) => [name, event, act, i] as const),
+    );
+
+    it.each(sends)('%s waits for %s', async (_name, event, act, nth) => {
+      let finish = () => {};
+      const sending = new Promise<void>((resolve) => (finish = resolve));
+      const t = setup({
+        staff: { role: 'owner' },
+        waitlisted: true,
+        sending: (name) => (name === event ? sending : Promise.resolve()),
+      });
+      let done = false;
+      const request = act(t).then(() => (done = true));
+
+      for (let i = 0; i < 20; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(t.events).toHaveLength(nth + 1);
+      expect(t.events.at(-1)).toBe(event);
+      expect(done).toBe(false);
+
+      finish();
+      await request;
+    });
+
+    it('are sent after the booking transaction, not inside it', async () => {
+      const t = setup();
+      await t.book(at('09:20'));
+      const steps = t.queries.map((q) => q.sql);
+      expect(steps.indexOf('SEND appointment.booked')).toBeGreaterThan(
+        steps.indexOf('COMMIT'),
+      );
+    });
+  });
 
   describe('booking a slot', () => {
     it('accepts an open one', async () => {

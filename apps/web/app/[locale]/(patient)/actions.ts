@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { hasLocale } from "next-intl";
 import { LOCALE_COOKIE, routing, type AppLocale } from "@/i18n/routing";
 import { BLOOD_GROUP, type BloodGroup } from "@careconnect/shared-types";
+import { orSavedUnrecorded, unlessRefused } from "@/lib/api/audit";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
 import {
   cancelAppointment,
@@ -202,7 +203,8 @@ export async function leaveWaitlistAction(locale: string, formData: FormData): P
   revalidatePath(`/${locale}/patient/appointments`);
 }
 
-export async function uploadVaultRecordAction(locale: string, formData: FormData): Promise<void> {
+/** Returns whether the upload could be recorded; it is saved either way. */
+async function uploadRecord(locale: string, formData: FormData): Promise<{ recorded: boolean }> {
   // The form only sends familyMemberId (empty = self); derive subjectType
   // here rather than a hidden field, same pattern as createAppointmentAction
   // above. An empty familyMemberId would otherwise be sent as "" and fail
@@ -214,13 +216,28 @@ export async function uploadVaultRecordAction(locale: string, formData: FormData
     formData.set("subjectType", "self");
     formData.delete("familyMemberId");
   }
-  await uploadVaultRecord(formData);
+  const saved = await orSavedUnrecorded(uploadVaultRecord(formData));
   revalidatePath(`/${locale}/patient/vault`);
+  return { recorded: saved !== null };
+}
+
+export async function uploadVaultRecordAction(locale: string, formData: FormData): Promise<void> {
+  const { recorded } = await uploadRecord(locale, formData);
+  // Redirects on success too, to clear an earlier attempt's ?audit=.
+  redirect(`/patient/vault${recorded ? "" : "?audit=saved"}`);
+}
+
+/** For the scanner, which says what happened itself instead of leaving the page. */
+export async function uploadScanAction(
+  locale: string,
+  formData: FormData,
+): Promise<{ recorded: boolean }> {
+  return uploadRecord(locale, formData);
 }
 
 export async function viewVaultRecordAction(_locale: string, formData: FormData): Promise<void> {
-  const { url } = await getVaultRecordSignedUrl(String(formData.get("recordId")));
-  redirect(url);
+  const link = await unlessRefused(getVaultRecordSignedUrl(String(formData.get("recordId"))));
+  redirect(link?.url ?? "/patient/vault?audit=refused");
 }
 
 export async function upsertMedicalSummaryAction(

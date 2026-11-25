@@ -540,5 +540,15 @@
     "cancel": "Cancel",
     "link": "Account delete karein",
     "deletedNotice": "Aap ka account delete kar diya gaya hai."
+  },
+  "audit": {
+    "refused": {
+      "title": "Maloomat nahi dikhai gayin",
+      "body": "Hum is rasai ka indraj nahi kar sake, is liye tibbi maloomat nahi dikhai gayin. Barah-e-karam kuch dair baad dobara koshish karein."
+    },
+    "saved": {
+      "title": "Mehfooz ho gaya, magar indraj nahi hua",
+      "body": "Aap ki tabdeeli mehfooz ho gayi hai, magar hum is ka indraj nahi kar sake. Barah-e-karam isay dobara submit na karein."
+    }
   }
 }
