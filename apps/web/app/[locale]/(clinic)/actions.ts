@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { normalizePhone, WEEKDAY_KEYS, type WeeklyTimings } from "@careconnect/validation";
@@ -11,6 +12,7 @@ import {
   type BloodGroup,
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
+import { type AuditNoticeKind, orSavedUnrecorded, unlessRefused } from "@/lib/api/audit";
 import {
   assignPatient,
   attachRecord,
@@ -40,6 +42,21 @@ function linesToList(raw: FormDataEntryValue | null): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Reloads `path` and, if there is something to say about the audit log, says
+ * it there. Otherwise leaves the page where it is — unless it is still
+ * showing the notice from an earlier attempt, which this clears.
+ */
+async function finish(locale: string, path: string, notice?: AuditNoticeKind): Promise<void> {
+  revalidatePath(`/${locale}${path}`);
+  if (notice) {
+    redirect(`${path}?audit=${notice}`);
+  }
+  if ((await headers()).get("referer")?.includes("audit=")) {
+    redirect(path);
+  }
+}
+
 export async function checkInAction(
   locale: string,
   clinicSlug: string,
@@ -65,14 +82,16 @@ export async function recordVitalsAction(
   formData: FormData,
 ): Promise<void> {
   const appointmentId = String(formData.get("appointmentId"));
-  await recordVitals(clinicId, appointmentId, {
-    systolicMmhg: optionalNumber(formData.get("systolicMmhg")),
-    diastolicMmhg: optionalNumber(formData.get("diastolicMmhg")),
-    pulseBpm: optionalNumber(formData.get("pulseBpm")),
-    weightKg: optionalNumber(formData.get("weightKg")),
-    temperatureF: optionalNumber(formData.get("temperatureF")),
-  });
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  const saved = await orSavedUnrecorded(
+    recordVitals(clinicId, appointmentId, {
+      systolicMmhg: optionalNumber(formData.get("systolicMmhg")),
+      diastolicMmhg: optionalNumber(formData.get("diastolicMmhg")),
+      pulseBpm: optionalNumber(formData.get("pulseBpm")),
+      weightKg: optionalNumber(formData.get("weightKg")),
+      temperatureF: optionalNumber(formData.get("temperatureF")),
+    }),
+  );
+  await finish(locale, `/clinic/${clinicSlug}/today`, saved ? undefined : "saved");
 }
 
 export async function attachRecordAction(
@@ -81,8 +100,8 @@ export async function attachRecordAction(
   clinicId: string,
   formData: FormData,
 ): Promise<void> {
-  await attachRecord(clinicId, formData);
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  const saved = await orSavedUnrecorded(attachRecord(clinicId, formData));
+  await finish(locale, `/clinic/${clinicSlug}/today`, saved ? undefined : "saved");
 }
 
 export async function reportReviewAction(
@@ -214,12 +233,22 @@ export async function unassignPatientAction(
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
 }
 
+function patientPath(clinicSlug: string, patientId: string, familyMemberId?: string): string {
+  const path = `/clinic/${clinicSlug}/patients/${patientId}`;
+  return familyMemberId ? `${path}/family/${familyMemberId}` : path;
+}
+
 export async function viewClinicRecordAction(
+  clinicSlug: string,
   clinicId: string,
+  patientId: string,
+  familyMemberId: string | undefined,
   formData: FormData,
 ): Promise<void> {
-  const { url } = await getClinicRecordSignedUrl(clinicId, String(formData.get("recordId")));
-  redirect(url);
+  const link = await unlessRefused(
+    getClinicRecordSignedUrl(clinicId, String(formData.get("recordId"))),
+  );
+  redirect(link?.url ?? `${patientPath(clinicSlug, patientId, familyMemberId)}?audit=refused`);
 }
 
 export async function upsertClinicMedicalSummaryAction(
@@ -240,16 +269,17 @@ export async function upsertClinicMedicalSummaryAction(
     activeMedications: linesToList(formData.get("activeMedications")),
   };
 
-  const familyMemberId = formData.get("familyMemberId");
-  if (familyMemberId) {
-    await upsertFamilyMemberMedicalSummary(clinicId, patientId, String(familyMemberId), input);
-    revalidatePath(
-      `/${locale}/clinic/${clinicSlug}/patients/${patientId}/family/${String(familyMemberId)}`,
-    );
-  } else {
-    await upsertPatientMedicalSummary(clinicId, patientId, input);
-    revalidatePath(`/${locale}/clinic/${clinicSlug}/patients/${patientId}`);
-  }
+  const familyMemberId = String(formData.get("familyMemberId") ?? "") || undefined;
+  const saved = await orSavedUnrecorded(
+    familyMemberId
+      ? upsertFamilyMemberMedicalSummary(clinicId, patientId, familyMemberId, input)
+      : upsertPatientMedicalSummary(clinicId, patientId, input),
+  );
+  await finish(
+    locale,
+    patientPath(clinicSlug, patientId, familyMemberId),
+    saved ? undefined : "saved",
+  );
 }
 
 export async function saveClinicalNoteAction(
@@ -263,12 +293,16 @@ export async function saveClinicalNoteAction(
   const notes = String(formData.get("notes") ?? "");
   const diagnosis = formData.get("diagnosis") ? String(formData.get("diagnosis")) : undefined;
 
-  if (hasExisting) {
-    await updateClinicalNote(clinicId, appointmentId, { notes, diagnosis });
-  } else {
-    await createClinicalNote(clinicId, { appointmentId, notes, diagnosis });
-  }
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/clinical-notes/${appointmentId}`);
+  const saved = await orSavedUnrecorded(
+    hasExisting
+      ? updateClinicalNote(clinicId, appointmentId, { notes, diagnosis })
+      : createClinicalNote(clinicId, { appointmentId, notes, diagnosis }),
+  );
+  await finish(
+    locale,
+    `/clinic/${clinicSlug}/clinical-notes/${appointmentId}`,
+    saved ? undefined : "saved",
+  );
 }
 
 const PRESCRIPTION_ROWS = 8;
@@ -293,13 +327,13 @@ export async function saveClinicalPrescriptionAction(
     });
   }
 
-  const { allergyWarnings } = await savePrescription(clinicId, appointmentId, items);
   const basePath = `/clinic/${clinicSlug}/clinical-notes/${appointmentId}`;
-  redirect(
-    allergyWarnings.length > 0
-      ? `${basePath}?warned=${encodeURIComponent(allergyWarnings.join(","))}`
-      : basePath,
-  );
+  const { allergyWarnings, recorded } = await savePrescription(clinicId, appointmentId, items);
+  const query = new URLSearchParams();
+  if (!recorded) query.set("audit", "saved");
+  if (allergyWarnings.length > 0) query.set("warned", allergyWarnings.join(","));
+  revalidatePath(`/${locale}${basePath}`);
+  redirect(query.size > 0 ? `${basePath}?${query}` : basePath);
 }
 
 export async function uploadVerificationDocumentAction(

@@ -393,7 +393,8 @@ export class ClinicService {
       })
       .returning();
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_STAFF_INVITED,
       new StaffInvitedEvent(clinicId, user.id, input.role, invitedBy),
     );
@@ -964,7 +965,8 @@ export class ClinicService {
       throw new Error('Update did not return the checked-in appointment');
     }
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_PATIENT_CHECKED_IN,
       new PatientCheckedInEvent({
         appointmentId: row.id,

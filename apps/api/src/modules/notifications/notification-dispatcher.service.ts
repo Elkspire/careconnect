@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DRIZZLE, type Database } from '../../common/database/database.module';
 import { notificationLog } from '../../common/database/schema';
 import { EmailAdapter } from './channels/email.adapter';
@@ -35,6 +35,8 @@ export interface DispatchParams {
  */
 @Injectable()
 export class NotificationDispatcher {
+  private readonly logger = new Logger(NotificationDispatcher.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: Database,
     private readonly smsAdapter: SmsAdapter,
@@ -56,6 +58,7 @@ export class NotificationDispatcher {
     ];
   }
 
+  /** Resolves once every channel has finished, whether or not it worked. */
   async dispatch(params: DispatchParams): Promise<void> {
     const message = renderTemplate(
       params.templateKey,
@@ -63,8 +66,11 @@ export class NotificationDispatcher {
       params.payload,
     );
 
-    await Promise.all(
-      this.adapters.map(async (adapter) => {
+    // allSettled, not all: the first channel to throw would end the wait
+    // while the others are still sending.
+    const adapters = this.adapters;
+    const results = await Promise.allSettled(
+      adapters.map(async (adapter) => {
         const result = await adapter.send(
           params.recipient,
           params.templateKey,
@@ -82,5 +88,14 @@ export class NotificationDispatcher {
         });
       }),
     );
+    results.forEach((result, i) => {
+      if (result.status === 'rejected') {
+        const error = result.reason as Error;
+        this.logger.error(
+          `${params.eventType} via ${adapters[i]!.channel} failed: ${error.message}`,
+          error.stack,
+        );
+      }
+    });
   }
 }

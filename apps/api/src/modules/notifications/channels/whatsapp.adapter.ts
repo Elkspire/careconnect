@@ -5,10 +5,11 @@ import {
   type TemplateKey,
   type NotificationLocale,
 } from '../templates';
-import type {
-  ChannelAdapter,
-  DeliveryResult,
-  NotificationRecipient,
+import {
+  type ChannelAdapter,
+  type DeliveryResult,
+  type NotificationRecipient,
+  SEND_TIMEOUT_MS,
 } from './channel-adapter.interface';
 
 // The monorepo's two apps pin different @types/node majors (apps/web ^20,
@@ -57,6 +58,7 @@ export class WhatsAppAdapter implements ChannelAdapter {
         `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
         {
           method: 'POST',
+          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

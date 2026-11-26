@@ -12,10 +12,11 @@ import {
   type TemplateKey,
   type NotificationLocale,
 } from '../templates';
-import type {
-  ChannelAdapter,
-  DeliveryResult,
-  NotificationRecipient,
+import {
+  type ChannelAdapter,
+  type DeliveryResult,
+  type NotificationRecipient,
+  SEND_TIMEOUT_MS,
 } from './channel-adapter.interface';
 
 /**
@@ -74,7 +75,9 @@ export class PushAdapter implements ChannelAdapter {
     const body = renderTemplate(templateKey as TemplateKey, locale, payload);
     const message = JSON.stringify({ title: 'CareConnect', body });
 
-    const results = await Promise.all(
+    // allSettled: failing to delete one dead endpoint must not stop the wait
+    // for the others. It is tried again on the next send.
+    const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
           await webpush.sendNotification(
@@ -83,6 +86,7 @@ export class PushAdapter implements ChannelAdapter {
               keys: { p256dh: sub.p256dh, auth: sub.auth },
             },
             message,
+            { timeout: SEND_TIMEOUT_MS },
           );
           return true;
         } catch (err) {
@@ -100,7 +104,7 @@ export class PushAdapter implements ChannelAdapter {
       }),
     );
 
-    return results.some(Boolean)
+    return results.some((r) => r.status === 'fulfilled' && r.value)
       ? { status: 'sent' }
       : { status: 'failed', error: 'delivery_failed' };
   }

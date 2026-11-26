@@ -11,12 +11,14 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Audit } from '../../common/decorators/audit.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import {
   RequireClinicRole,
   RequireStaffPermission,
 } from '../../common/decorators/require-clinic-role.decorator';
 import type { AuthenticatedUser } from '../../common/guards/supabase-auth.guard';
+import { AuditLogInterceptor } from '../../common/interceptors/audit-log.interceptor';
 import type { UploadedFile as ClinicUploadedFile } from '../vault/vault.service';
 import {
   AssignPatientDto,
@@ -32,6 +34,7 @@ import {
 import { ClinicService } from './clinic.service';
 
 @Controller('clinics')
+@UseInterceptors(AuditLogInterceptor)
 export class ClinicController {
   constructor(private readonly clinicService: ClinicService) {}
 
@@ -150,6 +153,7 @@ export class ClinicController {
   @Get(':clinicId/patients/:patientId/records')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
+  @Audit('view', 'patient_record')
   getPatientRecords(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -161,6 +165,7 @@ export class ClinicController {
   @Get(':clinicId/patients/:patientId/family/:familyMemberId/records')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
+  @Audit('view', 'patient_record')
   getFamilyMemberRecords(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -178,6 +183,7 @@ export class ClinicController {
   @Get(':clinicId/records/:recordId/signed-url')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
+  @Audit('view', 'patient_record')
   getRecordSignedUrl(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -189,6 +195,7 @@ export class ClinicController {
   @Get(':clinicId/patients/:patientId/medical-summary')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
+  @Audit('view', 'medical_summary')
   getPatientMedicalSummary(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -204,6 +211,7 @@ export class ClinicController {
   @Put(':clinicId/patients/:patientId/medical-summary')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('clinicalNotes')
+  @Audit('update', 'medical_summary')
   upsertPatientMedicalSummary(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -221,6 +229,7 @@ export class ClinicController {
   @Get(':clinicId/patients/:patientId/family/:familyMemberId/medical-summary')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('viewRecords')
+  @Audit('view', 'medical_summary')
   getFamilyMemberMedicalSummary(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -238,6 +247,7 @@ export class ClinicController {
   @Put(':clinicId/patients/:patientId/family/:familyMemberId/medical-summary')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('clinicalNotes')
+  @Audit('update', 'medical_summary')
   upsertFamilyMemberMedicalSummary(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -341,6 +351,7 @@ export class ClinicController {
   @Put(':clinicId/appointments/:appointmentId/vitals')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('recordVitals')
+  @Audit('update', 'vitals')
   recordVitals(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -358,6 +369,7 @@ export class ClinicController {
   @Get(':clinicId/appointments/:appointmentId/vitals')
   @RequireClinicRole('owner', 'junior_doctor')
   @RequireStaffPermission('recordVitals')
+  @Audit('view', 'vitals')
   getVitals(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,
@@ -391,6 +403,7 @@ export class ClinicController {
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),
   )
+  @Audit('create', 'patient_record')
   attachRecord(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clinicId') clinicId: string,

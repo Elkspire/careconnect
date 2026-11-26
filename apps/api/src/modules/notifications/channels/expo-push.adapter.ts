@@ -10,10 +10,11 @@ import {
   type TemplateKey,
   type NotificationLocale,
 } from '../templates';
-import type {
-  ChannelAdapter,
-  DeliveryResult,
-  NotificationRecipient,
+import {
+  type ChannelAdapter,
+  type DeliveryResult,
+  type NotificationRecipient,
+  SEND_TIMEOUT_MS,
 } from './channel-adapter.interface';
 
 // See whatsapp.adapter.ts's FetchResponse comment — same ambient `Response`
@@ -70,6 +71,7 @@ export class ExpoPushAdapter implements ChannelAdapter {
     try {
       const res = (await fetch(EXPO_PUSH_API, {
         method: 'POST',
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',

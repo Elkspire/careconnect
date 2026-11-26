@@ -14,6 +14,7 @@ import {
 } from '../../src/common/database/database.module';
 import { appointments } from '../../src/common/database/schema';
 import { AllExceptionsFilter } from '../../src/common/filters/all-exceptions.filter';
+import { AuditLogService } from '../../src/modules/audit/audit.service';
 
 /** Fixed ids from supabase/seed/seed.sql. */
 export const SEED = {
@@ -34,6 +35,7 @@ export const tokens = {
 type TestDb = Database & { $client: { end: () => Promise<void> } };
 
 export interface TestApp {
+  audit: AuditLogService;
   db: TestDb;
   http: () => ReturnType<typeof request>;
   close: () => Promise<void>;
@@ -63,6 +65,7 @@ export async function createTestApp(): Promise<TestApp> {
   const db = app.get<TestDb>(DRIZZLE);
 
   return {
+    audit: app.get(AuditLogService),
     db,
     http: () => request(app.getHttpServer()),
     close: async () => {
@@ -156,9 +159,7 @@ export async function createClinicWithOwner(
 }
 
 /**
- * Frees the slots held by these patients' appointments. Cancels rather than
- * deletes: booking and cancelling write notification_log rows a moment after
- * the response, and those reference the appointment.
+ * Frees the slots held by these patients' appointments.
  */
 export async function releaseAppointments(
   t: TestApp,

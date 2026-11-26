@@ -1,14 +1,19 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { getTableColumns } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/pg-proxy';
 import type { Database } from '../../common/database/database.module';
 import type { MedicalSummaryService } from '../medical-summary/medical-summary.service';
 import type { VaultService } from '../vault/vault.service';
+import { appointments } from '../../common/database/schema';
 import { ClinicService } from './clinic.service';
 
 /** Drizzle builds the service's real SQL; only the round trip is scripted. */
-function setup(caller: 'owner' | 'junior_doctor' | 'nobody') {
+function setup(
+  caller: 'owner' | 'junior_doctor' | 'nobody',
+  emitAsync = jest.fn(() => Promise.resolve()),
+) {
   const queries: Array<{ sql: string; params: unknown[] }> = [];
   const db = drizzle((sql, params) => {
     queries.push({ sql, params });
@@ -23,7 +28,7 @@ function setup(caller: 'owner' | 'junior_doctor' | 'nobody') {
   const service = new ClinicService(
     db as unknown as Database,
     {} as SupabaseClient,
-    { emit: () => true } as unknown as EventEmitter2,
+    { emitAsync } as unknown as EventEmitter2,
     {} as VaultService,
     {} as MedicalSummaryService,
   );
@@ -31,6 +36,42 @@ function setup(caller: 'owner' | 'junior_doctor' | 'nobody') {
 }
 
 describe('ClinicService', () => {
+  it('checking in waits for the notification to be sent', async () => {
+    const db = drizzle((sql) =>
+      Promise.resolve({
+        rows: sql.startsWith('update')
+          ? [Object.keys(getTableColumns(appointments)).map(() => null)]
+          : [['appointment-1', 'clinic-1', 'booked']],
+      }),
+    );
+    let finish = () => {};
+    const sending = new Promise<void>((resolve) => (finish = resolve));
+    const emitAsync = jest.fn(() => sending);
+    const service = new ClinicService(
+      db as unknown as Database,
+      {} as SupabaseClient,
+      { emitAsync } as unknown as EventEmitter2,
+      {} as VaultService,
+      {} as MedicalSummaryService,
+    );
+    let done = false;
+    const request = service
+      .checkIn('clinic-1', { appointmentId: 'appointment-1' })
+      .then(() => (done = true));
+
+    for (let i = 0; i < 20; i++) {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+    expect(emitAsync).toHaveBeenCalledWith(
+      'patient.checked_in',
+      expect.anything(),
+    );
+    expect(done).toBe(false);
+
+    finish();
+    await request;
+  });
+
   describe.each([
     ['listToday', 'appointments'],
     ['listClinicWaitlist', 'waitlist_entries'],
@@ -61,7 +102,7 @@ describe('ClinicService', () => {
     });
   });
 
-  describe('the owner cannot lock themself out', () => {
+  describe('inviting and removing staff', () => {
     const invitation = {
       clinicId: 'clinic-1',
       phone: '+923001234567',
@@ -72,7 +113,30 @@ describe('ClinicService', () => {
     const inserts = (queries: Array<{ sql: string }>) =>
       queries.filter((q) => q.sql.startsWith('insert into "clinic_staff"'));
 
-    it('by inviting their own number', async () => {
+    it('an invitation waits for its message to be sent', async () => {
+      let finish = () => {};
+      const sending = new Promise<void>((resolve) => (finish = resolve));
+      const emitAsync = jest.fn(() => sending);
+      const { service } = setup('nobody', emitAsync);
+      let done = false;
+      const request = service
+        .inviteStaff('clinic-1', 'user-1', invitation)
+        .then(() => (done = true));
+
+      for (let i = 0; i < 20; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      expect(emitAsync).toHaveBeenCalledWith(
+        'staff.invited',
+        expect.anything(),
+      );
+      expect(done).toBe(false);
+
+      finish();
+      await request;
+    });
+
+    it('the owner cannot lock themself out by inviting their own number', async () => {
       const { service, queries } = setup('owner');
       await expect(
         service.inviteStaff('clinic-1', 'user-1', invitation),
@@ -80,13 +144,13 @@ describe('ClinicService', () => {
       expect(inserts(queries)).toEqual([]);
     });
 
-    it('while anyone else can still be invited', async () => {
+    it('anyone else can be invited', async () => {
       const { service, queries } = setup('nobody');
       await service.inviteStaff('clinic-1', 'user-1', invitation);
       expect(inserts(queries)).toHaveLength(1);
     });
 
-    it('by removing their own membership', async () => {
+    it('the owner cannot lock themself out by removing their own membership', async () => {
       const { service, queries } = setup('owner');
       await expect(
         service.revokeStaff('clinic-1', 'staff-row'),

@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { AuditController } from './audit.controller';
 import { AuditLogService } from './audit.service';
 
-/** Global so AuditLogInterceptor (used from ClinicalModule and VaultModule) can inject AuditLogService without each importing AuditModule. */
+/** Global so AuditLogInterceptor (used from ClinicModule, ClinicalModule and VaultModule) can inject AuditLogService without each importing AuditModule. */
 @Global()
 @Module({
   controllers: [AuditController],

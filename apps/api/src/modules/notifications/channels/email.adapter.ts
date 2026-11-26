@@ -6,10 +6,11 @@ import {
   type TemplateKey,
   type NotificationLocale,
 } from '../templates';
-import type {
-  ChannelAdapter,
-  DeliveryResult,
-  NotificationRecipient,
+import {
+  type ChannelAdapter,
+  type DeliveryResult,
+  type NotificationRecipient,
+  SEND_TIMEOUT_MS,
 } from './channel-adapter.interface';
 
 const SUBJECTS: Partial<
@@ -74,6 +75,10 @@ export class EmailAdapter implements ChannelAdapter {
         // 465 is implicit TLS; 587 upgrades via STARTTLS instead.
         secure: port === 465,
         auth: { user, pass },
+        dnsTimeout: SEND_TIMEOUT_MS,
+        connectionTimeout: SEND_TIMEOUT_MS,
+        greetingTimeout: SEND_TIMEOUT_MS,
+        socketTimeout: SEND_TIMEOUT_MS,
       });
     }
 

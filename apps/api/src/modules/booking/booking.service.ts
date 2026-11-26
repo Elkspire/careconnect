@@ -208,7 +208,8 @@ export class BookingService {
       throw new Error('Insert did not return the new appointment');
     }
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_APPOINTMENT_BOOKED,
       new AppointmentBookedEvent({
         appointmentId: row.id,
@@ -262,7 +263,8 @@ export class BookingService {
       throw new ConflictException('This appointment can no longer be changed');
     }
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_APPOINTMENT_RESCHEDULED,
       new AppointmentRescheduledEvent(
         {
@@ -315,7 +317,8 @@ export class BookingService {
       throw new ConflictException('This appointment can no longer be changed');
     }
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_APPOINTMENT_CANCELLED,
       new AppointmentCancelledEvent(
         {
@@ -465,7 +468,8 @@ export class BookingService {
       .set({ status: 'offered' })
       .where(eq(waitlistEntries.id, entry.id));
 
-    this.eventEmitter.emit(
+    // Awaited: Vercel can freeze the function once the response is sent.
+    await this.eventEmitter.emitAsync(
       EVENT_WAITLIST_OFFERED,
       new WaitlistOfferedEvent(
         entry.id,

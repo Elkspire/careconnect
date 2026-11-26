@@ -152,6 +152,10 @@ export type VerificationDocumentType = (typeof VERIFICATION_DOCUMENT_TYPE)[numbe
 export const AUDIT_ACTION = ["view", "create", "update", "delete", "export"] as const;
 export type AuditAction = (typeof AUDIT_ACTION)[number];
 
+/** `code` on the API's error when an audit entry could not be saved (AuditLogInterceptor). */
+export const AUDIT_FAILURE = ["audit_view_refused", "audit_change_saved"] as const;
+export type AuditFailure = (typeof AUDIT_FAILURE)[number];
+
 export const NOTIFICATION_CHANNEL = ["sms", "whatsapp", "push", "in_app", "email"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNEL)[number];
 

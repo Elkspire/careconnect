@@ -19,6 +19,8 @@ import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 import { attachRecordAction, checkInAction, recordVitalsAction } from "../../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { AuditNotice } from "@/components/audit-notice";
+import { auditNoticeFrom } from "@/lib/api/audit";
 
 const inputClasses =
   "tap-target rounded-md border border-border px-2.5 py-1.5 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
@@ -33,6 +35,7 @@ export default async function ClinicTodayPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/today">,
 ) {
   const { locale, clinicSlug } = await props.params;
+  const notice = auditNoticeFrom((await props.searchParams).audit);
   const [t, staffCtx] = await Promise.all([
     getTranslations("clinic"),
     resolveClinicStaffBySlug(clinicSlug),
@@ -72,6 +75,8 @@ export default async function ClinicTodayPage(
   return (
     <div>
       <PageHeader icon={ListChecks} kicker={staffCtx.clinicName} title={t("todayHeading")} />
+
+      {notice && <AuditNotice kind={notice} />}
 
       {needsWorkingHours && (
         <div className="mb-5">

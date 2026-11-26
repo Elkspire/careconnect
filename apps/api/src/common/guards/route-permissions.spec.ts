@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { RequestMethod, type Type } from '@nestjs/common';
 import {
   GUARDS_METADATA,
+  INTERCEPTORS_METADATA,
   METHOD_METADATA,
   PATH_METADATA,
 } from '@nestjs/common/constants';
@@ -16,7 +17,9 @@ import {
   CLINIC_PERMISSION_KEY,
   CLINIC_ROLES_KEY,
 } from '../decorators/require-clinic-role.decorator';
+import { AUDIT_KEY, type AuditMeta } from '../decorators/audit.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AuditLogInterceptor } from '../interceptors/audit-log.interceptor';
 import { AdminGuard } from './admin.guard';
 import { CronSecretGuard } from './cron-secret.guard';
 
@@ -33,6 +36,9 @@ interface Route {
   isCron: boolean;
   roles: ClinicStaffRole[];
   permission?: StaffPermissionKey;
+  audit?: AuditMeta;
+  /** @Audit() does nothing on its own. */
+  hasAuditInterceptor: boolean;
 }
 
 const SRC = join(__dirname, '../..');
@@ -86,6 +92,13 @@ function routesOf(controller: Type): Route[] {
         isCron: guards.includes(CronSecretGuard),
         roles: own<ClinicStaffRole[]>(CLINIC_ROLES_KEY) ?? [],
         permission: own<StaffPermissionKey>(CLINIC_PERMISSION_KEY),
+        audit: reflector.get<AuditMeta | undefined>(AUDIT_KEY, handler),
+        hasAuditInterceptor: [controller, handler].some((target) =>
+          (
+            (Reflect.getMetadata(INTERCEPTORS_METADATA, target) as
+              unknown[] | undefined) ?? []
+          ).includes(AuditLogInterceptor),
+        ),
       };
     });
 }
@@ -157,6 +170,82 @@ const CLINIC_ROUTES: Record<string, [string, StaffPermissionKey?]> = {
   [`GET ${NOTE}/prescription`]: [CLINICAL, 'clinicalNotes'],
   [`POST ${NOTE}/prescription`]: [CLINICAL, 'clinicalNotes'],
 };
+
+/** Route -> what it leaves in the audit log. */
+const AUDITED_ROUTES: Record<string, string> = {
+  [`GET ${PATIENT}/records`]: 'view patient_record',
+  [`GET ${FAMILY}/records`]: 'view patient_record',
+  [`GET ${C}/records/:recordId/signed-url`]: 'view patient_record',
+  [`POST ${C}/records`]: 'create patient_record',
+  [`GET ${PATIENT}/medical-summary`]: 'view medical_summary',
+  [`PUT ${PATIENT}/medical-summary`]: 'update medical_summary',
+  [`GET ${FAMILY}/medical-summary`]: 'view medical_summary',
+  [`PUT ${FAMILY}/medical-summary`]: 'update medical_summary',
+  [`GET ${VITALS}`]: 'view vitals',
+  [`PUT ${VITALS}`]: 'update vitals',
+
+  [`POST ${C}/clinical-notes`]: 'create clinical_note',
+  [`GET ${NOTE}`]: 'view clinical_note',
+  [`PATCH ${NOTE}`]: 'update clinical_note',
+  [`GET ${NOTE}/allergies`]: 'view clinical_note',
+  [`GET ${NOTE}/prescription`]: 'view clinical_note',
+  [`POST ${NOTE}/prescription`]: 'update clinical_note',
+
+  'POST /vault/records': 'create patient_record',
+  'GET /vault/records/:id/signed-url': 'view patient_record',
+  'DELETE /vault/records/:id': 'delete patient_record',
+};
+
+describe('Audited routes', () => {
+  it('are exactly these', () => {
+    expect(
+      Object.fromEntries(
+        routes
+          .filter((r) => r.audit)
+          .map((r) => [r.name, `${r.audit!.action} ${r.audit!.resourceType}`]),
+      ),
+    ).toEqual(AUDITED_ROUTES);
+  });
+
+  it('all have the interceptor, and a role to record', () => {
+    for (const route of routes.filter((r) => r.audit)) {
+      expect([route.name, route.hasAuditInterceptor]).toEqual([
+        route.name,
+        true,
+      ]);
+      // A clinic route's role is whatever membership the guard let in.
+      expect([route.name, route.audit!.actorRole !== undefined]).toEqual([
+        route.name,
+        route.roles.length === 0,
+      ]);
+    }
+  });
+
+  it('return nothing unrecorded, except allergy warnings on a saved prescription', () => {
+    expect(
+      routes
+        .filter((r) => r.audit?.alwaysReturn)
+        .map((r) => [r.name, r.audit!.alwaysReturn]),
+    ).toEqual([[`POST ${NOTE}/prescription`, ['allergyWarnings']]]);
+  });
+
+  it('include every clinic route that needs a clinical permission', () => {
+    const clinical: StaffPermissionKey[] = [
+      'viewRecords',
+      'clinicalNotes',
+      'recordVitals',
+      'attachRecords',
+    ];
+    expect(
+      names(
+        routes.filter(
+          (r) => r.permission && clinical.includes(r.permission) && !r.audit,
+        ),
+      ),
+      // A picker: names and dates of visits, nothing medical.
+    ).toEqual([`GET ${C}/appointments/recent`]);
+  });
+});
 
 describe('Route permissions', () => {
   it('only these routes work without signing in', () => {

@@ -19,6 +19,8 @@ import {
   saveClinicalPrescriptionAction,
 } from "../../../../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { AuditNotice } from "@/components/audit-notice";
+import { auditNoticeFrom, unlessRefused } from "@/lib/api/audit";
 
 const PRESCRIPTION_ROWS = 8;
 const inputClasses =
@@ -29,6 +31,7 @@ export default async function ClinicalNotePage(
 ) {
   const { locale, clinicSlug, appointmentId } = await props.params;
   const sp = await props.searchParams;
+  const notice = auditNoticeFrom(sp.audit);
   const warned = typeof sp.warned === "string" ? sp.warned.split(",").filter(Boolean) : [];
   const [t, staffCtx] = await Promise.all([
     getTranslations("clinic"),
@@ -53,12 +56,36 @@ export default async function ClinicalNotePage(
     );
   }
 
-  const [note, allergies, prescriptionItems, vitals] = await Promise.all([
-    getClinicalNote(clinicId, appointmentId),
-    getAppointmentAllergies(clinicId, appointmentId),
-    getPrescription(clinicId, appointmentId),
-    getVitals(clinicId, appointmentId),
-  ]);
+  const allergyWarning = warned.length > 0 && (
+    <div role="alert" className="my-4">
+      <Alert
+        tone="danger"
+        title={t("allergyWarningTitle")}
+        description={t("allergyWarningBody", { drugs: warned.join(", ") })}
+      />
+    </div>
+  );
+
+  const clinical = await unlessRefused(
+    Promise.all([
+      getClinicalNote(clinicId, appointmentId),
+      getAppointmentAllergies(clinicId, appointmentId),
+      getPrescription(clinicId, appointmentId),
+      getVitals(clinicId, appointmentId),
+    ]),
+  );
+  if (!clinical) {
+    // No form either: an empty one would overwrite a note we can't see.
+    return (
+      <div className="max-w-2xl">
+        <PageHeader icon={NotebookPen} kicker="CareConnect" title={t("notesHeading")} />
+        {allergyWarning}
+        {notice === "saved" && <AuditNotice kind="saved" />}
+        <AuditNotice kind="refused" />
+      </div>
+    );
+  }
+  const [note, allergies, prescriptionItems, vitals] = clinical;
   const action = saveClinicalNoteAction.bind(
     null,
     locale,
@@ -79,6 +106,8 @@ export default async function ClinicalNotePage(
   return (
     <div className="max-w-2xl">
       <PageHeader icon={NotebookPen} kicker="CareConnect" title={t("notesHeading")} />
+
+      {notice && <AuditNotice kind={notice} />}
 
       {allergies.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
@@ -122,15 +151,7 @@ export default async function ClinicalNotePage(
         )}
       </Card>
 
-      {warned.length > 0 && (
-        <div className="mt-4">
-          <Alert
-            tone="danger"
-            title={t("allergyWarningTitle")}
-            description={t("allergyWarningBody", { drugs: warned.join(", ") })}
-          />
-        </div>
-      )}
+      {allergyWarning}
 
       <Card padding="lg" className="mt-6">
         <div className="mb-4 flex items-center gap-2">
