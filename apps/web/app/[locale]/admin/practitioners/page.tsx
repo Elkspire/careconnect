@@ -1,6 +1,5 @@
-import { ChevronDown, ShieldCheck } from "lucide-react";
+import { FileText, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { listPendingPractitioners, listPractitionerDocuments } from "@/lib/api/admin";
 import { formatClinicDate } from "@/lib/format-time";
 import {
@@ -10,7 +9,10 @@ import {
 } from "../actions";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Drawer, Modal } from "@/components/ui/overlay";
+import { FormField } from "@/components/ui/form-field";
+import { AdminTabs } from "@/components/admin-tabs";
 import { ListRow } from "@/components/ui/list-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
@@ -44,17 +46,7 @@ export default async function AdminPractitionersPage(
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <nav className="mb-4 flex gap-2">
-        <span className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white">
-          {t("navPractitioners")}
-        </span>
-        <Link
-          href="/admin/reviews"
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
-        >
-          {t("navReviews")}
-        </Link>
-      </nav>
+      <AdminTabs active="practitioners" />
       <PageHeader
         icon={ShieldCheck}
         kicker="CareConnect"
@@ -76,38 +68,19 @@ export default async function AdminPractitionersPage(
                 <div className="mt-3 rounded-md border border-border">
                   <ListRow title={t("registrationNoLabel")} meta={p.councilRegistrationNo} />
                   <ListRow title={t("phoneLabel")} meta={p.phone ?? "—"} />
-                  <ListRow title={t("statusLabel")} meta={<Badge tone="orange">{p.verificationStatus}</Badge>} />
+                  <ListRow title={t("statusLabel")} meta={
+                      <StatusBadge
+                        kind="verification"
+                        status={p.verificationStatus}
+                        label={t(`verificationStatus.${p.verificationStatus}` as "verificationStatus.pending")}
+                      />
+                    } />
                 </div>
                 {p.verificationNote && (
                   <p className="mt-2 text-sm text-danger-fg">
                     {t("lastNoteLabel")}: {p.verificationNote}
                   </p>
                 )}
-
-                <div className="mt-3">
-                  <span className="text-xs font-semibold text-text-label">
-                    {t("documentsLabel")}
-                  </span>
-                  {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
-                    <p className="text-sm text-text-muted">{t("noDocuments")}</p>
-                  ) : (
-                    <ul className="mt-1 flex flex-col gap-1">
-                      {documentsByPractitioner.get(p.id)!.map((doc) => (
-                        <li key={doc.id}>
-                          <form action={viewVerificationDocumentAction} className="inline">
-                            <input type="hidden" name="documentId" value={doc.id} />
-                            <SubmitButton
-                              className="tap-target text-xs font-medium text-primary-700 hover:text-primary-800"
-                            >
-                              {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")} —{" "}
-                              {doc.fileName}
-                            </SubmitButton>
-                          </form>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <form action={verify}>
@@ -118,31 +91,57 @@ export default async function AdminPractitionersPage(
                       {t("verify")}
                     </SubmitButton>
                   </form>
-                  <details className="group">
-                    <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-danger-fg">
-                      {t("reject")}
-                      <ChevronDown aria-hidden className="size-3.5 transition group-open:rotate-180" />
-                    </summary>
-                    <form action={reject} className="mt-2 flex flex-wrap items-end gap-2">
+                  <div>
+                    <Modal
+                      trigger={t("reject")}
+                      triggerVariant="danger"
+                      title={t("rejectTitle", { name: p.fullName })}
+                      description={t("rejectBody")}
+                      formAction={reject}
+                      submitLabel={t("confirmReject")}
+                      submitTone="danger"
+                    >
                       <input type="hidden" name="practitionerId" value={p.id} />
-                      <label className="block">
-                        <span className="mb-1.5 block text-xs font-semibold text-text-label">
-                          {t("rejectReasonLabel")}
-                        </span>
-                        <input
-                          type="text"
-                          name="reason"
-                          required
-                          className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
-                        />
-                      </label>
-                      <SubmitButton
-                        className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-danger-fg hover:text-danger-fg"
-                      >
-                        {t("confirmReject")}
-                      </SubmitButton>
-                    </form>
-                  </details>
+                      <FormField label={t("rejectReasonLabel")}>
+                        <input type="text" name="reason" required className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600" />
+                      </FormField>
+                    </Modal>
+                  </div>
+                  <div>
+                    <Drawer
+                      trigger={
+                        <>
+                          <FileText aria-hidden className="size-4" />
+                          {t("documentsLabel")} ({documentsByPractitioner.get(p.id)?.length ?? 0})
+                        </>
+                      }
+                      title={t("documentsLabel")}
+                      description={`${p.fullName} · ${p.councilRegistrationNo}`}
+                    >
+                      {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
+                        <p className="text-sm text-text-muted">{t("noDocuments")}</p>
+                      ) : (
+                        <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
+                          {documentsByPractitioner.get(p.id)!.map((doc) => (
+                            <li key={doc.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
+                              <span className="min-w-0">
+                                <b className="block text-sm font-semibold text-text">
+                                  {t(`documentTypes.${doc.documentType}` as "documentTypes.cnic")}
+                                </b>
+                                <span className="block truncate text-xs text-text-muted">{doc.fileName}</span>
+                              </span>
+                              <form action={viewVerificationDocumentAction}>
+                                <input type="hidden" name="documentId" value={doc.id} />
+                                <SubmitButton className="tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700">
+                                  {t("view")}
+                                </SubmitButton>
+                              </form>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Drawer>
+                  </div>
                 </div>
               </Card>
             </li>

@@ -143,7 +143,15 @@
       "completed": "Completed",
       "cancelled": "Cancelled",
       "no_show": "No-show"
-    }
+    },
+    "appointmentCancelled": "Appointment cancelled.",
+    "appointmentMoved": "Appointment moved.",
+    "cancelAppointment": "Cancel appointment",
+    "cancelConfirmTitle": "Cancel this appointment?",
+    "cancelConfirmBody": "The clinic will be told and the slot offered to someone else.",
+    "familyMemberAdded": "Family member added.",
+    "tabPast": "Past",
+    "tabUpcoming": "Upcoming"
   },
   "clinic": {
     "todayHeading": "Today",
@@ -325,6 +333,25 @@
       "errorHalfRange": "{day}: fill in both a start and an end time, or clear both.",
       "errorNoTimes": "{day} is ticked as open but has no times. Add a time or untick the day.",
       "save": "Save working hours"
+    },
+    "dayLabel": "Day",
+    "patientLabel": "Patient",
+    "practitionerLabel": "Practitioner",
+    "recordAttached": "Report attached to the visit.",
+    "reportSent": "Report sent. Our team will review it.",
+    "revokeConfirmTitle": "Revoke {name}'s access?",
+    "revokeConfirmBody": "They'll no longer be able to open this clinic. You can invite them again later.",
+    "staffRevoked": "Access revoked.",
+    "statusLabel": "Status",
+    "staffStatus": {
+      "invited": "Invited",
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "verificationStatus": {
+      "unverified": "Not verified",
+      "pending": "Pending review",
+      "verified": "Verified"
     }
   },
   "notifications": {
@@ -426,7 +453,10 @@
     "cornerTopLeft": "Top-left corner",
     "cornerTopRight": "Top-right corner",
     "cornerBottomRight": "Bottom-right corner",
-    "cornerBottomLeft": "Bottom-left corner"
+    "cornerBottomLeft": "Bottom-left corner",
+    "shareCreated": "Share link created.",
+    "summarySaved": "Medical summary saved.",
+    "uploaded": "Record uploaded."
   },
   "sharedRecord": {
     "heading": "Shared medical record",
@@ -474,7 +504,17 @@
     "hide": "Hide from directory",
     "hiddenReviewsHeading": "Hidden reviews",
     "noHiddenReviews": "No hidden reviews.",
-    "unhide": "Restore to directory"
+    "unhide": "Restore to directory",
+    "navLabel": "Admin queues",
+    "rejectTitle": "Reject {name}?",
+    "rejectBody": "They'll see your reason and can submit again.",
+    "rejected": "Practitioner rejected.",
+    "view": "View",
+    "verificationStatus": {
+      "unverified": "Not verified",
+      "pending": "Pending review",
+      "verified": "Verified"
+    }
   },
   "onboarding": {
     "roleHeading": "How would you like to use CareConnect?",
@@ -518,7 +558,12 @@
       "lab_diagnostic": "Lab / Diagnostic Center"
     },
     "error": "Something went wrong. Please try again.",
-    "becomeProviderLink": "Register as a healthcare provider instead"
+    "becomeProviderLink": "Register as a healthcare provider instead",
+    "setupStepsLabel": "Getting your practice listed",
+    "setupStepRole": "Account type",
+    "setupStepPractice": "Your practice",
+    "setupStepHours": "Working hours",
+    "setupStepVerification": "Verification"
   },
   "account": {
     "heading": "Delete your account",
@@ -550,5 +595,11 @@
       "title": "Saved, but not recorded",
       "body": "Your change was saved, but we couldn't record it in the access log. Please don't submit it again."
     }
+  },
+  "ui": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "stepDone": "done",
+    "stepOf": "Step {n} of {total}"
   }
 }

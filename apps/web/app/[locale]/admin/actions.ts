@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import type { FormResult } from "@/lib/form-result";
 import {
   getDocumentSignedUrl,
   hideReview,
@@ -15,10 +17,14 @@ export async function verifyPractitionerAction(locale: string, formData: FormDat
   revalidatePath(`/${locale}/admin/practitioners`);
 }
 
-export async function rejectPractitionerAction(locale: string, formData: FormData): Promise<void> {
+export async function rejectPractitionerAction(
+  locale: string,
+  formData: FormData,
+): Promise<FormResult> {
   const reason = String(formData.get("reason") ?? "").trim();
   await rejectPractitioner(String(formData.get("practitionerId")), { reason });
   revalidatePath(`/${locale}/admin/practitioners`);
+  return { status: "success", message: (await getTranslations("admin"))("rejected") };
 }
 
 export async function hideReviewAction(locale: string, formData: FormData): Promise<void> {

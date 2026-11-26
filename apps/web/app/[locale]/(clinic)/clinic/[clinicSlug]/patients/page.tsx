@@ -6,8 +6,8 @@ import { listClinicPatients } from "@/lib/api/clinic";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card } from "@/components/ui/card";
 import { InitialsAvatar } from "@/components/ui/avatar";
+import { DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function ClinicPatientsPage(
@@ -30,36 +30,43 @@ export default async function ClinicPatientsPage(
       {patients.length === 0 ? (
         <EmptyState icon={Users} title={t("noAppointmentsToday")} />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {patients.map((p) => (
-            <li key={`${p.patientId}-${p.familyMemberId ?? "self"}`}>
-              <Link
-                href={
-                  p.familyMemberId
-                    ? `/clinic/${clinicSlug}/patients/${p.patientId}/family/${p.familyMemberId}`
-                    : `/clinic/${clinicSlug}/patients/${p.patientId}`
-                }
-                className="block h-full"
-              >
-                <Card interactive className="flex h-full items-start gap-3">
-                  <InitialsAvatar name={p.fullName} size="md" />
-                  <div className="min-w-0 flex-1">
-                    <b className="block truncate font-semibold text-text">{p.fullName}</b>
+        <DataTable
+          caption={t("patientsHeading")}
+          initialSort={{ key: "lastVisit", direction: "descending" }}
+          columns={[
+            { key: "name", header: t("patientLabel"), sortable: true },
+            { key: "phone", header: t("phoneLabel") },
+            { key: "lastVisit", header: t("lastVisitLabel"), sortable: true },
+          ]}
+          rows={patients.map((p) => ({
+            key: `${p.patientId}-${p.familyMemberId ?? "self"}`,
+            sortValues: { name: p.fullName, lastVisit: new Date(p.lastVisit) },
+            cells: {
+              name: (
+                <Link
+                  href={
+                    p.familyMemberId
+                      ? `/clinic/${clinicSlug}/patients/${p.patientId}/family/${p.familyMemberId}`
+                      : `/clinic/${clinicSlug}/patients/${p.patientId}`
+                  }
+                  className="flex items-center gap-3 text-text no-underline hover:text-primary-700"
+                >
+                  <InitialsAvatar name={p.fullName} size="sm" />
+                  <span className="min-w-0">
+                    <b className="block font-semibold">{p.fullName}</b>
                     {p.guardianFullName && (
-                      <p className="truncate text-xs font-medium text-primary-700">
+                      <span className="block text-xs font-medium text-primary-700">
                         {t("familyMemberOfLabel", { name: p.guardianFullName })}
-                      </p>
+                      </span>
                     )}
-                    <p className="truncate text-sm text-text-muted">{p.phone}</p>
-                    <p className="mt-1 text-xs text-text-faint">
-                      {t("lastVisitLabel")}: {formatClinicDate(p.lastVisit, locale)}
-                    </p>
-                  </div>
-                </Card>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  </span>
+                </Link>
+              ),
+              phone: <span className="text-text-muted">{p.phone ?? "—"}</span>,
+              lastVisit: formatClinicDate(p.lastVisit, locale),
+            },
+          }))}
+        />
       )}
     </div>
   );

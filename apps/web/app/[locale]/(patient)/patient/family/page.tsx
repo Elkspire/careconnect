@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { addFamilyMemberAction } from "../../actions";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { Modal } from "@/components/ui/overlay";
 
 export default async function FamilyMembersPage(
   props: PageProps<"/[locale]/patient/family">,
@@ -18,7 +18,42 @@ export default async function FamilyMembersPage(
 
   return (
     <div>
-      <PageHeader icon={Users} kicker="CareConnect" title={t("familyMembersHeading")} />
+      <PageHeader
+        icon={Users}
+        kicker="CareConnect"
+        title={t("familyMembersHeading")}
+        actions={
+          <Modal
+            trigger={t("addFamilyMember")}
+            triggerVariant="primary"
+            title={t("addFamilyMember")}
+            formAction={action}
+            submitLabel={t("addFamilyMember")}
+          >
+            <div className="flex flex-col gap-4">
+              <FormField label={t("fullNameLabel")}>
+                <input type="text" name="fullName" required className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600" />
+              </FormField>
+              <FormField label={t("relationshipLabel")}>
+                <select name="relationship" className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600">
+                  <optgroup label={t("relationshipGroups.spouse")}>
+                    <option value="husband">{t("relationship.husband")}</option>
+                    <option value="wife">{t("relationship.wife")}</option>
+                  </optgroup>
+                  <optgroup label={t("relationshipGroups.child")}>
+                    <option value="son">{t("relationship.son")}</option>
+                    <option value="daughter">{t("relationship.daughter")}</option>
+                  </optgroup>
+                  <optgroup label={t("relationshipGroups.parent")}>
+                    <option value="mother">{t("relationship.mother")}</option>
+                    <option value="father">{t("relationship.father")}</option>
+                  </optgroup>
+                </select>
+              </FormField>
+            </div>
+          </Modal>
+        }
+      />
 
       {familyMembers.length === 0 ? (
         <EmptyState icon={Users} title={t("noFamilyMembers")} />
@@ -37,42 +72,6 @@ export default async function FamilyMembersPage(
         </ul>
       )}
 
-      <Card padding="lg" className="max-w-xl">
-        <form action={action} className="flex flex-wrap items-end gap-3">
-          <FormField label={t("fullNameLabel")}>
-            <input
-              type="text"
-              name="fullName"
-              required
-              className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
-            />
-          </FormField>
-          <FormField label={t("relationshipLabel")}>
-            <select
-              name="relationship"
-              className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
-            >
-              <optgroup label={t("relationshipGroups.spouse")}>
-                <option value="husband">{t("relationship.husband")}</option>
-                <option value="wife">{t("relationship.wife")}</option>
-              </optgroup>
-              <optgroup label={t("relationshipGroups.child")}>
-                <option value="son">{t("relationship.son")}</option>
-                <option value="daughter">{t("relationship.daughter")}</option>
-              </optgroup>
-              <optgroup label={t("relationshipGroups.parent")}>
-                <option value="mother">{t("relationship.mother")}</option>
-                <option value="father">{t("relationship.father")}</option>
-              </optgroup>
-            </select>
-          </FormField>
-          <SubmitButton
-            className="tap-target rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800"
-          >
-            {t("addFamilyMember")}
-          </SubmitButton>
-        </form>
-      </Card>
     </div>
   );
 }
