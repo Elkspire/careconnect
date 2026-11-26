@@ -9,10 +9,12 @@
    ml/mr/pl/pr everywhere so components flip automatically under
    dir="rtl" per the Urdu/RTL design principle.
 
-   Teal/blue clinical-SaaS palette (2026 visual revamp, see
-   resources/CareConnect.html for the reference), restrained relative to a
-   typical marketing teal for better contrast and a more trustworthy
-   register. Inter for UI text. */
+   Palette, type and shapes follow the product prototypes in
+   resources/prototypes/ (teal #0B7A75, navy #0E2233, ink #0F1B2D; Inter
+   for UI text, Plus Jakarta Sans for headings, Noto Nastaliq for Urdu).
+   Their :root variables map onto these tokens: --teal -> primary-600/700,
+   --teal-d -> primary-800, --teal-50 -> primary-50, --navy -> navy,
+   --ink -> text, --muted -> text-muted, --line -> border, --bg -> bg. */
 
 /* rtl:/ltr: follow the page's actual dir attribute, not its language.
    Tailwind's built-in rtl: matches a list of RTL *languages* via :lang(),
@@ -24,48 +26,69 @@
 @custom-variant ltr (&:where([dir="ltr"], [dir="ltr"] *));
 
 @theme {
-  --color-primary-50: #f0fdfa;
-  --color-primary-100: #ccfbf1;
-  --color-primary-500: #14b8a6;
-  --color-primary-600: #0d9488;
-  --color-primary-700: #0f766e;
-  --color-primary-800: #115e59;
+  /* Teal. One brand colour: the prototypes use the same teal for buttons,
+     links, focus rings and active nav, and its darker shade for hover. */
+  --color-primary-50: #e6f4f3;
+  --color-primary-100: #cde9e7;
+  --color-primary-500: #0b7a75;
+  --color-primary-600: #0b7a75;
+  --color-primary-700: #0b7a75;
+  --color-primary-800: #075e5a;
+  --color-primary-900: #0b5f5b;
   --color-accent-100: #e0f2fe;
-  --color-accent-600: #0369a1;
+  --color-accent-600: #075985;
   --color-accent-700: #075985;
 
-  --color-success-bg: #dcfce7;
-  --color-success-fg: #15803d;
-  --color-warning-bg: #ffedd5;
-  --color-warning-fg: #c2410c;
-  --color-danger-bg: #fee2e2;
-  --color-danger-fg: #b91c1c;
-  --color-info-bg: #e0f2fe;
-  --color-info-fg: #0369a1;
-  --color-purple-bg: #f3e8ff;
-  --color-purple-fg: #7c3aed;
-  --color-neutral-bg: #f1f5f9;
-  --color-neutral-fg: #475569;
+  /* Navy: the dashboard sidebar and dark hero surfaces. */
+  --color-navy: #0e2233;
+  --color-navy-hover: #17344a;
+  --color-navy-fg: #c3d2df;
 
-  --color-bg: #f8fafc;
+  /* Status chips (.hi .md .lo .info .pu .neu in the prototypes). */
+  --color-success-bg: #dcfae6;
+  --color-success-fg: #067647;
+  --color-warning-bg: #fef0c7;
+  --color-warning-fg: #93370d;
+  --color-danger-bg: #fee4e2;
+  --color-danger-fg: #b42318;
+  --color-info-bg: #e0f2fe;
+  --color-info-fg: #075985;
+  --color-purple-bg: #eef0ff;
+  --color-purple-fg: #3e3cb0;
+  --color-neutral-bg: #eef2f6;
+  --color-neutral-fg: #364152;
+
+  --color-bg: #f3f6f9;
   --color-surface: #ffffff;
-  --color-surface-muted: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-text-faint: #94a3b8;
+  --color-surface-muted: #f3f6f9;
+  --color-border: #e3e8ef;
+  --color-border-strong: #d0d8e2;
+  --color-text: #0f1b2d;
+  --color-text-label: #475467;
+  --color-text-muted: #5b6b7f;
+  --color-text-faint: #98a2b3;
   --color-text-on-primary: #ffffff;
 
   --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-jakarta), "Plus Jakarta Sans", var(--font-inter), "Inter", sans-serif;
+  /* Urdu pages: Latin text (names, numbers) stays in Inter / Plus Jakarta Sans
+     and Urdu script falls through to Nastaliq. Named directly, not via
+     var(--font-inter): that adds next/font's "Inter Fallback", a system font
+     with no character range that would catch the Urdu letters first.
+     Nastaliq's own Latin letters are serif, so it can't come first. */
+  --font-urdu: "Inter", var(--font-nastaliq), "Noto Nastaliq Urdu", sans-serif;
+  --font-urdu-display: "Plus Jakarta Sans", var(--font-nastaliq), "Noto Nastaliq Urdu", sans-serif;
 
-  --radius-sm: 6px;
+  /* Buttons/inputs 10px, cards 14px, modals 16px, pills fully round. */
+  --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  --radius-xl: 16px;
   --radius-full: 999px;
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  /* The prototypes' card shadow: barely there, ink-tinted. */
+  --shadow-sm: 0 1px 2px rgb(15 27 45 / 0.04), 0 8px 24px rgb(15 27 45 / 0.04);
+  --shadow-md: 0 1px 3px rgb(15 27 45 / 0.08), 0 10px 28px rgb(15 27 45 / 0.08);
+  --shadow-lg: 0 24px 64px rgb(15 27 45 / 0.25);
 }
 
 /* Low-literacy design principle: icon-led nav and large tap targets are

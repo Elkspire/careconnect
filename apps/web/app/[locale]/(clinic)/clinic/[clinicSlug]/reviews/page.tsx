@@ -71,14 +71,14 @@ export default async function ClinicReviewsPage(
                   <form action={report} className="mt-2 flex flex-col gap-2">
                     <input type="hidden" name="reviewId" value={review.id} />
                     <label className="block">
-                      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                      <span className="mb-1.5 block text-xs font-semibold text-text-label">
                         {t("reportReasonLabel")}
                       </span>
                       <textarea
                         name="reason"
                         required
                         rows={2}
-                        className="w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                        className="w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
                       />
                     </label>
                     <SubmitButton

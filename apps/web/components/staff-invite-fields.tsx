@@ -13,7 +13,7 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch";
 const ROLES: AssignableStaffRole[] = ["receptionist", "junior_doctor"];
 
 const selectClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 
 /**
  * Role picker + per-permission toggles for the invite form. A toggle can
@@ -63,7 +63,7 @@ export function StaffInviteFields() {
       </FormField>
 
       <div className="w-full">
-        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+        <span className="mb-1.5 block text-xs font-semibold text-text-label">
           {t("permissionsToggleHeading")}
         </span>
         <div className="flex flex-col divide-y divide-border rounded-md border border-border">

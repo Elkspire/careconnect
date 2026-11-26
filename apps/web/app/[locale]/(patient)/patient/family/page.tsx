@@ -44,13 +44,13 @@ export default async function FamilyMembersPage(
               type="text"
               name="fullName"
               required
-              className="tap-target rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
             />
           </FormField>
           <FormField label={t("relationshipLabel")}>
             <select
               name="relationship"
-              className="tap-target rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
             >
               <optgroup label={t("relationshipGroups.spouse")}>
                 <option value="husband">{t("relationship.husband")}</option>

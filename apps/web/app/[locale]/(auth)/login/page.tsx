@@ -102,7 +102,7 @@ export default function LoginPage() {
   }
 
   const inputClasses =
-    "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+    "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
   const primaryButtonClasses =
     "tap-target w-full rounded-md bg-primary-700 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800 disabled:cursor-wait disabled:opacity-60";
 
@@ -115,7 +115,7 @@ export default function LoginPage() {
         <div className="mb-6 text-center">
           <HeartPulse aria-hidden className="mx-auto size-10 text-primary-600" />
         </div>
-        <h1 className="text-center text-2xl font-bold text-text">{t("heading")}</h1>
+        <h1 className="text-center text-[22px] font-bold text-text">{t("heading")}</h1>
         {step === "input" && (
           <p className="mt-2 text-center text-[0.95rem] text-text-muted">{t("subtitle")}</p>
         )}

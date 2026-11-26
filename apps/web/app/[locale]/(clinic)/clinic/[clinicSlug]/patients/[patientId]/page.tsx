@@ -22,7 +22,7 @@ import { auditNoticeFrom, unlessRefused } from "@/lib/api/audit";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const inputClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const secondaryButtonClasses =
   "tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700";
 
@@ -192,7 +192,7 @@ export default async function ClinicPatientDetailPage(
 
       {familyMembers.length > 0 && (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 mt-8 text-base font-bold text-text">
             {tPatient("familyMembersHeading")}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -217,7 +217,7 @@ export default async function ClinicPatientDetailPage(
 
       {clinical && (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 mt-8 text-base font-bold text-text">
             {t("recordsHeading")}
           </h2>
           {records.length === 0 ? (
@@ -244,7 +244,7 @@ export default async function ClinicPatientDetailPage(
         </>
       )}
 
-      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 mt-8 text-base font-bold text-text">
         {t("appointmentHistoryHeading")}
       </h2>
       <Card>

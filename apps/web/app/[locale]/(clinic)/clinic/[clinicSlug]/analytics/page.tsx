@@ -65,7 +65,7 @@ export default async function ClinicAnalyticsPage(
         </div>
       ) : (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 mt-8 text-base font-bold text-text">
             {t("dailyBreakdownHeading")}
           </h2>
           <Card>
@@ -85,7 +85,7 @@ export default async function ClinicAnalyticsPage(
 
           {analytics.byPractitioner.length > 1 && (
             <>
-              <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+              <h2 className="mb-3 mt-8 text-base font-bold text-text">
                 {t("byPractitionerHeading")}
               </h2>
               <Card>

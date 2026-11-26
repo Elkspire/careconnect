@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-10">
-      <h1 className="text-center text-xl font-bold text-text">{t("roleHeading")}</h1>
+      <h1 className="text-center text-[22px] font-bold text-text">{t("roleHeading")}</h1>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <RoleCard

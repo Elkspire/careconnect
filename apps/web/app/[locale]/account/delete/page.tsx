@@ -97,7 +97,7 @@ export default async function DeleteAccountPage(props: PageProps<"/[locale]/acco
               spellCheck={false}
               dir="ltr"
               placeholder="DELETE"
-              className="tap-target w-full rounded-md border border-border px-3 py-2 font-mono text-sm text-text focus:border-danger-fg focus:outline-none focus:ring-2 focus:ring-danger-bg"
+              className="tap-target w-full rounded-md border border-border-strong px-3 py-2 font-mono text-sm text-text focus:border-danger-fg focus:outline-2 focus:outline-offset-1 focus:outline-danger-fg"
             />
           </label>
           <div className="flex flex-wrap items-center gap-3">

@@ -33,7 +33,7 @@ export default async function HomePage(props: PageProps<"/[locale]">) {
           </div>
         )}
         {/* Hero */}
-        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-accent-600 px-6 py-10 text-text-on-primary sm:px-10 sm:py-14">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy to-primary-800 px-6 py-10 text-text-on-primary sm:px-10 sm:py-14">
           <div
             aria-hidden
             className="absolute -bottom-10 -end-10 size-52 rounded-full bg-white/10"

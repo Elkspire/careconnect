@@ -16,9 +16,9 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface/70 backdrop-blur-[14px]">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 font-bold text-primary-700">
+        <Link href="/" className="flex items-center gap-2 font-display text-base font-extrabold text-primary-700 sm:text-lg">
           <Stethoscope aria-hidden className="size-6" />
           <span>
             Care<span className="text-text">Connect</span>

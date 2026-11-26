@@ -85,7 +85,7 @@ export default async function SharedRecordPage(
 
       {bundle.scope.includeClinicalHistory && (
         <div className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 text-base font-bold text-text">
             {t("visitHistoryHeading")}
           </h2>
           {bundle.clinicalHistory.length === 0 ? (
@@ -131,7 +131,7 @@ export default async function SharedRecordPage(
 
       {(bundle.scope.includeLabReports || bundle.scope.includeOtherRecords) && (
         <div className="mt-8">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 text-base font-bold text-text">
             {t("recordsHeading")}
           </h2>
           {bundle.records.length === 0 ? (

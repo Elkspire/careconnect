@@ -148,10 +148,10 @@ export function LanguageMenu({
         onKeyDown={onButtonKeyDown}
         className={
           variant === "field"
-            ? `tap-target flex w-full items-center gap-2.5 rounded-md border px-3 py-2 text-start text-sm text-text transition focus:outline-none focus:ring-2 focus:ring-primary-100 disabled:cursor-wait ${
-                open ? "border-primary-500 ring-2 ring-primary-100" : "border-border hover:border-primary-500"
+            ? `tap-target flex w-full items-center gap-2.5 rounded-md border px-3 py-2 text-start text-sm text-text transition focus:outline-2 focus:outline-offset-1 focus:outline-primary-600 disabled:cursor-wait ${
+                open ? "border-primary-600 outline-2 outline-offset-1 outline-primary-600" : "border-border-strong hover:border-primary-600"
               }`
-            : `tap-target flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-100 disabled:cursor-wait ${
+            : `tap-target flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm font-medium transition focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:cursor-wait ${
                 open
                   ? "border-primary-500 bg-primary-50 text-primary-800"
                   : "border-border text-text-muted hover:border-primary-500 hover:text-text"

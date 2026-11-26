@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareConnect · Partner portal (labs & pharmacies)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Noto+Nastaliq+Urdu:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0B7A75;--teal-d:#075E5A;--teal-50:#E6F4F3;--navy:#0E2233;--ink:#0F1B2D;--muted:#5B6B7F;--line:#E3E8EF;--bg:#F3F6F9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.45}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;margin:0;letter-spacing:-.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--teal)}
+.ur{font-family:'Noto Nastaliq Urdu',serif;line-height:2}
+.app{min-height:100vh;display:flex;flex-wrap:wrap}
+.sidebar{flex:1 1 236px;max-width:260px;background:var(--navy);color:#fff;padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.content{padding:24px 28px 48px;display:flex;flex-direction:column;gap:20px;max-width:1480px;width:100%}
+@media (max-width:860px){.sidebar{max-width:none}.sidebar nav{flex-direction:row!important;flex-wrap:wrap}.sidebar .branch{display:none}.content{padding:16px}}
+.nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#C3D2DF;font-weight:500;min-height:44px;border:0;background:none;width:100%;text-align:left}
+@media (max-width:860px){.nav{width:auto}}
+.nav:hover{background:#17344A;color:#fff}
+.nav.on{background:var(--teal);color:#fff}
+.nav .bdg{margin-left:auto;border-radius:999px;font-size:11px;font-weight:700;padding:1px 8px}
+header.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:18px 28px;background:#fff;border-bottom:1px solid var(--line)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:10px;border:1px solid #D0D8E2;background:#fff;font-weight:600;font-size:13px;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--bg)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#fff}.btn.pri:hover{background:var(--teal-d)}
+.btn.dan{border-color:#FDA29B;color:#B42318}.btn.dan:hover{background:#FEF3F2}
+.btn.ghost{border-color:transparent;background:transparent}.btn.ghost:hover{background:#EEF2F6}
+.btn.sm{min-height:32px;padding:0 12px;font-size:12px;border-radius:8px}
+.btn.ico{width:40px;padding:0}.btn.sm.ico{width:32px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.5;border:0}
+.hi{background:#FEE4E2;color:#B42318}.md{background:#FEF0C7;color:#93370D}.lo{background:#DCFAE6;color:#067647}.info{background:#E0F2FE;color:#075985}.neu{background:#EEF2F6;color:#364152}.tl{background:var(--teal-50);color:#0B5F5B}.pu{background:#EEF0FF;color:#3E3CB0}
+.tabbar{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;padding:10px 2px;margin-right:22px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;min-height:44px;white-space:nowrap}
+.tab:hover{color:var(--ink)}.tab.on{color:var(--teal);border-bottom-color:var(--teal)}
+.pill{border:1px solid #D0D8E2;background:#fff;color:#344054;border-radius:999px;padding:0 14px;min-height:34px;font-weight:600;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{border-color:var(--teal)}.pill.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.inp{height:40px;border:1px solid #D0D8E2;border-radius:10px;padding:0 12px;background:#fff;width:100%}
+textarea.inp{height:auto;padding:10px 12px;resize:vertical}
+.inp:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.lbl{font-size:12px;font-weight:600;color:#475467;display:block;margin-bottom:6px}
+.muted{color:var(--muted)}.sm{font-size:12px}.b{font-weight:600}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 14px;background:#F8FAFC;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:12px 14px;border-bottom:1px solid #EEF2F6;vertical-align:middle}
+.tbl tr.row{cursor:pointer}.tbl tr.row:hover td{background:#F5FAFA}.tbl tr.sel td{background:var(--teal-50)}
+.av{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.icob{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.sec{font-size:16px;font-weight:700;font-family:'Plus Jakarta Sans'}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.stack{display:flex;flex-direction:column}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+@media (max-width:600px){.g2,.g3{grid-template-columns:1fr}}
+.lnk{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:13px;text-decoration:none}
+.lnk:hover{text-decoration:underline}
+.chk{width:18px;height:18px;accent-color:var(--teal);cursor:pointer;flex:none}
+.bar{background:#EEF2F6;border-radius:999px;height:8px;overflow:hidden}.bar>div{height:100%;border-radius:999px;background:var(--teal)}
+.scroll{overflow-x:auto}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.bg{position:fixed;inset:0;background:rgba(15,27,45,.48);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:580px;max-height:90vh;overflow:auto;padding:24px;box-shadow:0 24px 64px rgba(15,27,45,.25)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-weight:500;z-index:60;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;padding:6px;box-shadow:0 12px 32px rgba(15,27,45,.14)}
+.sug button{display:flex;width:100%;gap:10px;align-items:center;padding:10px;border:0;background:transparent;border-radius:8px;text-align:left;min-height:44px}
+.sug button:hover{background:#F3F6F9}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.vidbtn{width:52px;height:52px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+</style>
+<style>
+.seg{display:flex;background:#132536;border-radius:10px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:none;color:#C3D2DF;font-weight:600;padding:8px;border-radius:8px;min-height:38px;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:#fff;color:#0F1B2D}
+.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover td{background:#F5FAFA}.tbl tr.sel td{background:#E6F4F3}
+.steps{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.step{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#98A2B3}
+.step.done{color:#067647}.step.cur{color:#0B7A75}
+.step i{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#EEF2F6;font-style:normal;font-size:11px}
+.step.done i{background:#DCFAE6}.step.cur i{background:#0B7A75;color:#fff}
+.step+.step:before{content:'';width:14px;height:2px;background:#E3E8EF;display:inline-block;margin-right:2px}
+.list-btn{display:block;width:100%;padding:14px;border:0;border-bottom:1px solid #F2F4F7;background:#fff;text-align:left}
+.list-btn.on{background:#E6F4F3}
+.flagH{color:#B42318;font-weight:700}.flagL{color:#175CD3;font-weight:700}.flagC{background:#B42318;color:#fff;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11px}
+.map{height:250px;border-radius:14px;position:relative;overflow:hidden;background:#E8EEF3;background-image:linear-gradient(90deg,rgba(255,255,255,.9) 2px,transparent 2px),linear-gradient(rgba(255,255,255,.9) 2px,transparent 2px),linear-gradient(35deg,transparent 48%,#fff 48%,#fff 52%,transparent 52%);background-size:70px 70px,70px 70px,100% 100%}
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;font-size:11px;font-weight:700}
+.pin span{background:#fff;border-radius:6px;padding:2px 6px;box-shadow:0 2px 6px rgba(15,27,45,.15);white-space:nowrap;margin-bottom:2px}
+.report{border:1px solid var(--line);border-radius:12px;padding:20px;background:#fff}
+.urdu{font-family:'Noto Nastaliq Urdu',serif;direction:rtl;line-height:2.1}
+.sw{position:relative;width:44px;height:24px;flex:none}.sw input{opacity:0;width:100%;height:100%;position:absolute;margin:0;cursor:pointer;z-index:1}.sw span{position:absolute;inset:0;background:#D0D8E2;border-radius:999px;transition:.2s}.sw span:after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}.sw input:checked+span{background:#0B7A75}.sw input:checked+span:after{left:23px}
+</style>
+
+<style id="cc-gradient">
+html{min-height:100%;background:radial-gradient(1100px 620px at 100% -8%,rgba(11,122,117,.20),transparent 62%),radial-gradient(900px 640px at -5% 105%,rgba(62,60,176,.13),transparent 60%),linear-gradient(160deg,#E7F5F3 0%,#F2F6F9 46%,#ECEFFB 100%)}
+body{background:transparent!important}
+.main{background:transparent}
+.topbar{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.card{box-shadow:0 1px 2px rgba(15,27,45,.04),0 8px 24px rgba(15,27,45,.04)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="ov"></div>
+<script>
+const P={
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ video:'<path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+ plan:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+ chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+ chart:'<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', check:'<path d="M20 6 9 17l-5-5"/>',
+ alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ pulse:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>', file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+ star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2-6.2 3.2L7 14.2 2 9.3l6.9-1z"/>', filter:'<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>',
+ mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/>',
+ screen:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+ cc:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10.5a2 2 0 1 0 0 3M17 10.5a2 2 0 1 0 0 3"/>',
+ globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+ spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+ pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z"/><path d="m8.5 8.5 7 7"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ chevr:'<path d="m9 18 6-6-6-6"/>', chevl:'<path d="m15 18-6-6 6-6"/>', chevd:'<path d="m6 9 6 6 6-6"/>', chevu:'<path d="m18 15-6-6-6 6"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>', download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+ clip:'<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ trash:'<path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+ edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+ money:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+ layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+ move:'<path d="M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01"/>',
+ bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>'
+};
+const I=(n,s=18,c='currentColor',w=1.8,fill='none')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const LOGO='<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#0B7A75"/><path d="M17 25.5s-8-4.6-8-10.2A4.3 4.3 0 0 1 17 13a4.3 4.3 0 0 1 8 2.3c0 5.6-8 10.2-8 10.2z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 17h3.5l1.5-2.5 2.2 5 1.5-2.5h4.3" fill="none" stroke="#7FE3DA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+Object.assign(P,{
+ building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+ flask:'<path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/>',
+ truck:'<path d="M1 4h14v12H1zM15 9h4l3 3v4h-7"/><circle cx="5.5" cy="18.5" r="2"/><circle cx="18.5" cy="18.5" r="2"/>',
+ box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+ bike:'<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h2l3 11.5M5.5 17.5 9 10h7l-4.5 7.5M9 10 7.5 6H5"/>',
+ tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/>',
+ barcode:'<path d="M3 5v14M7 5v14M10 5v14M14 5v14M17 5v14M21 5v14"/>',
+ snow:'<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1 19.1 4.9"/>',
+ refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ printer:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>'
+});
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ini=n=>n.replace(/^(Dr\.|Mr\.|Ms\.)\s/,'').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const rs=n=>n>=1e5?'Rs '+(n/1e5).toFixed(2)+' lakh':'Rs '+Math.round(n).toLocaleString('en-PK');
+const sel=(id,opts,val,attrs='')=>`<select id="${id}" class="inp" ${attrs}>${opts.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];return `<option value="${esc(v)}" ${v===val?'selected':''}>${esc(l)}</option>`}).join('')}</select>`;
+const pills=(act,list,cur)=>list.map(l=>`<button class="pill ${cur===l?'on':''}" data-a="${act}" data-v="${esc(l)}">${esc(l)}</button>`).join('');
+const tabs=(act,list,cur)=>`<div class="tabbar">${list.map(t=>`<button class="tab ${cur===t[0]?'on':''}" data-a="${act}" data-v="${t[0]}">${t[1]}${t[2]?` <span class="chip ${t[3]||'neu'}" style="margin-left:4px">${t[2]}</span>`:''}</button>`).join('')}</div>`;
+const kpi=(ic,cls,val,lab,sub,subc)=>`<div class="card" style="padding:18px;display:flex;gap:14px;align-items:flex-start"><span class="icob ${cls}">${I(ic,20)}</span><div><div class="muted sm b">${lab}</div><div style="font-size:24px;font-weight:700;font-family:'Plus Jakarta Sans'">${val}</div><div class="sm" style="color:${subc||'var(--muted)'}">${sub}</div></div></div>`;
+const stepper=(list,cur)=>{const i=list.indexOf(cur);return `<div class="steps">${list.map((s,j)=>`<span class="step ${j<i?'done':j===i?'cur':''}"><i>${j<i?I('check',12,'currentColor',3):j+1}</i>${s}</span>`).join('')}</div>`};
+
+/* ================= LAB DATA ================= */
+// [name, unit, low, high, criticalLow, criticalHigh]
+const PANELS={'CBC':[['Haemoglobin','g/dL',13,17,7,null],['WBC','×10⁹/L',4,11,null,30],['Platelets','×10⁹/L',150,400,50,null]],
+ 'HbA1c':[['HbA1c','%',4,5.6]],
+ 'Fasting glucose':[['Glucose (fasting)','mg/dL',70,99,50,400]],
+ 'Lipid profile':[['Total cholesterol','mg/dL',0,200],['LDL cholesterol','mg/dL',0,100],['HDL cholesterol','mg/dL',40,999],['Triglycerides','mg/dL',0,150]],
+ 'Serum creatinine':[['Creatinine','mg/dL',0.7,1.3]],
+ 'Electrolytes':[['Sodium','mmol/L',135,145,120,160],['Potassium','mmol/L',3.5,5.1,2.8,6.0]],
+ 'TSH':[['TSH','mIU/L',0.4,4.0]],
+ 'Vitamin D':[['25-OH Vitamin D','ng/mL',30,100]],
+ 'Urine routine':[['Pus cells','/HPF',0,5],['Protein','mg/dL',0,15]]};
+const ref=p=>p[2]===0?`< ${p[3]}`:p[3]===999?`> ${p[2]}`:`${p[2]} – ${p[3]}`;
+const flag=(p,v)=>{if(v===''||v==null||isNaN(+v))return '';v=+v;if((p[4]!=null&&v<=p[4])||(p[5]!=null&&v>=p[5]))return 'C';if(p[2]!==0&&v<p[2])return 'L';if(p[3]!==999&&v>p[3])return 'H';return 'N'};
+const params=o=>o.tests.flatMap((t,ti)=>PANELS[t].map((p,pi)=>({t,p,k:ti+'_'+pi})));
+const LST=['New','Accepted','Collected','Processing','Ready','Published'];
+const LCLS={New:'md',Accepted:'info',Collected:'info',Processing:'pu',Ready:'tl',Published:'lo',Rejected:'hi'};
+const LLAB={New:'New',Accepted:'Accepted',Collected:'Sample in transit',Processing:'In lab',Ready:'Awaiting pathologist',Published:'Report sent',Rejected:'Declined'};
+
+/* ================= PHARMACY DATA ================= */
+const MEDS=[
+ {id:'m1',name:'Glucophage 500mg',gen:'Metformin',form:'tablet',price:8,stock:1840,re:500,exp:'2027-08',batch:'GL2409'},
+ {id:'m2',name:'Metformin 500mg (generic)',gen:'Metformin',form:'tablet',price:4,stock:600,re:300,exp:'2027-03',batch:'MF1187'},
+ {id:'m3',name:'Concor 5mg',gen:'Bisoprolol',form:'tablet',price:28,stock:220,re:200,exp:'2027-11',batch:'CC5512'},
+ {id:'m4',name:'Lipitor 10mg',gen:'Atorvastatin',form:'tablet',price:52,stock:90,re:150,exp:'2027-06',batch:'LP0921'},
+ {id:'m5',name:'Atorvastatin 10mg (generic)',gen:'Atorvastatin',form:'tablet',price:18,stock:400,re:200,exp:'2027-09',batch:'AT3310'},
+ {id:'m6',name:'Nexum 40mg',gen:'Esomeprazole',form:'capsule',price:35,stock:300,re:150,exp:'2027-04',batch:'NX4021'},
+ {id:'m7',name:'Augmentin 625mg',gen:'Amoxicillin + clavulanate',form:'tablet',price:95,stock:0,re:100,exp:'2027-02',batch:'—'},
+ {id:'m8',name:'Co-amoxiclav 625mg (generic)',gen:'Amoxicillin + clavulanate',form:'tablet',price:55,stock:140,re:100,exp:'2027-05',batch:'CA7702'},
+ {id:'m9',name:'Panadol 500mg',gen:'Paracetamol',form:'tablet',price:3,stock:5000,re:1000,exp:'2028-01',batch:'PN8810'},
+ {id:'m10',name:'Brufen 400mg',gen:'Ibuprofen',form:'tablet',price:6,stock:900,re:300,exp:'2027-10',batch:'BR2290'},
+ {id:'m11',name:'Ventolin inhaler',gen:'Salbutamol',form:'inhaler',price:520,stock:12,re:10,exp:'2027-07',batch:'VT1102'},
+ {id:'m12',name:'Mixtard 70/30 vial',gen:'Human insulin',form:'vial',price:1650,stock:8,re:10,exp:'2027-01',batch:'MX0331',cold:1},
+ {id:'m13',name:'Xanax 0.5mg',gen:'Alprazolam',form:'tablet',price:14,stock:300,re:100,exp:'2027-12',batch:'XN5501',ctrl:1},
+ {id:'m14',name:'ORS sachet',gen:'Oral rehydration salts',form:'sachet',price:30,stock:260,re:100,exp:'2026-12',batch:'OR0912'},
+ {id:'m15',name:'Arinac Forte',gen:'Ibuprofen + pseudoephedrine',form:'tablet',price:12,stock:410,re:200,exp:'2027-02',batch:'AR6630'}];
+const SUBS={m1:'m2',m4:'m5',m7:'m8'};
+const med=id=>MEDS.find(m=>m.id===id);
+const monthsLeft=e=>{const [y,m]=e.split('-').map(Number);return (y-2026)*12+(m-11)};
+const RST=['New','Quoted','Confirmed','Packed','Out for delivery','Delivered'];
+const RCLS={New:'md',Quoted:'info',Confirmed:'pu',Packed:'tl','Out for delivery':'info',Delivered:'lo',Cancelled:'hi'};
+const RLAB={New:'New',Quoted:'Awaiting patient',Confirmed:'To pack',Packed:'Ready to dispatch','Out for delivery':'Out for delivery',Delivered:'Delivered',Cancelled:'Cancelled'};
+const it=(m,q,sig)=>({m,q,sig,act:med(m).stock>=q?'ok':'oos'});
+
+/* ================= STATE ================= */
+const S={mode:'lab',page:'l_home',modal:null,toast:'',open:{lab:1,ph:1},
+ L:[
+  {id:'LB-7731',pt:'Ahmed Raza',ag:'54 M',phone:'0300 •••• 112',doc:'Dr. Ayesha Malik',clinic:'Shifa Family Clinic',tests:['HbA1c','Lipid profile','Serum creatinine'],mode:'Home',addr:'House 12, Street 4, G-9/2',slot:'Today 8:00–9:00 AM',pay:'Paid · JazzCash',pri:'Routine',fast:1,status:'New',time:'7:12 AM',note:'Diabetes follow-up',vals:{}},
+  {id:'LB-7730',pt:'Sara Ahmed',ag:'31 F',phone:'0333 •••• 908',doc:'Dr. Hina Shah',clinic:'Shifa Family Clinic',tests:['CBC','TSH'],mode:'Home',addr:'Flat 3B, Block C, Gulberg Greens',slot:'Today 9:00–10:00 AM',pay:'Pay at collection',pri:'Routine',fast:0,status:'New',time:'6:58 AM',note:'Female phlebotomist requested',fem:1,vals:{}},
+  {id:'LB-7729',pt:'Muhammad Iqbal',ag:'67 M',phone:'0345 •••• 330',doc:'Dr. Fazal Rehman',clinic:'Peshawar Heart & Diabetes Centre',tests:['Electrolytes','Serum creatinine'],mode:'Walk-in',addr:'',slot:'Walk-in today',pay:'Sehat Card',pri:'Urgent',fast:0,status:'New',time:'6:40 AM',note:'On spironolactone — please check potassium today',vals:{}},
+  {id:'LB-7725',pt:'Zainab Bibi',ag:'45 F',phone:'0301 •••• 774',doc:'Dr. Ayesha Malik',clinic:'Shifa Family Clinic',tests:['Fasting glucose','HbA1c'],mode:'Home',addr:'House 88, Street 21, I-8/3',slot:'Today 8:00–9:00 AM',pay:'Paid · Easypaisa',pri:'Routine',fast:1,status:'Accepted',coll:'Assigned',asg:'ph2',time:'Yesterday',note:'',fem:1,vals:{}},
+  {id:'LB-7724',pt:'Imran Siddiqui',ag:'39 M',phone:'0321 •••• 441',doc:'Dr. Kashif Mirza',clinic:'Rawalpindi Bone & Joint',tests:['Vitamin D','CBC'],mode:'Home',addr:'Lane 5, Bahria Town Phase 7',slot:'Today 10:00–11:00 AM',pay:'Paid · Card',pri:'Routine',fast:0,status:'Accepted',coll:'',asg:'',time:'Yesterday',note:'Gate code 2241',vals:{}},
+  {id:'LB-7723',pt:'Rehana Begum',ag:'62 F',phone:'0300 •••• 650',doc:'Dr. Ayesha Malik',clinic:'Shifa Family Clinic',tests:['Urine routine','Serum creatinine'],mode:'Home',addr:'House 4, Street 9, F-10/2',slot:'Today 7:00–8:00 AM',pay:'Paid · JazzCash',pri:'Routine',fast:0,status:'Collected',coll:'Collected',asg:'ph1',time:'Yesterday',note:'',vals:{}},
+  {id:'LB-7722',pt:'Khalid Mehmood',ag:'58 M',phone:'0312 •••• 219',doc:'Dr. Fazal Rehman',clinic:'Peshawar Heart & Diabetes Centre',tests:['Electrolytes','CBC'],mode:'Walk-in',addr:'',slot:'Walk-in 7:05 AM',pay:'Sehat Card',pri:'Urgent',fast:0,status:'Processing',time:'7:05 AM',note:'Kidney disease stage 3',vals:{'0_0':'138','0_1':'6.4','1_0':'11.2','1_1':'8.1','1_2':'210'}},
+  {id:'LB-7720',pt:'Ayesha Noor',ag:'27 F',phone:'0334 •••• 012',doc:'Dr. Hina Shah',clinic:'Shifa Family Clinic',tests:['CBC','Vitamin D'],mode:'Walk-in',addr:'',slot:'Walk-in 6:50 AM',pay:'Paid · JazzCash',pri:'Routine',fast:0,status:'Processing',time:'6:50 AM',note:'Pregnant — 14 weeks',vals:{'0_0':'10.4','0_1':'7.2'}},
+  {id:'LB-7718',pt:'Tariq Jamil',ag:'49 M',phone:'0302 •••• 558',doc:'Dr. Ayesha Malik',clinic:'Shifa Family Clinic',tests:['Lipid profile'],mode:'Walk-in',addr:'',slot:'Yesterday 5 PM',pay:'Paid · Card',pri:'Routine',fast:1,status:'Ready',time:'Yesterday',note:'',vals:{'0_0':'236','0_1':'158','0_2':'38','0_3':'210'}},
+  {id:'LB-7710',pt:'Nadia Khan',ag:'36 F',phone:'0336 •••• 771',doc:'Dr. Mehwish Ali',clinic:'SkinCare Studio',tests:['TSH','Vitamin D'],mode:'Home',addr:'F-11/1',slot:'Yesterday',pay:'Paid · Easypaisa',pri:'Routine',fast:0,status:'Published',time:'Yesterday',note:'',vals:{'0_0':'2.1','1_0':'14'},pubAt:'Yesterday 6:20 PM'}],
+ PH:[{id:'ph1',name:'Bilal Hussain',g:'M',status:'On a visit',loc:[62,38]},{id:'ph2',name:'Asma Parveen',g:'F',status:'On the way',loc:[30,62]},{id:'ph3',name:'Usman Ghani',g:'M',status:'Available',loc:[48,24]}],
+ lo:{f:'New',sel:null,rej:null},lc:{sel:'LB-7725'},lr:{sel:'LB-7722',crit:{}},
+ cat:Object.fromEntries(Object.keys(PANELS).map((k,i)=>[k,{price:[900,1800,350,2400,650,1600,1500,3800,500][i],tat:['4 h','24 h','4 h','12 h','6 h','4 h','24 h','48 h','4 h'][i],home:1,on:1}])),
+ R:[
+  {id:'RX-5102',pt:'Ahmed Raza',ag:'54 M',phone:'0300 •••• 112',doc:'Dr. Ayesha Malik',pmdc:'52871-P',clinic:'Shifa Family Clinic',items:[it('m1',60,'1 tablet twice a day after meals'),it('m4',30,'1 tablet at night'),it('m6',14,'1 capsule before breakfast')],del:'Delivery',addr:'House 12, Street 4, G-9/2',pay:'Cash on delivery',status:'New',time:'7:20 AM',subOK:1},
+  {id:'RX-5101',pt:'Fatima Zahra',ag:'29 F',phone:'0333 •••• 245',doc:'Dr. Faisal Qadir',pmdc:'71204-P',clinic:'Shifa Family Clinic',items:[it('m7',14,'1 tablet twice a day for 7 days'),it('m9',20,'2 tablets when needed for fever, max 4 times a day'),it('m10',10,'1 tablet after food when needed')],del:'Delivery',addr:'Street 32, F-8/1',pay:'Paid · Easypaisa',status:'New',time:'7:02 AM',subOK:1},
+  {id:'RX-5099',pt:'Kulsoom Akhtar',ag:'71 F',phone:'0301 •••• 330',doc:'Dr. Fazal Rehman',pmdc:'38812-P',clinic:'Peshawar Heart & Diabetes Centre',items:[it('m12',2,'20 units before breakfast, 10 units before dinner'),it('m3',30,'1 tablet in the morning')],del:'Delivery',addr:'House 7, Street 2, F-7/3',pay:'Paid · JazzCash',status:'Confirmed',time:'Yesterday',subOK:0},
+  {id:'RX-5097',pt:'Hamza Tariq',ag:'34 M',phone:'0321 •••• 909',doc:'Dr. Sana Iqbal',pmdc:'48870-P',clinic:'Video consultation',items:[it('m13',15,'½ tablet at night for 2 weeks'),it('m6',30,'1 capsule before breakfast')],del:'Delivery',addr:'Flat 12, Silver Oaks, F-10',pay:'Cash on delivery',status:'Packed',time:'Yesterday',subOK:0},
+  {id:'RX-5095',pt:'Rabia Saleem',ag:'22 F',phone:'0345 •••• 618',doc:'Dr. Faisal Qadir',pmdc:'71204-P',clinic:'Shifa Family Clinic',items:[it('m11',1,'2 puffs when short of breath'),it('m9',20,'2 tablets when needed')],del:'Delivery',addr:'House 3, Street 14, G-6/2',pay:'Cash on delivery',status:'Out for delivery',rider:'r1',otp:'4821',time:'6:30 AM',subOK:1},
+  {id:'RX-5090',pt:'Bilal Ahmed',ag:'45 M',phone:'0300 •••• 441',doc:'Dr. Ayesha Malik',pmdc:'52871-P',clinic:'Shifa Family Clinic',items:[it('m3',30,'1 tablet in the morning')],del:'Pickup',addr:'',pay:'Paid · Card',status:'Delivered',time:'Yesterday',subOK:1}],
+ RD:[{id:'r1',name:'Kamran Ali',v:'Bike · LEB-4421',status:'On delivery',cash:0},{id:'r2',name:'Shahid Mehmood',v:'Bike · RIM-2210',status:'Available',cash:3460},{id:'r3',name:'Naveed Khan',v:'Bike · ICT-9902',status:'Off today',cash:0}],
+ ro:{f:'New',sel:'RX-5102',pack:{}},rd:{otp:{}},inv:{f:'All',q:''},pay:{}
+};
+let tT;const toast=m=>{S.toast=m;renderOv();clearTimeout(tT);tT=setTimeout(()=>{S.toast='';renderOv()},2600)};
+const V={},A={},M={};
+
+/* ================= SHELL ================= */
+const lowMeds=()=>MEDS.filter(m=>m.stock<m.re);
+const NAVS={lab:[['l_home','grid','Overview'],['l_orders','file','Test orders',()=>S.L.filter(o=>o.status==='New').length],['l_coll','bike','Home collection',()=>S.L.filter(o=>o.mode==='Home'&&(o.status==='Accepted'||o.status==='Collected')).length],['l_res','flask','Results',()=>S.L.filter(o=>o.status==='Processing'||o.status==='Ready').length],['l_cat','tag','Tests & prices'],['pay','money','Payouts']],
+ ph:[['p_home','grid','Overview'],['p_rx','pill','Prescriptions',()=>S.R.filter(r=>r.status==='New').length],['p_del','truck','Deliveries',()=>S.R.filter(r=>r.status==='Packed'||r.status==='Out for delivery').length],['p_inv','box','Inventory',()=>lowMeds().length],['pay','money','Payouts']]};
+const ORG={lab:['CityLab Diagnostics','Blue Area, Islamabad · Lab partner','Faraz Ahmed','Lab manager'],ph:['MediPlus Pharmacy','F-7 Markaz, Islamabad · Pharmacy partner','Sadia Rauf','Pharmacist in charge']};
+const TITLES={l_home:['Good morning, Faraz','Monday, 16 November 2026 · CityLab Diagnostics'],l_orders:['Test orders','Lab tests ordered by doctors on CareConnect'],l_coll:['Home collection','Sample pick-ups from patients’ homes'],l_res:['Results','Enter results, pathologist check, send reports'],l_cat:['Tests & prices','What patients see when a doctor orders a test'],pay:['Payouts','Money collected through CareConnect and paid to you weekly'],
+ p_home:['Good morning, Sadia','Monday, 16 November 2026 · MediPlus Pharmacy'],p_rx:['Prescriptions','E-prescriptions sent by doctors on CareConnect'],p_del:['Deliveries','Riders and orders on the way'],p_inv:['Inventory','Stock, expiry dates and reorders']};
+function shell(){const o=ORG[S.mode],nav=NAVS[S.mode];return `<aside class="sidebar"><div class="row" style="padding:4px 8px">${LOGO}<div><div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px">CareConnect</div><div class="sm" style="color:#7FE3DA">Partner portal</div></div></div>
+ <div class="seg" role="tablist" aria-label="Partner type (demo)"><button class="${S.mode==='lab'?'on':''}" data-a="mode" data-v="lab">${I('flask',16)}Lab</button><button class="${S.mode==='ph'?'on':''}" data-a="mode" data-v="ph">${I('pill',16)}Pharmacy</button></div>
+ <nav aria-label="Main" class="stack" style="gap:2px">${nav.map(n=>{const b=n[3]&&n[3]();return `<button class="nav ${S.page===n[0]?'on':''}" data-go="${n[0]}">${I(n[1],19)}<span>${n[2]}</span>${b?`<span class="bdg" style="background:#F79009;color:#0F1B2D">${b}</span>`:''}</button>`}).join('')}</nav>
+ <div class="branch" style="margin-top:auto;background:#132536;border-radius:12px;padding:14px"><div class="b">${o[0]}</div><div class="sm" style="color:#8FA6BA">${o[1]}</div><div class="row sm" style="margin-top:8px;color:#7FE3DA;gap:6px">${I('shield',14)}Verified partner since 2025</div></div></aside>
+ <main class="main"><header class="topbar"><div style="flex:1 1 260px;min-width:0"><h1 style="font-size:22px">${TITLES[S.page][0]}</h1><div class="muted sm">${TITLES[S.page][1]}</div></div>
+ <label class="row" style="gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px"><span class="sw"><input type="checkbox" ${S.open[S.mode]?'checked':''} data-a="openT" aria-label="Accepting new orders"><span></span></span><span><b class="sm" style="display:block;font-size:13px">${S.open[S.mode]?'Accepting orders':'Paused'}</b><span class="muted sm">${S.open[S.mode]?'Open till 10 PM':'Hidden from patients'}</span></span></label>
+ <button class="btn ico" aria-label="Notifications" data-a="toast" data-v="No new notifications">${I('bell')}</button>
+ <div class="row"><span class="av" style="background:#E6F4F3;color:#0B5F5B">${ini(o[2])}</span><div><div class="b" style="font-size:13px">${o[2]}</div><div class="muted sm">${o[3]}</div></div></div></header>
+ <div class="content">${V[S.page]()}</div></main>`}
+function render(){const y=window.scrollY;document.getElementById('app').innerHTML=shell();renderOv();try{window.scrollTo(0,y)}catch(_){}}
+function renderOv(){document.getElementById('ov').innerHTML=(S.modal?`<div class="bg" data-a="closeModal"><div class="modal" role="dialog" aria-modal="true" data-stop="1" ${S.modal==='report'?'style="max-width:760px"':''}>${M[S.modal]()}</div></div>`:'')+(S.toast?`<div class="toast" role="status">${I('check',18,'#7FE3DA',2.4)}<span>${esc(S.toast)}</span></div>`:'')}
+const mhead=(t,sub)=>`<div class="between"><div><h3 class="sec" style="font-size:18px">${t}</h3>${sub?`<div class="muted sm">${sub}</div>`:''}</div><button class="btn ico ghost" aria-label="Close" data-a="closeModal">${I('x')}</button></div>`;
+const go=p=>{S.page=p;S.modal=null;render();try{window.scrollTo(0,0)}catch(_){}};
+A.closeModal=()=>{S.modal=null;render()};A.toast=v=>toast(v);
+A.mode=v=>{S.mode=v;go(v==='lab'?'l_home':'p_home')};
+A.openT=()=>{S.open[S.mode]=S.open[S.mode]?0:1;render();toast(S.open[S.mode]?'You are accepting new orders':'New orders paused · existing orders continue')};
+
+/* ================= OVERVIEWS ================= */
+V.l_home=()=>{const c=s=>S.L.filter(o=>o.status===s).length;const crit=S.L.filter(o=>o.status!=='Published'&&params(o).some(x=>flag(x.p,o.vals[x.k])==='C'));
+ return `<div class="grid g4">${kpi('file','md',c('New'),'New orders','Accept within 30 minutes')}${kpi('bike','info',S.L.filter(o=>o.mode==='Home'&&['Accepted','Collected'].includes(o.status)).length,'Home pick-ups today','3 phlebotomists on duty')}${kpi('flask','pu',c('Processing')+c('Ready'),'Reports in progress',c('Ready')+' waiting for pathologist')}${kpi('clock','lo','5.2 h','Average turnaround','Promise: 24 h','#067647')}</div>
+ ${crit.length?`<div class="card row wrap" style="padding:14px 16px;background:#FEF3F2;border-color:#FDA29B"><span class="icob hi">${I('alert',20)}</span><div style="flex:1"><b>Critical result needs a phone call before release</b><div class="sm">${crit.map(o=>o.pt+' · '+o.id).join(', ')} — tell the ordering doctor right away.</div></div><button class="btn dan" data-a="openRes" data-v="${crit[0].id}">Open result</button></div>`:''}
+ <div class="grid g2"><section class="card" style="overflow:hidden"><div class="between" style="padding:16px 18px"><h3 class="sec">Today's work</h3><button class="lnk" data-go="l_orders">All orders</button></div><table class="tbl"><tbody>${S.L.filter(o=>o.status!=='Published'&&o.status!=='Rejected').map(o=>`<tr class="clk" data-a="openOrder" data-v="${o.id}"><td><b>${o.pt}</b> <span class="muted sm">${o.ag}</span><div class="muted sm">${o.tests.join(', ')}</div></td><td class="sm">${o.mode==='Home'?I('bike',14)+' '+o.slot:'Walk-in'}</td><td>${o.pri==='Urgent'?'<span class="chip hi">Urgent</span> ':''}<span class="chip ${LCLS[o.status]}">${LLAB[o.status]}</span></td></tr>`).join('')}</tbody></table></section>
+ <div class="stack" style="gap:20px"><section class="card stack" style="padding:18px;gap:12px"><h3 class="sec">This week</h3><div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">${[['Orders','186'],['Home pick-ups','74'],['Earnings',rs(342600)]].map(k=>`<div style="background:#F8FAFC;border-radius:12px;padding:12px"><div class="muted sm">${k[0]}</div><b style="font-size:18px">${k[1]}</b></div>`).join('')}</div>
+ <svg viewBox="0 0 420 120" style="width:100%" role="img" aria-label="Orders per day this week">${[24,31,28,35,30,22,16].map((v,i)=>`<rect x="${14+i*58}" y="${100-v*2.4}" width="34" height="${v*2.4}" rx="5" fill="${i===0?'#0B7A75':'#A7DCD8'}"/><text x="${31+i*58}" y="115" text-anchor="middle" font-size="10" fill="#5B6B7F">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</text>`).join('')}</svg></section>
+ <section class="card stack" style="padding:18px;gap:10px"><div class="between"><h3 class="sec">Patient ratings</h3><span class="chip lo">${I('star',12)} 4.7 / 5</span></div>${[['“Sister Asma came on time and was very gentle with my mother.”','Zainab B. · home collection'],['“Report came on my phone the same evening.”','Tariq J. · walk-in']].map(r=>`<div style="background:#F8FAFC;border-radius:12px;padding:12px"><div>${r[0]}</div><div class="muted sm">${r[1]}</div></div>`).join('')}</section></div></div>`};
+
+V.p_home=()=>{const c=s=>S.R.filter(r=>r.status===s).length;const low=lowMeds(),exp=MEDS.filter(m=>monthsLeft(m.exp)<=3);
+ return `<div class="grid g4">${kpi('pill','md',c('New'),'New prescriptions','Reply within 15 minutes')}${kpi('box','pu',c('Confirmed'),'To pack','Patient has confirmed')}${kpi('truck','info',c('Packed')+c('Out for delivery'),'Ready or on the way',S.RD.filter(r=>r.status!=='Off today').length+' riders on duty')}${kpi('money','lo',rs(48250),'Sales today','132 orders this week','#067647')}</div>
+ <div class="grid g2"><section class="card" style="overflow:hidden"><div class="between" style="padding:16px 18px"><h3 class="sec">Prescription queue</h3><button class="lnk" data-go="p_rx">Open queue</button></div><table class="tbl"><tbody>${S.R.filter(r=>!['Delivered','Cancelled'].includes(r.status)).map(r=>`<tr class="clk" data-a="openRx" data-v="${r.id}"><td><b>${r.pt}</b><div class="muted sm">${r.doc} · ${r.items.length} items</div></td><td class="sm">${r.del==='Delivery'?I('truck',14)+' Delivery':'Pickup'}</td><td>${r.items.some(i=>med(i.m).ctrl)?'<span class="chip hi">Controlled</span> ':''}${r.items.some(i=>med(i.m).cold)?`<span class="chip info">${I('snow',12)}Cold</span> `:''}<span class="chip ${RCLS[r.status]}">${RLAB[r.status]}</span></td></tr>`).join('')}</tbody></table></section>
+ <div class="stack" style="gap:20px"><section class="card stack" style="padding:18px;gap:10px"><div class="between"><h3 class="sec">Low stock</h3><button class="lnk" data-a="invGo" data-v="Low stock">See all</button></div>${low.map(m=>`<div class="between"><span><b>${m.name}</b><span class="muted sm" style="display:block">${m.stock} left · reorder at ${m.re}</span></span><button class="btn sm" data-a="reorder" data-v="${m.id}">Reorder</button></div>`).join('')}</section>
+ <section class="card stack" style="padding:18px;gap:10px"><div class="between"><h3 class="sec">Expiring within 3 months</h3><button class="lnk" data-a="invGo" data-v="Expiring soon">See all</button></div>${exp.map(m=>`<div class="between"><span><b>${m.name}</b><span class="muted sm" style="display:block">Batch ${m.batch} · ${m.stock} units</span></span><span class="chip ${monthsLeft(m.exp)<=1?'hi':'md'}">${fmtExp(m.exp)}</span></div>`).join('')}</section></div></div>`};
+const fmtExp=e=>{const [y,m]=e.split('-');return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y};
+</script>
+<script>
+/* ================= LAB: ORDERS ================= */
+const LGRP={New:['New'],'In progress':['Accepted','Collected','Processing','Ready'],Completed:['Published'],Declined:['Rejected']};
+const lo=id=>S.L.find(o=>o.id===id);
+const amt=o=>o.tests.reduce((a,t)=>a+(+S.cat[t].price||0),0)+(o.mode==='Home'?300:0);
+V.l_orders=()=>{const f=S.lo.f,list=S.L.filter(o=>LGRP[f].includes(o.status));let o=lo(S.lo.sel);if(!o||!list.includes(o))o=list[0];S.lo.sel=o&&o.id;
+ return `${tabs('loF',Object.keys(LGRP).map(k=>[k,k,S.L.filter(x=>LGRP[k].includes(x.status)).length||'',k==='New'?'md':'neu']),f)}
+ <div class="row wrap" style="gap:20px;align-items:flex-start"><section class="card" style="flex:1 1 340px;overflow:hidden;min-width:0">${list.map(x=>`<button class="list-btn ${o&&o.id===x.id?'on':''}" data-a="loSel" data-v="${x.id}"><div class="between"><span class="sm muted">${x.id} · ${x.time}</span><span>${x.pri==='Urgent'?'<span class="chip hi">Urgent</span> ':''}<span class="chip ${LCLS[x.status]}">${LLAB[x.status]}</span></span></div><b style="display:block;margin:4px 0">${x.pt} <span class="muted sm" style="font-weight:500">${x.ag}</span></b><div class="muted sm">${x.tests.join(' · ')}</div><div class="sm" style="margin-top:4px">${x.mode==='Home'?I('bike',13)+' Home · '+x.slot:I('pin',13)+' Walk-in'}</div></button>`).join('')||'<div class="muted" style="padding:30px;text-align:center">No orders here.</div>'}</section>
+ ${o?`<section class="card stack" style="flex:2 1 520px;padding:20px;gap:16px;min-width:0">${orderDetail(o)}</section>`:''}</div>`};
+function orderDetail(o){return `<div class="between wrap"><div class="row"><span class="av tl" style="width:48px;height:48px">${ini(o.pt)}</span><div><b style="font-size:18px">${o.pt}</b> <span class="muted">${o.ag}</span><div class="muted sm">${o.id} · ${o.phone} · ordered ${o.time}</div></div></div><div class="row wrap" style="gap:6px">${o.pri==='Urgent'?'<span class="chip hi">Urgent</span>':''}<span class="chip ${LCLS[o.status]}">${LLAB[o.status]}</span></div></div>
+ ${o.status!=='Rejected'?stepper(['New','Accepted','Collected','Processing','Ready','Published'].map(s=>s),o.status).replace(/>Accepted</,'>Accepted<').replace('>Collected<','>Sample taken<').replace('>Processing<','>In lab<').replace('>Ready<','>Checked<').replace('>Published<','>Sent<'):''}
+ <div class="grid sm" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;background:#F8FAFC;border-radius:12px;padding:14px"><div><div class="muted">Ordered by</div><b>${o.doc}</b><div class="muted">${o.clinic}</div></div><div><div class="muted">Collection</div><b>${o.mode==='Home'?'Home · '+o.slot:'Walk-in at lab'}</b>${o.addr?`<div class="muted">${o.addr}</div>`:''}</div><div><div class="muted">Payment</div><b>${o.pay}</b><div class="muted">${rs(amt(o))}${o.mode==='Home'?' incl. Rs 300 home visit':''}</div></div></div>
+ <table class="tbl"><thead><tr><th>Test</th><th>Turnaround</th><th style="text-align:right">Price</th></tr></thead><tbody>${o.tests.map(t=>`<tr><td><b>${t}</b><div class="muted sm">${PANELS[t].map(p=>p[0]).join(', ')}</div></td><td class="sm">${S.cat[t].tat}</td><td style="text-align:right">${rs(+S.cat[t].price||0)}</td></tr>`).join('')}</tbody></table>
+ ${o.fast||o.note?`<div class="card" style="padding:12px 14px;background:#FFFAEB;border-color:#FEDF89">${o.fast?`<div class="sm"><b>Fasting test</b> — patient told by SMS: no food 10–12 hours before, water is fine.</div>`:''}${o.note?`<div class="sm"><b>Doctor's note:</b> ${esc(o.note)}</div>`:''}</div>`:''}
+ <div class="row wrap">${{New:`<button class="btn pri" data-a="accept" data-v="${o.id}">${I('check',16)}Accept order</button><button class="btn dan" data-a="rejOpen" data-v="${o.id}">Decline</button>`,
+  Accepted:o.mode==='Home'?`<button class="btn pri" data-a="openColl" data-v="${o.id}">${I('bike',16)}Manage home pick-up</button>`:`<button class="btn pri" data-a="walkCollect" data-v="${o.id}">${I('barcode',16)}Sample taken · print barcode</button>`,
+  Collected:`<button class="btn pri" data-a="receive" data-v="${o.id}">${I('barcode',16)}Scan in at lab</button>`,
+  Processing:`<button class="btn pri" data-a="openRes" data-v="${o.id}">${I('flask',16)}Enter results</button>`,
+  Ready:`<button class="btn pri" data-a="openRes" data-v="${o.id}">${I('shield',16)}Pathologist check</button>`,
+  Published:`<button class="btn pri" data-a="report" data-v="${o.id}">${I('eye',16)}View report</button><button class="btn" data-a="toast" data-v="Report link sent again by WhatsApp">${I('send',16)}Resend to patient</button>`,
+  Rejected:'<span class="muted sm">Declined — the doctor and patient were told and can choose another lab.</span>'}[o.status]}${['New','Accepted'].includes(o.status)?`<button class="btn" style="margin-left:auto" data-a="toast" data-v="Calling ${esc(o.pt)} through CareConnect (number hidden)">${I('phone',16)}Call patient</button>`:''}</div>`}
+A.loF=v=>{S.lo.f=v;S.lo.sel=null;render()};A.loSel=v=>{S.lo.sel=v;render()};
+A.openOrder=v=>{const o=lo(v);S.lo.f=Object.keys(LGRP).find(k=>LGRP[k].includes(o.status));S.lo.sel=v;go('l_orders')};
+A.accept=v=>{const o=lo(v);o.status='Accepted';if(o.mode==='Home'){o.coll='';o.asg=''}render();toast(o.mode==='Home'?'Accepted · now assign a phlebotomist':'Accepted · patient told to visit the lab')};
+A.rejOpen=v=>{S.lo.rej=v;S.modal='rej';renderOv()};
+M.rej=()=>mhead('Decline order '+S.lo.rej+'?','The doctor and patient will be told and can pick another lab')+`<label class="lbl" for="rjr" style="margin-top:14px">Reason</label>${sel('rjr',['Test not available at this branch','Outside our home collection area','No slot available at that time','Duplicate order'])}<div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn dan" data-a="doRej">Decline order</button></div>`;
+A.doRej=()=>{lo(S.lo.rej).status='Rejected';S.modal=null;render();toast('Order declined · doctor & patient notified')};
+A.walkCollect=v=>{const o=lo(v);o.status='Processing';render();toast('Barcode CL-'+v.slice(3)+' printed · sample sent to bench')};
+A.receive=v=>{const o=lo(v);o.status='Processing';o.coll='At lab';render();toast('Sample scanned in · temperature OK')};
+A.openRes=v=>{S.lr.sel=v;go('l_res')};
+A.openColl=v=>{S.lc.sel=v;go('l_coll')};
+
+/* ================= LAB: HOME COLLECTION ================= */
+const CST=['Assigned','On the way','Collected','At lab'];
+const ph=id=>S.PH.find(p=>p.id===id);
+const PINS={'LB-7731':[70,55],'LB-7730':[22,30],'LB-7725':[38,70],'LB-7724':[84,78],'LB-7723':[55,30]};
+V.l_coll=()=>{const list=S.L.filter(o=>o.mode==='Home'&&['Accepted','Collected'].includes(o.status));let o=lo(S.lc.sel);if(!o||!list.includes(o))o=list[0];S.lc.sel=o&&o.id;
+ return `<div class="grid g4">${S.PH.map(p=>{const jobs=S.L.filter(x=>x.asg===p.id&&['Accepted','Collected'].includes(x.status)).length;return `<div class="card row" style="padding:14px"><span class="av ${p.g==='F'?'pu':'tl'}">${ini(p.name)}</span><div style="flex:1"><b>${p.name}</b><div class="muted sm">${p.g==='F'?'Female':'Male'} · ${jobs} job${jobs===1?'':'s'} today</div></div><span class="chip ${p.status==='Available'?'lo':p.status==='On break'?'neu':'info'}">${p.status}</span></div>`}).join('')}</div>
+ <div class="row wrap" style="gap:20px;align-items:flex-start"><section class="card" style="flex:1 1 320px;overflow:hidden;min-width:0">${list.map(x=>`<button class="list-btn ${o&&o.id===x.id?'on':''}" data-a="lcSel" data-v="${x.id}"><div class="between"><b>${x.pt}</b><span class="chip ${x.coll?'info':'md'}">${x.coll||'Not assigned'}</span></div><div class="muted sm">${x.slot} · ${x.addr}</div><div class="sm" style="margin-top:4px">${x.asg?I('user',13)+' '+ph(x.asg).name:'<span style="color:#B54708">Needs a phlebotomist</span>'}${x.fem?' · <span class="chip pu">Female requested</span>':''}</div></button>`).join('')||'<div class="muted" style="padding:30px;text-align:center">No home pick-ups waiting.</div>'}</section>
+ <section class="card stack" style="flex:2 1 520px;padding:20px;gap:14px;min-width:0"><div class="map" role="img" aria-label="Map of pick-ups and phlebotomists">${list.map(x=>{const pp=PINS[x.id]||[50,50];return `<div class="pin" style="left:${pp[0]}%;top:${pp[1]}%"><span style="${o&&o.id===x.id?'background:#0B7A75;color:#fff':''}">${x.pt.split(' ')[0]}</span>${I('pin',22,o&&o.id===x.id?'#0B7A75':'#D92D20',2)}</div>`}).join('')}${S.PH.map(p=>`<div class="pin" style="left:${p.loc[0]}%;top:${p.loc[1]}%"><span style="background:#0E2233;color:#fff">${p.name.split(' ')[0]}</span>${I('bike',20,'#0E2233',2)}</div>`).join('')}</div>
+ ${o?`<div class="between wrap"><div><b style="font-size:17px">${o.pt}</b> <span class="muted">${o.ag} · ${o.id}</span><div class="muted sm">${o.addr} · ${o.slot}${o.note&&o.mode==='Home'?' · '+esc(o.note):''}</div></div><span class="chip ${o.pay.startsWith('Paid')?'lo':'md'}">${o.pay}</span></div>
+ ${stepper(CST,o.coll||'')}
+ <div class="row wrap" style="gap:12px;align-items:flex-end"><div style="min-width:240px"><label class="lbl" for="asg">Phlebotomist</label>${sel('asg',[['','Choose…'],...S.PH.map(p=>[p.id,`${p.name} (${p.g==='F'?'female':'male'}) · ${p.status}`])],o.asg||'',`data-a="assign" data-v="${o.id}" ${o.status==='Collected'?'disabled':''}`)}</div>
+ ${!o.coll?'':o.coll==='Assigned'?`<button class="btn pri" data-a="collStep" data-v="${o.id}">${I('bike',16)}On the way · send ETA to patient</button>`:o.coll==='On the way'?`<button class="btn pri" data-a="collStep" data-v="${o.id}">${I('barcode',16)}Sample collected${o.pay==='Pay at collection'?' · cash Rs '+amt(o).toLocaleString():''}</button>`:o.coll==='Collected'?`<button class="btn pri" data-a="receive" data-v="${o.id}">${I('barcode',16)}Scan in at lab</button>`:''}</div>
+ <div class="muted sm">${o.fem?'Patient asked for a female phlebotomist — only female staff can be assigned. ':''}Patients get an SMS with the phlebotomist’s name and photo when they set off.</div>`:''}</section></div>`};
+A.lcSel=v=>{S.lc.sel=v;render()};
+A.assign=(v,el)=>{const o=lo(v),p=ph(el.value);if(!p){o.asg='';o.coll='';render();return}if(o.fem&&p.g!=='F'){toast('Patient asked for a female phlebotomist');render();return}o.asg=p.id;o.coll='Assigned';render();toast(p.name+' assigned · patient notified')};
+A.collStep=v=>{const o=lo(v),p=ph(o.asg);if(o.coll==='Assigned'){o.coll='On the way';p.status='On the way';toast('ETA 20 min sent to '+o.pt)}else if(o.coll==='On the way'){o.coll='Collected';o.status='Collected';p.status='Available';if(o.pay==='Pay at collection')o.pay='Paid · Cash';toast('Sample collected · barcode CL-'+o.id.slice(3)+' scanned')}render()};
+
+/* ================= LAB: RESULTS ================= */
+V.l_res=()=>{const list=S.L.filter(o=>['Processing','Ready'].includes(o.status));let o=lo(S.lr.sel);if(!o||!list.includes(o))o=list[0];S.lr.sel=o&&o.id;
+ const ps=o?params(o):[];const filled=ps.every(x=>o.vals[x.k]!==undefined&&o.vals[x.k]!==''&&!isNaN(+o.vals[x.k]));const crit=ps.filter(x=>flag(x.p,o.vals[x.k])==='C');const lock=o&&o.status==='Ready';
+ return `<div class="row wrap" style="gap:20px;align-items:flex-start"><section class="card" style="flex:1 1 300px;overflow:hidden;min-width:0"><div style="padding:12px 14px" class="muted sm b">IN LAB</div>${list.map(x=>{const c=params(x).some(y=>flag(y.p,x.vals[y.k])==='C');return `<button class="list-btn ${o&&o.id===x.id?'on':''}" data-a="lrSel" data-v="${x.id}"><div class="between"><b>${x.pt}</b><span class="chip ${LCLS[x.status]}">${x.status==='Ready'?'Pathologist':'Entering'}</span></div><div class="muted sm">${x.id} · ${x.tests.join(', ')}</div>${c?'<span class="flagC" style="display:inline-block;margin-top:6px">CRITICAL</span>':''}${x.pri==='Urgent'?' <span class="chip hi" style="margin-top:6px">Urgent</span>':''}</button>`}).join('')||'<div class="muted" style="padding:30px;text-align:center">Nothing waiting.</div>'}</section>
+ ${o?`<section class="card stack" style="flex:2 1 560px;padding:20px;gap:14px;min-width:0"><div class="between wrap"><div><b style="font-size:18px">${o.pt}</b> <span class="muted">${o.ag}</span><div class="muted sm">${o.id} · ${o.doc} · ${o.clinic}${o.note?' · '+esc(o.note):''}</div></div><span class="chip ${LCLS[o.status]}">${LLAB[o.status]}</span></div>
+ ${crit.length?`<div class="card row wrap" style="padding:12px 14px;background:#FEF3F2;border-color:#FDA29B"><span class="icob hi">${I('alert',18)}</span><div style="flex:1"><b>Critical value: ${crit.map(x=>x.p[0]+' '+o.vals[x.k]+' '+x.p[1]).join(', ')}</b><div class="sm">${S.lr.crit[o.id]?'Call logged: '+esc(S.lr.crit[o.id]):'The pathologist must phone '+o.doc+' before the report is released.'}</div></div>${S.lr.crit[o.id]?'<span class="chip lo">Doctor informed</span>':`<button class="btn dan" data-a="openModal" data-v="crit">${I('phone',16)}Log call to doctor</button>`}</div>`:''}
+ <div class="scroll"><table class="tbl"><thead><tr><th>Test</th><th>Result</th><th>Unit</th><th>Normal range</th><th>Flag</th></tr></thead><tbody>${o.tests.map(t=>PANELS[t].map((p,pi)=>{const k=o.tests.indexOf(t)+'_'+pi,v=o.vals[k]??'',fl=flag(p,v);return `<tr>${pi===0?`<td rowspan="${PANELS[t].length}" style="vertical-align:top"><b>${t}</b></td>`:''}<td><label class="sm" style="display:block;color:var(--muted)" for="r${k}">${p[0]}</label><input id="r${k}" class="inp" style="width:120px;min-height:36px;${fl==='C'?'border-color:#D92D20;background:#FEF3F2':''}" inputmode="decimal" value="${esc(v)}" data-i="L.${S.L.indexOf(o)}.vals.${k}" ${lock?'readonly':''}></td><td class="sm muted">${p[1]}</td><td class="sm">${ref(p)}</td><td>${fl==='C'?'<span class="flagC">CRITICAL</span>':fl==='H'?'<span class="flagH">High ↑</span>':fl==='L'?'<span class="flagL">Low ↓</span>':fl==='N'?'<span class="sm" style="color:#067647">Normal</span>':''}</td></tr>`}).join('')).join('')}</tbody></table></div>
+ ${o.status==='Processing'?`<div class="row wrap"><button class="btn pri" data-a="submitRes" data-v="${o.id}" ${filled?'':'disabled'}>${I('send',16)}Send to pathologist</button><button class="btn" data-a="toast" data-v="Draft saved">Save draft</button><button class="btn" style="margin-left:auto" data-a="toast" data-v="Values imported from the analyser (demo)">${I('upload',16)}Import from analyser</button></div><div class="muted sm">${filled?'All values entered.':'Enter every value to continue. Flags update as you type.'}</div>`
+ :`<div class="card row wrap" style="padding:14px;background:#F8FAFC"><span class="av pu">RK</span><div style="flex:1"><b>Dr. Rukhsana Kazmi</b><div class="muted sm">Consultant pathologist · PMDC 33018-P · signs and releases the report</div></div><button class="btn" data-a="report" data-v="${o.id}">${I('eye',16)}Preview report</button><button class="btn" data-a="rerun" data-v="${o.id}">Send back for re-run</button><button class="btn pri" data-a="publish" data-v="${o.id}" ${crit.length&&!S.lr.crit[o.id]?'disabled':''}>${I('check',16)}Sign & send report</button></div>`}</section>`:''}</div>`};
+A.lrSel=v=>{S.lr.sel=v;render()};
+A.openModal=v=>{S.modal=v;renderOv()};
+A.submitRes=v=>{lo(v).status='Ready';render();toast('Sent to Dr. Rukhsana Kazmi for checking')};
+A.rerun=v=>{lo(v).status='Processing';render();toast('Sent back to the bench for a re-run')};
+A.publish=v=>{const o=lo(v);o.status='Published';o.pubAt='Today, just now';S.modal=null;render();toast('Report sent to '+o.pt+'’s app and to '+o.doc)};
+M.crit=()=>{const o=lo(S.lr.sel);return mhead('Log critical value call',o.pt+' · '+o.id)+`<p class="muted" style="margin:10px 0">Call ${o.doc} (${o.clinic}). If the doctor can't be reached in 15 minutes, call the clinic's duty doctor and the patient.</p><div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"><div><label class="lbl" for="cw">Spoke with</label><input id="cw" class="inp" value="${o.doc}"></div><div><label class="lbl" for="ct">Time</label><input id="ct" class="inp" value="8:14 AM"></div></div><label class="row sm" style="margin-top:12px;gap:8px"><input type="checkbox" class="chk" id="crb">The doctor repeated the value back to me</label><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn dan" data-a="logCrit">Save call log</button></div>`};
+A.logCrit=()=>{if(!document.getElementById('crb').checked){toast('Tick the read-back box first');return}S.lr.crit[S.lr.sel]=document.getElementById('cw').value+' at '+document.getElementById('ct').value+' · read back confirmed';S.modal=null;render();toast('Call logged · you can now release the report')};
+A.report=v=>{S.rep=v;S.modal='report';renderOv()};
+M.report=()=>{const o=lo(S.rep);const abn=params(o).filter(x=>['H','L','C'].includes(flag(x.p,o.vals[x.k])));return mhead('Report preview','What the patient and doctor receive in the app')+`<div class="report" style="margin-top:14px"><div class="between wrap" style="border-bottom:2px solid #0B7A75;padding-bottom:12px"><div><b style="font-size:18px;font-family:'Plus Jakarta Sans'">CityLab Diagnostics</b><div class="muted sm">Blue Area, Islamabad · via CareConnect</div></div><div class="sm" style="text-align:right"><b>${o.id}</b><div class="muted">${o.status==='Published'?'Released '+o.pubAt:'DRAFT — not yet released'}</div></div></div>
+ <div class="grid sm" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0"><div><span class="muted">Patient</span><br><b>${o.pt}</b> · ${o.ag}</div><div><span class="muted">Referred by</span><br><b>${o.doc}</b></div><div><span class="muted">Sample</span><br><b>${o.mode==='Home'?'Home collection':'Walk-in'}</b></div></div>
+ <table class="tbl"><thead><tr><th>Test</th><th>Result</th><th>Normal range</th></tr></thead><tbody>${params(o).map(x=>{const fl=flag(x.p,o.vals[x.k]);return `<tr><td>${x.p[0]}<div class="muted sm">${x.t}</div></td><td class="${fl==='H'||fl==='C'?'flagH':fl==='L'?'flagL':''}">${esc(o.vals[x.k]||'—')} ${x.p[1]} ${fl==='H'?'↑':fl==='L'?'↓':fl==='C'?'‼':''}</td><td class="sm">${ref(x.p)}</td></tr>`}).join('')}</tbody></table>
+ <div style="background:#F8FAFC;border-radius:10px;padding:12px;margin-top:12px"><div class="sm"><b>In simple words:</b> ${abn.length?abn.length+' result'+(abn.length>1?'s are':' is')+' outside the normal range ('+abn.map(x=>x.p[0]).join(', ')+'). '+o.doc+' has a copy and will advise you.':'All results are within the normal range.'}</div><div class="urdu sm" style="margin-top:6px">${abn.length?`${abn.length} نتائج نارمل حد سے باہر ہیں۔ آپ کے ڈاکٹر کے پاس رپورٹ موجود ہے اور وہ آپ کو مشورہ دیں گے۔`:'تمام نتائج نارمل حد کے اندر ہیں۔'}</div></div>
+ <div class="between sm" style="margin-top:12px"><span class="muted">Dr. Rukhsana Kazmi, Consultant Pathologist · PMDC 33018-P</span>${o.status==='Published'?'<span class="chip lo">Digitally signed</span>':'<span class="chip md">Unsigned</span>'}</div></div>
+ <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn" data-a="toast" data-v="Sent to printer">${I('printer',16)}Print</button><button class="btn pri" data-a="closeModal">Done</button></div>`};
+
+/* ================= LAB: CATALOG ================= */
+V.l_cat=()=>`<div class="between wrap"><p class="muted">Set prices and turnaround times for tests ordered through CareConnect. Patients see the full price before they confirm. Home visit fee: <b>Rs 300</b>.</p><button class="btn pri" data-a="toast" data-v="Prices saved · live in patient app within 5 minutes">${I('check',16)}Save changes</button></div>
+ <section class="card" style="overflow:hidden"><div class="scroll"><table class="tbl"><thead><tr><th>Test</th><th>Includes</th><th>Price (Rs)</th><th>Turnaround</th><th>Home collection</th><th>Offered</th></tr></thead><tbody>${Object.keys(PANELS).map(t=>{const c=S.cat[t];return `<tr style="${c.on?'':'opacity:.55'}"><td><b>${t}</b></td><td class="sm muted">${PANELS[t].map(p=>p[0]).join(', ')}</td><td><input class="inp" id="pr_${t.replace(/\W/g,'')}" style="width:110px;min-height:36px" inputmode="numeric" value="${c.price}" data-i="cat.${t}.price" data-norender="1" aria-label="Price for ${t}"></td><td>${sel('tat_'+t.replace(/\W/g,''),['2 h','4 h','6 h','12 h','24 h','48 h'],c.tat,`data-i="cat.${t}.tat" aria-label="Turnaround for ${t}" style="min-height:36px;width:100px"`)}</td><td><span class="sw"><input type="checkbox" ${c.home?'checked':''} data-t="cat.${t}.home" aria-label="Home collection for ${t}"><span></span></span></td><td><span class="sw"><input type="checkbox" ${c.on?'checked':''} data-t="cat.${t}.on" aria-label="Offer ${t}"><span></span></span></td></tr>`}).join('')}</tbody></table></div></section>
+ <p class="muted sm">Sehat Card orders are paid through the card at the panel rate, not the prices above.</p>`;
+</script>
+<script>
+/* ================= PHARMACY: PRESCRIPTIONS ================= */
+const RGRP={New:['New'],'Awaiting patient':['Quoted'],'To pack':['Confirmed'],Dispatch:['Packed','Out for delivery'],Done:['Delivered','Cancelled']};
+const rx=id=>S.R.find(r=>r.id===id);
+const disp=i=>i.act==='sub'?med(SUBS[i.m]):med(i.m);
+const subtotal=r=>r.items.filter(i=>i.act!=='oos').reduce((a,i)=>a+disp(i).price*i.q,0);
+const dfee=r=>r.del==='Delivery'&&subtotal(r)<2500?150:0;
+const total=r=>subtotal(r)+dfee(r);
+V.p_rx=()=>{const f=S.ro.f,list=S.R.filter(r=>RGRP[f].includes(r.status));let r=rx(S.ro.sel);if(!r||!list.includes(r))r=list[0];S.ro.sel=r&&r.id;
+ return `${tabs('roF',Object.keys(RGRP).map(k=>[k,k,S.R.filter(x=>RGRP[k].includes(x.status)).length||'',k==='New'?'md':'neu']),f)}
+ <div class="row wrap" style="gap:20px;align-items:flex-start"><section class="card" style="flex:1 1 320px;overflow:hidden;min-width:0">${list.map(x=>`<button class="list-btn ${r&&r.id===x.id?'on':''}" data-a="roSel" data-v="${x.id}"><div class="between"><span class="sm muted">${x.id} · ${x.time}</span><span class="chip ${RCLS[x.status]}">${RLAB[x.status]}</span></div><b style="display:block;margin:4px 0">${x.pt} <span class="muted sm" style="font-weight:500">${x.ag}</span></b><div class="muted sm">${x.items.map(i=>med(i.m).name).join(' · ')}</div><div class="row wrap sm" style="gap:6px;margin-top:6px">${x.del==='Delivery'?`<span class="chip neu">${I('truck',12)}Delivery</span>`:'<span class="chip neu">Pickup</span>'}${x.items.some(i=>med(i.m).ctrl)?'<span class="chip hi">Controlled</span>':''}${x.items.some(i=>med(i.m).cold)?`<span class="chip info">${I('snow',12)}Cold chain</span>`:''}</div></button>`).join('')||'<div class="muted" style="padding:30px;text-align:center">Nothing here.</div>'}</section>
+ ${r?`<section class="card stack" style="flex:2 1 580px;padding:20px;gap:14px;min-width:0">${rxDetail(r)}</section>`:''}</div>`};
+function rxDetail(r){const ctrl=r.items.some(i=>med(i.m).ctrl),cold=r.items.some(i=>med(i.m).cold),edit=r.status==='New';
+ const pk=S.ro.pack[r.id]=S.ro.pack[r.id]||{};const CK=['Every item matches the prescription (name, strength, quantity)','Batch number and expiry recorded for each item','Directions label printed in Urdu and English',...(cold?['Insulin packed in cool box with ice pack (2–8 °C)']:[]),...(ctrl?['Psychotropic entered in controlled-drug register']:[])];
+ return `<div class="between wrap"><div class="row"><span class="av tl" style="width:48px;height:48px">${ini(r.pt)}</span><div><b style="font-size:18px">${r.pt}</b> <span class="muted">${r.ag}</span><div class="muted sm">${r.id} · ${r.phone} · ${r.del==='Delivery'?'Deliver to '+r.addr:'Pickup at pharmacy'}</div></div></div><span class="chip ${RCLS[r.status]}">${RLAB[r.status]}</span></div>
+ ${r.status!=='Cancelled'?stepper(['New','Quoted','Confirmed','Packed',...(r.del==='Delivery'?['Out for delivery']:[]),'Delivered'],r.status).replace('>Quoted<','>Quote sent<').replace('>Confirmed<','>Confirmed<').replace('>Out for delivery<','>On the way<'):''}
+ <div class="card row wrap" style="padding:12px 14px;background:#F8FAFC"><span class="icob tl">${I('file',18)}</span><div style="flex:1"><b>E-prescription from ${r.doc}</b><div class="muted sm">${r.clinic} · PMDC ${r.pmdc} · digitally signed in CareConnect · ${r.subOK?'generic substitution allowed':'<b>dispense as written</b> — no substitution'}</div></div><button class="btn sm" data-a="toast" data-v="Message sent to ${esc(r.doc)}">${I('chat',14)}Ask doctor</button></div>
+ ${ctrl?`<div class="card" style="padding:12px 14px;background:#FEF3F2;border-color:#FDA29B"><b class="sm" style="color:#B42318">${I('alert',14)} Controlled medicine (alprazolam)</b><div class="sm">Rider must check the patient's CNIC at handover. Record in the controlled-drug register. No refills without a new prescription.</div></div>`:''}
+ ${cold?`<div class="card" style="padding:12px 14px;background:#EFF8FF;border-color:#B2DDFF"><b class="sm">${I('snow',14)} Cold chain</b><div class="sm">Insulin must stay at 2–8 °C. Pack last, deliver within 2 hours.</div></div>`:''}
+ <div class="scroll"><table class="tbl"><thead><tr><th>Prescribed</th><th>Qty</th><th>We give</th><th>Stock</th><th style="text-align:right">Price</th></tr></thead><tbody>${r.items.map((i,ix)=>{const m=med(i.m),d=disp(i),sub=SUBS[i.m]&&r.subOK?med(SUBS[i.m]):null;return `<tr style="${i.act==='oos'?'opacity:.6':''}"><td><b>${m.name}</b><div class="muted sm">${m.gen} · ${esc(i.sig)}</div></td><td>${i.q}</td><td>${i.act==='oos'?'<span class="chip hi">Not available</span>':`<b>${d.name}</b>${i.act==='sub'?'<div class="sm" style="color:#067647">Generic — saves '+rs((m.price-d.price)*i.q)+'</div>':''}`}${edit?`<div class="row wrap" style="gap:6px;margin-top:6px">${sub?`<button class="btn sm ${i.act==='sub'?'pri':''}" data-a="itSub" data-v="${r.id}:${ix}">${i.act==='sub'?'Using generic':'Offer generic'}</button>`:''}<button class="btn sm ${i.act==='oos'?'dan':''}" data-a="itOos" data-v="${r.id}:${ix}">${i.act==='oos'?'Unavailable':'Mark unavailable'}</button></div>`:''}</td><td class="sm" style="white-space:nowrap">${i.act==='oos'?'—':d.stock>=i.q?`<span style="color:#067647">${d.stock} in stock</span>`:`<span style="color:#B42318">Only ${d.stock}</span>`}</td><td style="text-align:right;white-space:nowrap">${i.act==='oos'?'—':rs(d.price*i.q)}</td></tr>`}).join('')}
+ <tr><td colspan="4" class="sm muted" style="text-align:right">Medicines</td><td style="text-align:right;white-space:nowrap">${rs(subtotal(r))}</td></tr><tr><td colspan="4" class="sm muted" style="text-align:right">Delivery ${r.del==='Delivery'&&!dfee(r)?'(free over Rs 2,500)':''}</td><td style="text-align:right;white-space:nowrap">${rs(dfee(r))}</td></tr><tr><td colspan="4" style="text-align:right"><b>Total · ${r.pay}</b></td><td style="text-align:right;font-size:17px;white-space:nowrap"><b>${rs(total(r))}</b></td></tr></tbody></table></div>
+ ${{New:`<div class="row wrap"><button class="btn pri" data-a="quote" data-v="${r.id}" ${r.items.every(i=>i.act==='oos')?'disabled':''}>${I('send',16)}Send quote to patient</button><button class="btn dan" data-a="rxCancel" data-v="${r.id}">Can't fill</button></div><div class="muted sm">The patient sees the price and any generic swaps in the app and confirms before you pack.</div>`,
+  Quoted:`<div class="card stack" style="padding:14px;gap:8px;background:#F8FAFC"><div class="sm"><b>Waiting for ${r.pt} to confirm</b> · reminder SMS sent after 30 minutes.</div><div class="row wrap"><button class="btn pri" data-a="ptOk" data-v="${r.id}">Patient accepted (demo)</button><button class="btn" data-a="ptNo" data-v="${r.id}">Patient declined (demo)</button></div></div>`,
+  Confirmed:`<div><div class="lbl">Packing checklist</div>${CK.map((c,i)=>`<label class="row" style="padding:6px 0;cursor:pointer"><input type="checkbox" class="chk" ${pk[i]?'checked':''} data-t="ro.pack.${r.id}.${i}">${c}</label>`).join('')}</div><div class="row wrap"><button class="btn pri" data-a="packed" data-v="${r.id}" ${CK.every((c,i)=>pk[i])?'':'disabled'}>${I('box',16)}Mark packed</button><button class="btn" data-a="toast" data-v="Labels sent to printer">${I('printer',16)}Print labels</button></div>`,
+  Packed:r.del==='Delivery'?`<button class="btn pri" data-a="toDel" data-v="${r.id}" style="align-self:flex-start">${I('truck',16)}Assign a rider</button>`:`<button class="btn pri" data-a="handover" data-v="${r.id}" style="align-self:flex-start">${I('check',16)}Handed to patient</button>`,
+  'Out for delivery':`<div class="sm">With ${(S.RD.find(d=>d.id===r.rider)||{name:'rider'}).name} · <button class="lnk" data-a="toDel" data-v="${r.id}">Track in Deliveries</button></div>`,
+  Delivered:'<div class="muted sm">Delivered. The patient got refill reminders for long-term medicines.</div>',
+  Cancelled:'<div class="muted sm">Cancelled — the patient was told and can send the prescription to another pharmacy.</div>'}[r.status]}`}
+const rxIx=v=>{const [id,ix]=v.split(':');return [rx(id),+ix]};
+A.roF=v=>{S.ro.f=v;S.ro.sel=null;render()};A.roSel=v=>{S.ro.sel=v;render()};
+A.openRx=v=>{const r=rx(v);S.ro.f=Object.keys(RGRP).find(k=>RGRP[k].includes(r.status));S.ro.sel=v;go('p_rx')};
+A.itSub=v=>{const [r,ix]=rxIx(v),i=r.items[ix];i.act=i.act==='sub'?(med(i.m).stock>=i.q?'ok':'oos'):'sub';render()};
+A.itOos=v=>{const [r,ix]=rxIx(v),i=r.items[ix];i.act=i.act==='oos'?(med(i.m).stock>=i.q?'ok':SUBS[i.m]&&r.subOK?'sub':'oos'):'oos';render()};
+A.quote=v=>{const r=rx(v);r.status='Quoted';S.ro.f='Awaiting patient';render();toast('Quote of '+rs(total(r))+' sent to '+r.pt)};
+A.ptOk=v=>{const r=rx(v);r.status='Confirmed';S.ro.f='To pack';render();toast(r.pt+' confirmed · ready to pack')};
+A.ptNo=v=>{rx(v).status='Cancelled';render();toast('Patient declined the quote')};
+A.rxCancel=v=>{rx(v).status='Cancelled';render();toast('Patient & doctor told you can’t fill this prescription')};
+A.packed=v=>{const r=rx(v);r.items.filter(i=>i.act!=='oos').forEach(i=>{disp(i).stock-=i.q});r.status='Packed';S.ro.f='Dispatch';render();toast('Packed · stock updated')};
+A.handover=v=>{rx(v).status='Delivered';render();toast('Marked as collected')};
+A.toDel=v=>{S.rd.sel=v;go('p_del')};
+
+/* ================= PHARMACY: DELIVERIES ================= */
+const rd=id=>S.RD.find(d=>d.id===id);
+V.p_del=()=>{const list=S.R.filter(r=>r.del==='Delivery'&&['Packed','Out for delivery'].includes(r.status));const cash=S.RD.reduce((a,d)=>a+d.cash,0);
+ return `<div class="grid g4">${S.RD.map(d=>`<div class="card stack" style="padding:14px;gap:8px"><div class="row"><span class="av tl">${ini(d.name)}</span><div style="flex:1"><b>${d.name}</b><div class="muted sm">${d.v}</div></div><span class="chip ${d.status==='Available'?'lo':d.status==='Off today'?'neu':'info'}">${d.status}</span></div><div class="between sm"><span class="muted">Cash with rider</span><b>${rs(d.cash)}</b></div>${d.cash?`<button class="btn sm" data-a="cashIn" data-v="${d.id}">Collect cash</button>`:''}</div>`).join('')}${kpi('money','md',rs(cash),'Cash on delivery to collect','Count at end of shift')}</div>
+ <section class="card" style="overflow:hidden"><div class="between" style="padding:14px 16px"><h3 class="sec">Orders to deliver</h3><span class="muted sm">Patients get live tracking and the rider's name by SMS</span></div><div class="scroll"><table class="tbl"><thead><tr><th>Order</th><th>Deliver to</th><th>Payment</th><th>Rider</th><th>Status</th><th style="min-width:250px"></th></tr></thead><tbody>${list.map(r=>`<tr class="${S.rd.sel===r.id?'sel':''}"><td><b>${r.pt}</b><div class="muted sm">${r.id} · ${r.items.length} items${r.items.some(i=>med(i.m).cold)?' · cold':''}${r.items.some(i=>med(i.m).ctrl)?' · check CNIC':''}</div></td><td class="sm">${r.addr}</td><td class="sm">${r.pay}<div class="b">${rs(total(r))}</div></td><td>${r.status==='Packed'?sel('rider_'+r.id,[['','Choose rider…'],...S.RD.filter(d=>d.status!=='Off today').map(d=>[d.id,d.name+' · '+d.status])],r.rider||'',`data-a="pickRider" data-v="${r.id}" style="min-height:36px;min-width:170px" aria-label="Rider for ${r.id}"`):rd(r.rider).name}</td><td><span class="chip ${RCLS[r.status]}">${RLAB[r.status]}</span></td><td>${r.status==='Packed'?`<button class="btn sm pri" data-a="dispatch" data-v="${r.id}" ${r.rider?'':'disabled'}>${I('truck',14)}Dispatch</button>`:`<div class="row" style="gap:6px"><input id="otp_${r.id}" class="inp" style="width:110px;min-height:36px;letter-spacing:.3em" inputmode="numeric" maxlength="4" placeholder="OTP" aria-label="Delivery code for ${r.id}" value="${esc(S.rd.otp[r.id]||'')}" data-i="rd.otp.${r.id}" data-norender="1"><button class="btn sm pri" data-a="deliver" data-v="${r.id}">Confirm delivery</button></div><div class="muted sm" style="margin-top:4px">Patient's code (demo): ${r.otp}</div>`}</td></tr>`).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No deliveries waiting.</td></tr>'}</tbody></table></div></section>
+ <p class="muted sm">The rider enters the 4-digit code the patient reads out from their app. This proves the medicine reached the right person.</p>`};
+A.pickRider=(v,el)=>{rx(v).rider=el.value;render()};
+A.dispatch=v=>{const r=rx(v),d=rd(r.rider);r.status='Out for delivery';r.otp=String(1000+(parseInt(v.slice(3))*37)%9000);d.status='On delivery';render();toast('Dispatched with '+d.name+' · tracking link sent to '+r.pt)};
+A.deliver=v=>{const r=rx(v);if((S.rd.otp[v]||'').trim()!==r.otp){toast('Code doesn’t match — ask the patient to read it from the app');return}const d=rd(r.rider);r.status='Delivered';if(r.pay==='Cash on delivery')d.cash+=total(r);if(!S.R.some(x=>x.rider===d.id&&x.status==='Out for delivery'))d.status='Available';delete S.rd.otp[v];render();toast('Delivered to '+r.pt+(r.pay==='Cash on delivery'?' · '+rs(total(r))+' cash with '+d.name:''))};
+A.cashIn=v=>{const d=rd(v),c=d.cash;d.cash=0;render();toast(rs(c)+' received from '+d.name)};
+
+/* ================= PHARMACY: INVENTORY ================= */
+const IF={All:()=>1,'Low stock':m=>m.stock<m.re,'Expiring soon':m=>monthsLeft(m.exp)<=3,'Cold chain':m=>m.cold,Controlled:m=>m.ctrl};
+V.p_inv=()=>{const q=S.inv.q.toLowerCase();const rows=MEDS.filter(m=>IF[S.inv.f](m)&&(!q||(m.name+m.gen).toLowerCase().includes(q)));
+ return `<div class="grid g4">${kpi('box','tl',MEDS.length,'Products listed','On CareConnect')}${kpi('alert','hi',lowMeds().length,'Below reorder level',MEDS.filter(m=>!m.stock).length+' out of stock','#B42318')}${kpi('clock','md',MEDS.filter(m=>monthsLeft(m.exp)<=3).length,'Expiring within 3 months','Return to distributor or discount')}${kpi('money','lo',rs(MEDS.reduce((a,m)=>a+m.stock*m.price,0)),'Stock value','At retail price')}</div>
+ <div class="card row wrap" style="padding:14px 16px;gap:10px"><div style="flex:1 1 240px;position:relative"><span style="position:absolute;left:12px;top:11px;color:var(--muted)">${I('search')}</span><input id="invq" class="inp" style="padding-left:40px" placeholder="Search medicine or generic name" value="${esc(S.inv.q)}" data-i="inv.q" aria-label="Search inventory"></div><div class="row wrap" style="gap:6px">${pills('invF',Object.keys(IF),S.inv.f)}</div></div>
+ <section class="card" style="overflow:hidden"><div class="scroll"><table class="tbl"><thead><tr><th>Medicine</th><th>Batch</th><th style="min-width:160px">Stock</th><th>Expiry</th><th>Price</th><th></th></tr></thead><tbody>${rows.map(m=>{const ml=monthsLeft(m.exp),p=Math.min(100,Math.round(m.stock/(m.re*2)*100));return `<tr><td><b>${m.name}</b> ${m.cold?`<span class="chip info">${I('snow',11)}2–8 °C</span>`:''}${m.ctrl?'<span class="chip hi">Controlled</span>':''}<div class="muted sm">${m.gen} · per ${m.form}</div></td><td class="sm">${m.batch}</td><td><div class="between sm"><b style="color:${!m.stock?'#B42318':m.stock<m.re?'#B54708':'inherit'}">${m.stock?m.stock.toLocaleString():'Out of stock'}</b><span class="muted">reorder ${m.re}</span></div><div class="bar" style="margin-top:4px"><div style="width:${p}%;background:${m.stock<m.re?'#F79009':'#0B7A75'}"></div></div></td><td><span class="chip ${ml<=1?'hi':ml<=3?'md':'neu'}">${fmtExp(m.exp)}</span></td><td>${rs(m.price)}</td><td style="white-space:nowrap"><button class="btn sm" data-a="recv" data-v="${m.id}">${I('plus',14)}Receive</button> ${m.stock<m.re?`<button class="btn sm pri" data-a="reorder" data-v="${m.id}">Reorder</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No medicines match.</td></tr>'}</tbody></table></div></section>`};
+A.invF=v=>{S.inv.f=v;render()};
+A.invGo=v=>{S.inv.f=v;go('p_inv')};
+A.reorder=v=>{const m=med(v);m.ordered=1;toast(`Order for ${m.re*2} × ${m.name} sent to your distributor`)};
+A.recv=v=>{S.rcv=v;S.modal='recv';renderOv()};
+M.recv=()=>{const m=med(S.rcv);return mhead('Receive stock',m.name+' · now '+m.stock+' in stock')+`<div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px"><div><label class="lbl" for="rq">Quantity</label><input id="rq" class="inp" inputmode="numeric" value="${m.re*2}"></div><div><label class="lbl" for="rb">Batch no.</label><input id="rb" class="inp" value="${m.batch==='—'?'NEW01':m.batch}"></div><div><label class="lbl" for="re">Expiry</label>${sel('re',['2027-06','2027-12','2028-06','2028-12'].map(e=>[e,fmtExp(e)]),'2028-06')}</div></div><div class="muted sm" style="margin-top:10px">Check the invoice matches the delivery. Never accept medicines with less than 6 months expiry.</div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doRecv">Add to stock</button></div>`};
+A.doRecv=()=>{const m=med(S.rcv),q=parseInt(document.getElementById('rq').value)||0;m.stock+=q;m.batch=document.getElementById('rb').value;m.exp=document.getElementById('re').value;S.modal=null;render();toast(q+' added · '+m.name+' now '+m.stock)};
+
+/* ================= PAYOUTS (both) ================= */
+V.pay=()=>{const lab=S.mode==='lab';const gross=lab?342600:286400,fee=Math.round(gross*.05),gw=Math.round(gross*.015),cod=lab?0:61200;
+ const hist=lab?[['PB-0460','2–8 Nov',318200],['PB-0459','26 Oct–1 Nov',296900],['PB-0458','19–25 Oct',301450]]:[['PB-0460','2–8 Nov',241300],['PB-0459','26 Oct–1 Nov',229800],['PB-0458','19–25 Oct',218650]];
+ return `<div class="grid g4">${kpi('money','tl',rs(gross),'Paid online this week','JazzCash, Easypaisa, cards'+(lab?', Sehat Card':''))}${kpi('chart','pu','− '+rs(fee),'CareConnect commission (5%)','Placeholder rate')}${kpi('card','neu','− '+rs(gw),'Payment gateway fees (1.5%)','Charged by payment providers')}${kpi('building','lo',rs(gross-fee-gw),'Your payout · Fri 20 Nov','To Meezan Bank ••••4471')}</div>
+ ${lab?'':`<div class="card row" style="padding:14px 16px;background:#FFFAEB;border-color:#FEDF89"><span class="icob md">${I('money',18)}</span><div class="sm">You also collected <b>${rs(cod)}</b> in cash on delivery this week. Commission on cash orders (${rs(Math.round(cod*.05))}) is deducted from your online payout.</div></div>`}
+ <div class="grid g2"><section class="card" style="overflow:hidden"><div class="between" style="padding:14px 16px"><h3 class="sec">Past payouts</h3><button class="btn sm" data-a="toast" data-v="Statement downloaded (PDF)">${I('download',14)}Statement</button></div><table class="tbl"><tbody>${hist.map(h=>`<tr><td><b>${h[0]}</b><div class="muted sm">${h[1]}</div></td><td class="b">${rs(h[2])}</td><td><span class="chip lo">Paid</span></td></tr>`).join('')}</tbody></table></section>
+ <section class="card stack" style="padding:18px;gap:12px"><h3 class="sec">Bank account</h3><div class="row"><span class="icob tl">${I('building',18)}</span><div><b>Meezan Bank · ${ORG[S.mode][0]}</b><div class="muted sm">PK36 MEZN •••• •••• 4471 · verified</div></div></div><div class="muted sm">Payouts run every Friday for the week ending Sunday. Changing the bank account needs the owner's approval and a 48-hour wait.</div><button class="btn" style="align-self:flex-start" data-a="toast" data-v="Request sent to the owner for approval">Change account</button></section></div>`};
+
+/* ================= EVENTS ================= */
+function setPath(p,v){const k=p.split('.');let o=S;for(let i=0;i<k.length-1;i++){if(o[k[i]]==null)o[k[i]]={};o=o[k[i]]}o[k[k.length-1]]=v}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+ const a=e.target.closest('[data-a]');if(!a)return;if(a.tagName==='SELECT'||(a.tagName==='INPUT'&&a.type!=='checkbox'))return;
+ if(a.dataset.a==='closeModal'&&a.classList.contains('bg')&&e.target.closest('[data-stop]'))return;
+ if(a.tagName==='INPUT')e.preventDefault();
+ const f=A[a.dataset.a];if(f)f(a.dataset.v,a);});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.t){setPath(el.dataset.t,el.checked?1:0);S.modal?renderOv():render();return}
+ if(el.tagName==='SELECT'&&el.dataset.a&&A[el.dataset.a]){A[el.dataset.a](el.dataset.v,el);return}
+ if(el.tagName==='SELECT'&&el.dataset.i){setPath(el.dataset.i,el.value);S.modal?renderOv():render()}});
+document.addEventListener('input',e=>{const el=e.target;if(!el.dataset.i||el.tagName==='SELECT')return;setPath(el.dataset.i,el.value);if(el.dataset.norender)return;const id=el.id,pos=el.selectionStart;if(S.modal)renderOv();else render();const n=document.getElementById(id);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.modal){S.modal=null;render()}});
+render();
+</script>
+</body>
+</html>

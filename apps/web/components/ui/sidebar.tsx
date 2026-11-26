@@ -18,7 +18,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
 
 export function SidebarNav({ children }: { children: ReactNode }) {
   return (
-    <nav className="flex shrink-0 gap-1 overflow-x-auto rounded-lg border border-border bg-surface p-2 md:w-56 md:flex-col md:overflow-visible">
+    <nav className="flex shrink-0 gap-1 overflow-x-auto rounded-lg bg-navy p-2 shadow-sm md:w-56 md:flex-col md:overflow-visible">
       {children}
     </nav>
   );
@@ -45,10 +45,10 @@ export function SidebarLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`flex shrink-0 items-center gap-3 rounded-md border-s-2 px-3 py-2.5 text-sm font-medium transition ${
+      className={`tap-target flex shrink-0 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition ${
         active
-          ? "border-s-primary-600 bg-primary-50 text-primary-800"
-          : "border-s-transparent text-text-muted hover:bg-surface-muted hover:text-text"
+          ? "bg-primary-600 text-white"
+          : "text-navy-fg hover:bg-navy-hover hover:text-white"
       }`}
     >
       {icon}

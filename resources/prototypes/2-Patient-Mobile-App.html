@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareConnect · Patient app prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0B7A75;--teal-d:#075E5A;--teal-50:#E6F4F3;--teal-l:#7FE3DA;--navy:#0E2233;--ink:#0F1B2D;--muted:#5B6B7F;--line:#E3E8EF;--bg:#F3F6F9;--red:#B42318;--red-50:#FEE4E2;--amb:#93370D;--amb-50:#FEF0C7;--grn:#067647;--grn-50:#DCFAE6;--blu:#075985;--blu-50:#E0F2FE;--pu:#3E3CB0;--pu-50:#EEF0FF}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:#E9EFF4;font-size:14px;line-height:1.45}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;margin:0;letter-spacing:-.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--teal)}
+.ur{font-family:'Noto Nastaliq Urdu',serif;line-height:2}
+/* layout */
+.stage{min-height:100vh;display:flex;gap:40px;align-items:flex-start;justify-content:center;padding:32px 24px}
+.side{width:300px;flex:none;display:flex;flex-direction:column;gap:16px;position:sticky;top:32px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand b{font-family:'Plus Jakarta Sans';font-size:20px;font-weight:800}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.panel h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
+.jump{display:flex;flex-wrap:wrap;gap:6px}
+.jump button{border:1px solid var(--line);background:#F8FAFC;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;color:#344054}
+.jump button:hover,.jump button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.phone{width:390px;height:844px;flex:none;background:#fff;border-radius:48px;border:12px solid #0F1B2D;box-shadow:0 30px 70px rgba(15,27,45,.28);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none}
+.scr::-webkit-scrollbar{display:none}
+@media (max-width:820px){.stage{padding:0;gap:0}.side{display:none}.phone{width:100%;height:100vh;height:100dvh;border:0;border-radius:0;box-shadow:none}}
+/* components */
+.pad{padding:0 20px}
+.top{display:flex;align-items:center;gap:10px;padding:18px 20px 10px;position:sticky;top:0;background:#fff;z-index:5}
+.top h2{font-size:18px;flex:1}
+.ib{width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}
+.ib:hover{background:var(--bg)}
+.ib.soft{background:var(--bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;border:1px solid #D0D8E2;background:#fff;font-weight:600;font-size:15px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.pri:hover{background:var(--teal-d)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.block{width:100%}
+.btn.sm{min-height:36px;padding:0 14px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.hi{background:var(--red-50);color:var(--red)}.md{background:var(--amb-50);color:var(--amb)}.lo{background:var(--grn-50);color:var(--grn)}.info{background:var(--blu-50);color:var(--blu)}.neu{background:#EEF2F6;color:#364152}.tl{background:var(--teal-50);color:#0B5F5B}.pu{background:var(--pu-50);color:var(--pu)}
+.pill{border:1px solid #D0D8E2;background:#fff;border-radius:999px;padding:0 14px;min-height:38px;font-weight:600;font-size:13px;color:#344054;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.pill.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.muted{color:var(--muted)}.sm{font-size:12px}.b{font-weight:600}
+.av{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:14px}
+.ico{width:44px;height:44px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.sec{font-size:16px;font-weight:700;font-family:'Plus Jakarta Sans'}
+.inp{width:100%;height:50px;border:1px solid #D0D8E2;border-radius:14px;padding:0 14px;background:#fff;font-size:15px}
+textarea.inp{height:auto;padding:12px 14px;resize:none}
+.inp:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.lbl{display:block;font-size:13px;font-weight:600;color:#475467;margin-bottom:6px}
+.tabs{display:flex;gap:4px;background:var(--bg);border-radius:14px;padding:4px}
+.tabs button{flex:1;border:0;background:transparent;min-height:40px;border-radius:10px;font-weight:600;font-size:13px;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,27,45,.12)}
+.list>*{border-bottom:1px solid #F2F4F7}
+.list>*:last-child{border-bottom:0}
+.item{display:flex;gap:12px;align-items:center;padding:14px 0;width:100%;border:0;background:none;text-align:left}
+.stack{display:flex;flex-direction:column}
+.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.g16{gap:16px}.g20{gap:20px}
+.bar{height:8px;border-radius:999px;background:#EEF2F6;overflow:hidden}.bar>div{height:100%;background:var(--teal);border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.hscroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.hscroll::-webkit-scrollbar{display:none}
+.tog{position:relative;width:46px;height:28px;flex:none}
+.tog input{opacity:0;position:absolute;inset:0;margin:0;cursor:pointer;z-index:1}
+.tog span{position:absolute;inset:0;background:#D0D8E2;border-radius:999px;transition:.2s}
+.tog span:after{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tog input:checked+span{background:var(--teal)}
+.tog input:checked+span:after{transform:translateX(18px)}
+.tog input:focus-visible+span{outline:2px solid var(--teal);outline-offset:2px}
+/* nav */
+.nav{display:flex;border-top:1px solid var(--line);background:#fff;padding:6px 6px 14px;flex:none}
+.nav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:#7A8A9C;min-height:52px;padding-top:4px;position:relative}
+.nav button.on{color:var(--teal)}
+.nav .badge{position:absolute;top:2px;left:55%;background:#D92D20;color:#fff;border-radius:999px;font-size:10px;padding:0 5px;line-height:16px}
+/* overlays */
+.sheet-bg{position:absolute;inset:0;background:rgba(15,27,45,.45);z-index:30;display:flex;align-items:flex-end}
+.sheet{background:#fff;width:100%;border-radius:24px 24px 0 0;padding:20px;max-height:88%;overflow:auto}
+.grab{width:40px;height:5px;border-radius:9px;background:#D0D8E2;margin:0 auto 14px}
+.toast{position:absolute;left:16px;right:16px;bottom:86px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;z-index:40;display:flex;gap:10px;align-items:center;font-weight:500;animation:up .25s ease}
+@keyframes up{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.slide{position:relative;height:60px;border-radius:30px;background:#3E3CB0;overflow:hidden}
+.slide input{-webkit-appearance:none;appearance:none;width:100%;height:100%;background:transparent;margin:0;position:relative;z-index:2;cursor:grab}
+.slide input::-webkit-slider-thumb{-webkit-appearance:none;width:52px;height:52px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.slide input::-moz-range-thumb{width:52px;height:52px;border-radius:50%;background:#fff;border:0}
+.slide .lab{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;pointer-events:none;padding-left:40px}
+.otp{display:flex;gap:10px;justify-content:center}
+.otp input{width:52px;height:60px;text-align:center;font-size:24px;font-weight:700;border:1px solid #D0D8E2;border-radius:14px}
+.otp input:focus{outline:2px solid var(--teal)}
+.hero{background:linear-gradient(160deg,#E6F4F3 0%,#fff 70%)}
+.cal-d{width:56px;height:68px;border-radius:16px;border:1px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;font-size:12px;color:var(--muted)}
+.cal-d b{font-size:18px;color:var(--ink)}
+.cal-d.on{background:var(--teal);border-color:var(--teal);color:#E6F4F3}.cal-d.on b{color:#fff}
+.cal-d:disabled{opacity:.4}
+.slot{border:1px solid #D0D8E2;background:#fff;border-radius:12px;min-height:42px;font-weight:600;font-size:13px}
+.slot.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.slot:disabled{background:#F2F4F7;color:#98A2B3;text-decoration:line-through;border-color:#F2F4F7}
+.map{height:250px;border-radius:18px;position:relative;overflow:hidden;background:#E8EFE9}
+.pin{position:absolute;transform:translate(-50%,-100%);border:0;background:none;padding:0}
+.pin span{display:block;background:var(--teal);color:#fff;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.2);white-space:nowrap}
+.pin.on span{background:var(--ink)}
+.video{background:#0B1622;color:#fff;min-height:100%;display:flex;flex-direction:column}
+.cbtn{width:56px;height:56px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:#36506A}
+.bubble{max-width:82%;padding:10px 14px;border-radius:18px}
+.focus-ring:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.skip{position:absolute;left:-999px}
+</style>
+
+<style id="cc-gradient">
+body{background:radial-gradient(900px 600px at 85% -10%,rgba(11,122,117,.28),transparent 60%),radial-gradient(800px 600px at 0% 110%,rgba(62,60,176,.18),transparent 60%),linear-gradient(160deg,#DFF1EF 0%,#EEF3F7 50%,#E6E9FA 100%);background-attachment:fixed}
+.phone{background:linear-gradient(180deg,#E3F3F1 0%,#F4F8FB 34%,#F7F7FD 100%)}
+.top{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="side" aria-label="Prototype controls">
+    <div class="brand"><svg width="38" height="38" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#0B7A75"/><path d="M17 25.5s-8-4.6-8-10.2A4.3 4.3 0 0 1 17 13a4.3 4.3 0 0 1 8 2.3c0 5.6-8 10.2-8 10.2z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 17h3.5l1.5-2.5 2.2 5 1.5-2.5h4.3" fill="none" stroke="#7FE3DA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>CareConnect</b><div class="muted sm">Patient app · interactive prototype</div></div></div>
+    <div class="panel"><h4>Jump to screen</h4><div class="jump" id="jump"></div></div>
+    <div class="panel"><h4>Demo controls</h4>
+      <div class="between" style="margin-bottom:10px"><span class="b">App language</span><div class="tabs" style="width:150px" id="langT"></div></div>
+      <button class="btn sm block" id="resetBtn">Restart from login</button>
+      <p class="muted sm" style="margin-top:10px">Everything is clickable. Data is sample data and resets on reload.</p>
+    </div>
+  </aside>
+  <div class="phone" id="phone" role="application" aria-label="CareConnect patient app">
+    <div class="scr" id="scr"></div>
+    <div id="navWrap"></div>
+    <div id="overlay"></div>
+  </div>
+</div>
+
+<script>
+const P={
+ home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+ chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ back:'<path d="m15 18-6-6 6-6"/>', chev:'<path d="m9 18 6-6-6-6"/>', chevd:'<path d="m6 9 6 6 6-6"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>', check:'<path d="M20 6 9 17l-5-5"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ video:'<path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+ star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2-6.2 3.2L7 14.2 2 9.3l6.9-1z"/>',
+ pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z"/><path d="m8.5 8.5 7 7"/>',
+ lab:'<path d="M9 3h6M10 3v6L4.5 19A1.5 1.5 0 0 0 5.8 21h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/>',
+ heart:'<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',
+ pulse:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+ drop:'<path d="M12 2.7s7 7.3 7 12.3a7 7 0 0 1-14 0c0-5 7-12.3 7-12.3z"/>',
+ scale:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 9a5 5 0 0 1 8 0l-3 3"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+ syringe:'<path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/>',
+ alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ money:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+ send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+ mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/>',
+ cc:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10.5a2 2 0 1 0 0 3M17 10.5a2 2 0 1 0 0 3"/>',
+ globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+ camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+ filter:'<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>',
+ book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+ bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>',
+ bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/>',
+ settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+ trash:'<path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+ refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/>',
+ watch:'<rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 6V2h6v4M9 18v4h6v-4M10 12h1.5l1-2 1.5 4 1-2"/>',
+ scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/>',
+ truck:'<path d="M1 3h15v13H1zM16 8h4l3 3v5h-7"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+ play:'<path d="m6 3 14 9-14 9z"/>',
+ siren:'<path d="M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 2v2M4.2 6.2l1.4 1.4M19.8 6.2l-1.4 1.4"/>'
+};
+const I=(n,s=22,c='currentColor',w=1.8,fill='none')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const rs=n=>'Rs '+Math.round(n).toLocaleString('en-PK');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------------- data ---------------- */
+const FAMILY=[
+ {id:'me',name:'Fatima Zahra',short:'Fatima',rel:'You',age:34,sex:'F',ini:'FZ',bg:'#E6F4F3',fg:'#0B5F5B',mrn:'CC-10440',blood:'O+',cond:'Pregnancy · 28 weeks',allergy:'None known'},
+ {id:'zainab',name:'Zainab',short:'Zainab',rel:'Daughter',age:8,sex:'F',ini:'Z',bg:'#FEF0C7',fg:'#93370D',mrn:'CC-10461',blood:'O+',cond:'Dengue — recovering',allergy:'Ibuprofen (avoid)'},
+ {id:'riaz',name:'Riaz Ahmed',short:'Riaz',rel:'Husband',age:38,sex:'M',ini:'RA',bg:'#E0F2FE',fg:'#075985',mrn:'CC-10462',blood:'B+',cond:'No chronic conditions',allergy:'None known'},
+ {id:'khalida',name:'Khalida Begum',short:'Ammi',rel:'Mother-in-law',age:64,sex:'F',ini:'KB',bg:'#EEF0FF',fg:'#3E3CB0',mrn:'CC-10463',blood:'A+',cond:'Type 2 diabetes, hypertension',allergy:'Sulfa drugs'}
+];
+const DOCS=[
+ {id:'hina',name:'Dr. Hina Shah',spec:'Gynaecologist',cat:'Gynae',ini:'HS',bg:'#FEF0C7',fg:'#93370D',rating:4.9,reviews:412,yrs:16,fee:3000,vfee:2000,sex:'F',langs:'Urdu, English, Pashto',clinic:'Shifa Family Clinic',area:'F-8 Markaz, Islamabad',km:2.1,sehat:true,x:46,y:38,next:'Today, 4:30 PM',quals:'MBBS, FCPS (Obs & Gynae)',pmdc:'44120-P',about:'Specialist in high-risk pregnancy, gestational diabetes and PCOS. Known for clear explanations and respectful care.'},
+ {id:'ayesha',name:'Dr. Ayesha Malik',spec:'Consultant Physician',cat:'Medicine',ini:'AM',bg:'#E6F4F3',fg:'#0B5F5B',rating:4.8,reviews:638,yrs:14,fee:2500,vfee:1500,sex:'F',langs:'Urdu, English',clinic:'Shifa Family Clinic',area:'F-8 Markaz, Islamabad',km:2.1,sehat:true,x:46,y:38,next:'Tomorrow, 10:30 AM',quals:'MBBS, FCPS (Medicine)',pmdc:'12345-P',about:'Diabetes, blood pressure, thyroid and family medicine. Runs home-monitoring programmes for chronic patients.'},
+ {id:'saad',name:'Dr. Saad Rehman',spec:'Paediatrician',cat:'Child',ini:'SR',bg:'#E0F2FE',fg:'#075985',rating:4.7,reviews:290,yrs:11,fee:2000,vfee:1500,sex:'M',langs:'Urdu, English, Punjabi',clinic:'Little Steps Child Clinic',area:'Saddar, Rawalpindi',km:9.4,sehat:true,x:72,y:70,next:'Today, 6:00 PM',quals:'MBBS, FCPS (Paeds)',pmdc:'52018-P',about:'Child health, vaccinations, dengue and fever management, growth and nutrition.'},
+ {id:'usman',name:'Dr. Usman Tariq',spec:'General Physician',cat:'Medicine',ini:'UT',bg:'#EEF0FF',fg:'#3E3CB0',rating:4.5,reviews:187,yrs:5,fee:1500,vfee:1000,sex:'M',langs:'Urdu, English',clinic:'Shifa Family Clinic',area:'F-8 Markaz, Islamabad',km:2.1,sehat:true,x:46,y:38,next:'Today, 3:15 PM',quals:'MBBS',pmdc:'67812-P',about:'Fever, infections, minor injuries and general check-ups. Evening video slots available.'},
+ {id:'mehwish',name:'Dr. Mehwish Ali',spec:'Dermatologist',cat:'Skin',ini:'MA',bg:'#FCE7F6',fg:'#9E165F',rating:4.6,reviews:356,yrs:9,fee:2800,vfee:2000,sex:'F',langs:'Urdu, English',clinic:'SkinCare Studio',area:'Blue Area, Islamabad',km:4.6,sehat:false,x:30,y:30,next:'Wed, 11:00 AM',quals:'MBBS, FCPS (Dermatology)',pmdc:'60231-P',about:'Acne, eczema, hair loss and pigmentation. Video consults with photo upload.'},
+ {id:'kamran',name:'Dr. Kamran Shafiq',spec:'Cardiologist',cat:'Heart',ini:'KS',bg:'#FEE4E2',fg:'#B42318',rating:4.8,reviews:521,yrs:19,fee:4000,vfee:3000,sex:'M',langs:'Urdu, English',clinic:'Margalla Heart Centre',area:'G-9 Markaz, Islamabad',km:5.8,sehat:true,x:22,y:58,next:'Thu, 5:00 PM',quals:'MBBS, FCPS (Cardiology)',pmdc:'30118-P',about:'Heart failure, chest pain evaluation, hypertension and echocardiography.'},
+ {id:'sana',name:'Dr. Sana Iqbal',spec:'Psychiatrist',cat:'Mind',ini:'SI',bg:'#DCFAE6',fg:'#067647',rating:4.9,reviews:203,yrs:12,fee:3500,vfee:3000,sex:'F',langs:'Urdu, English',clinic:'Video consults only',area:'Online',km:0,sehat:false,x:0,y:0,next:'Today, 8:00 PM',quals:'MBBS, FCPS (Psychiatry)',pmdc:'48870-P',about:'Anxiety, depression, postnatal mood and sleep problems. Private, judgement-free video sessions.'}
+];
+const CATS=[['All','All'],['Gynae','Gynae'],['Medicine','Medicine'],['Child','Children'],['Heart','Heart'],['Skin','Skin'],['Mind','Mental health']];
+const LABS={
+ me:[{id:'cbc1',test:'Complete Blood Count (CBC)',date:'12 Nov 2026',lab:'Chughtai Lab, F-8',flag:1,mon:'Nov 2026',
+   groups:{Haemoglobin:[['Haemoglobin','10.4 g/dL','11.5–15.5',1],['Haematocrit','32 %','36–46',1],['MCV','78 fL','80–100',1],['RBC','4.1 ×10⁶/µL','3.8–5.2',0]],Platelets:[['Platelet count','238 ×10³/µL','150–450',0],['MPV','10.1 fL','7.5–11.5',0]],'White cells':[['WBC','8.9 ×10³/µL','4.0–11.0',0],['Neutrophils','68 %','40–75',0],['Lymphocytes','26 %','20–45',0]]}},
+  {id:'ogtt',test:'Oral Glucose Tolerance Test (75 g)',date:'12 Nov 2026',lab:'Chughtai Lab, F-8',flag:1,mon:'Nov 2026',groups:{Glucose:[['Fasting','94 mg/dL','< 92',1],['1 hour','176 mg/dL','< 180',0],['2 hour','158 mg/dL','< 153',1]]}},
+  {id:'tsh',test:'Thyroid (TSH)',date:'14 Oct 2026',lab:'Excel Labs, Blue Area',flag:0,mon:'Oct 2026',groups:{Thyroid:[['TSH','1.9 mIU/L','0.1–3.0 (pregnancy)',0]]}},
+  {id:'us',test:'Ultrasound — anomaly scan',date:'02 Sep 2026',lab:'Shifa Diagnostics',flag:0,mon:'Sep 2026',groups:{Findings:[['Single live foetus','Normal','—',0],['Placenta','Posterior, fundal','—',0],['Estimated weight','360 g','20 weeks',0]]}}],
+ zainab:[{id:'plt3',test:'Platelet count (follow-up)',date:'15 Nov 2026',lab:'Chughtai Lab — home sample',flag:0,mon:'Nov 2026',groups:{Platelets:[['Platelet count','142 ×10³/µL','150–450',1],['Haematocrit','37 %','33–41',0]]}},
+  {id:'plt1',test:'Dengue NS1 + CBC',date:'08 Nov 2026',lab:'Chughtai Lab — home sample',flag:1,mon:'Nov 2026',groups:{Dengue:[['NS1 antigen','Positive','Negative',1]],Platelets:[['Platelet count','64 ×10³/µL','150–450',1]],'White cells':[['WBC','3.1 ×10³/µL','4.5–13.5',1]]}}],
+ riaz:[{id:'lip',test:'Lipid profile',date:'20 Jul 2026',lab:'Excel Labs',flag:0,mon:'Jul 2026',groups:{Lipids:[['Total cholesterol','182 mg/dL','< 200',0],['LDL','108 mg/dL','< 130',0]]}}],
+ khalida:[{id:'a1c',test:'Glycated Haemoglobin (HbA1c)',date:'05 Nov 2026',lab:'Chughtai Lab, G-9',flag:1,mon:'Nov 2026',groups:{Diabetes:[['HbA1c','7.9 %','< 7.0',1],['Estimated avg glucose','180 mg/dL','—',1]]}},
+  {id:'rft',test:'Renal function tests',date:'05 Nov 2026',lab:'Chughtai Lab, G-9',flag:0,mon:'Nov 2026',groups:{Kidney:[['Creatinine','0.9 mg/dL','0.6–1.1',0],['Urea','28 mg/dL','15–45',0]]}}]
+};
+const MEDS={
+ me:[{n:'Folic acid 5 mg',d:'1 tablet once a day',t:'9:00 AM',days:'Every day',img:'pill',left:22},{n:'Ferrous sulfate 200 mg',d:'1 tablet twice a day, after meals',t:'2:00 PM, 9:00 PM',days:'Every day',img:'pill',left:9},{n:'Calcium + Vitamin D',d:'1 tablet at night',t:'10:00 PM',days:'Every day',img:'pill',left:30}],
+ zainab:[{n:'Panadol syrup 120 mg/5 mL',d:'7.5 mL when fever > 100°F',t:'As needed',days:'As needed',img:'drop',left:1},{n:'ORS sachets',d:'1 sachet in 1 L water, sip through the day',t:'All day',days:'Every day',img:'drop',left:6}],
+ riaz:[],
+ khalida:[{n:'Metformin 500 mg',d:'1 tablet twice a day after meals',t:'9:00 AM, 9:00 PM',days:'Every day',img:'pill',left:14},{n:'Amlodipine 5 mg',d:'1 tablet every morning',t:'8:00 AM',days:'Every day',img:'pill',left:20}]
+};
+const BILLS=[
+ {id:'b1',who:'me',title:'Antenatal visit — Dr. Hina Shah',type:'Consultation',amt:3000,due:'20 Nov 2026',status:'Due',items:[['Consultation (in-clinic)',1,3000]]},
+ {id:'b2',who:'zainab',title:'Dengue follow-up labs',type:'Lab',amt:1450,due:'18 Nov 2026',status:'Overdue',items:[['CBC with platelets',1,950],['Home sampling fee',1,500]]},
+ {id:'b3',who:'khalida',title:'Pharmacy order #PH-2291',type:'Pharmacy',amt:4320,due:'25 Nov 2026',status:'Due',items:[['Metformin 500 mg × 60',1,1180],['Amlodipine 5 mg × 30',1,640],['Glucometer strips × 50',1,2100],['Delivery',1,400]]},
+ {id:'b4',who:'riaz',title:'General check-up — Dr. Usman Tariq',type:'Consultation',amt:1500,due:'02 Nov 2026',status:'Paid',items:[['Consultation (video)',1,1500]]}
+];
+const ARTICLES=[
+ {t:'Gestational diabetes: what to eat',m:'5 min read · Urdu & English',c:'Pregnancy',ic:'book',bg:'#FEF0C7',fg:'#93370D'},
+ {t:'Dengue: warning signs in children',m:'3 min video',c:'Child health',ic:'play',bg:'#FEE4E2',fg:'#B42318'},
+ {t:'How to check blood pressure at home',m:'4 min video',c:'Heart health',ic:'play',bg:'#E0F2FE',fg:'#075985'},
+ {t:'Ramadan and diabetes: fasting safely',m:'6 min read',c:'Diabetes',ic:'book',bg:'#E6F4F3',fg:'#0B5F5B'},
+ {t:'Iron-rich desi foods for anaemia',m:'4 min read',c:'Nutrition',ic:'book',bg:'#DCFAE6',fg:'#067647'}
+];
+const T={
+ en:{home:'Home',doctors:'Doctors',records:'Records',chat:'Messages',profile:'Profile',hello:'Assalam-o-Alaikum',book:'Book a visit',emergency:'Emergency'},
+ ur:{home:'ہوم',doctors:'ڈاکٹر',records:'ریکارڈ',chat:'پیغامات',profile:'پروفائل',hello:'السلام علیکم',book:'وقت لیں',emergency:'ایمرجنسی'}
+};
+
+/* ---------------- state ---------------- */
+const S={screen:'login',stack:[],who:'me',lang:'en',phone:'',otp:['','','','',''],
+ cat:'All',dq:'',dview:'list',dSel:null,fGender:'Any',fSehat:false,fVideo:false,sort:'Nearest',
+ doc:'hina',bType:'clinic',bDay:0,bSlot:null,booked:[
+   {id:'a1',doc:'hina',who:'me',day:'Today',date:'16 Nov',time:'4:30 PM',type:'clinic',status:'Confirmed',reason:'Antenatal visit — 28 weeks'},
+   {id:'a2',doc:'saad',who:'zainab',day:'Wed',date:'18 Nov',time:'5:00 PM',type:'video',status:'Confirmed',reason:'Dengue recovery follow-up'}],
+ apTab:'Upcoming',apSel:null,qStep:1,syms:['Back pain'],symQ:'',qAns:{seen:'Yes',concern:'No'},
+ recTab:'date',labQ:'',lab:null,labGrp:null,vit:{sys:118,dia:76,glu:94,wt:68.2},vHist:[],
+ devices:{gfit:true,apple:false,omron:true,mi:false},medTab:'my',taken:{},medFreq:'Specific days',medDays:{Mon:true,Wed:true,Fri:true},photos:0,
+ bill:null,payMethod:'jazz',paid:{b4:'1764790101'},pharm:'vitalcure',chatDoc:'hina',
+ msgs:{hina:[{me:0,t:'Assalam-o-Alaikum Fatima. Your OGTT shows mild gestational diabetes. Please start the diet plan I shared and check your sugar 4 times a day.',time:'Yesterday'},{me:1,t:'Walaikum assalam doctor. Will it affect the baby?',time:'Yesterday'},{me:0,t:'With diet and monitoring most mothers have healthy babies. We will review your readings at today\'s visit.',time:'9:12 AM'}],
+       saad:[{me:0,t:'Zainab\'s platelets are recovering well (142). Keep giving fluids. No ibuprofen please.',time:'Yesterday'}],
+       bot:[]},
+ draft:'',botStep:0,notif:{appt:true,meds:true,labs:true,bills:true,promo:false,quiet:true,whatsapp:true,sms:true},
+ call:{mic:true,cam:true,cc:true,tr:true,sec:0},painEx:null,pain:{},exDone:{},sheet:null,toast:'',famNew:{name:'',rel:'Son'}
+};
+const doc=id=>DOCS.find(d=>d.id===id);
+const fam=id=>FAMILY.find(f=>f.id===id);
+const L=k=>T[S.lang][k]||T.en[k];
+
+/* ---------------- shell ---------------- */
+function topBar(title,opts={}){
+ return `<div class="top">${opts.noBack?'':`<button class="ib soft" data-act="back" aria-label="Back">${I('back')}</button>`}<h2>${title}</h2>${opts.right||''}</div>`;
+}
+function memberSwitch(){
+ const f=fam(S.who);
+ return `<button class="pill" data-act="openSheet" data-v="members" style="gap:8px;padding-left:6px"><span class="av" style="width:28px;height:28px;font-size:11px;background:${f.bg};color:${f.fg}">${f.ini}</span>${esc(f.short)} ${I('chevd',16)}</button>`;
+}
+function navBar(){
+ const tabs=[['home','home',L('home')],['doctors','search',L('doctors')],['records','file',L('records')],['chats','chat',L('chat')],['profile','user',L('profile')]];
+ const root={home:'home',doctors:'doctors',map:'doctors',records:'records',labs:'records',vitals:'records',meds:'records',chats:'chats',profile:'profile',family:'profile',notifs:'profile',bills:'home',learn:'home',appts:'home',pharmacy:'home',exercise:'records'}[S.screen];
+ if(!root) return '';
+ return `<nav class="nav" aria-label="Main">${tabs.map(t=>`<button class="${root===t[0]?'on':''}" data-tab="${t[0]}">${I(t[1],22)}<span${S.lang==='ur'?' class="ur" style="font-size:11px;line-height:1.6"':''}>${t[2]}</span>${t[0]==='chats'?'<span class="badge">2</span>':''}</button>`).join('')}</nav>`;
+}
+
+/* ---------------- screens ---------------- */
+const V={};
+
+V.login=()=>`<div class="hero" style="min-height:100%;display:flex;flex-direction:column;padding:56px 24px 28px;gap:22px">
+ <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+  <svg width="68" height="68" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#0B7A75"/><path d="M17 25.5s-8-4.6-8-10.2A4.3 4.3 0 0 1 17 13a4.3 4.3 0 0 1 8 2.3c0 5.6-8 10.2-8 10.2z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 17h3.5l1.5-2.5 2.2 5 1.5-2.5h4.3" fill="none" stroke="#7FE3DA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <h1 style="font-size:28px">CareConnect</h1>
+  <p class="muted" style="max-width:280px">Your family's doctors, records, medicines and bills — in one secure place.</p>
+ </div>
+ <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+  <h3 class="sec">Log in or sign up</h3>
+  <p class="muted sm">We'll send a 5-digit code to your mobile number.</p>
+  <label class="lbl" for="ph" style="margin:0">Mobile number</label>
+  <div class="row" style="gap:8px"><span class="inp" style="width:96px;display:flex;align-items:center;gap:6px;font-weight:600"><span aria-hidden="true" style="width:22px;height:15px;border-radius:3px;background:linear-gradient(90deg,#fff 0 25%,#01411C 25%);position:relative;display:inline-block"></span>+92</span>
+  <input id="ph" class="inp" inputmode="numeric" placeholder="3XX XXXXXXX" value="${esc(S.phone)}" data-in="phone" maxlength="12"></div>
+  <button class="btn pri block" data-act="sendOtp" ${S.phone.replace(/\D/g,'').length<10?'disabled':''}>Get code</button>
+  <div class="row" style="gap:10px"><div style="flex:1;height:1px;background:var(--line)"></div><span class="muted sm">or continue with</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
+  <div class="row" style="gap:10px"><button class="btn" style="flex:1" data-act="google"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2A12 12 0 0 1 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.7-.4-4z"/></svg>Google</button><button class="btn" style="flex:1" data-act="google">${I('lock',18)}CNIC + OTP</button></div>
+ </div>
+ <p class="muted sm" style="text-align:center;margin-top:auto">By continuing you agree to the Terms and Privacy Policy. Your records are encrypted.</p>
+</div>`;
+
+V.otp=()=>`${topBar('Verify number')}<div class="pad stack g16" style="padding-top:20px">
+ <p class="muted">Enter the code sent to <b style="color:var(--ink)">+92 ${esc(S.phone)}</b></p>
+ <div class="otp">${S.otp.map((v,i)=>`<input inputmode="numeric" maxlength="1" aria-label="Digit ${i+1}" value="${v}" data-otp="${i}">`).join('')}</div>
+ <button class="btn pri block" data-act="verify" ${S.otp.join('').length<5?'disabled':''}>Verify &amp; continue</button>
+ <button class="btn block" data-act="autofill">Auto-fill code (demo)</button>
+ <p class="muted sm" style="text-align:center">Didn't get it? <button class="lnk" style="border:0;background:none;color:var(--teal);font-weight:600" data-act="toast" data-v="New code sent by SMS">Resend in 0:45</button></p>
+</div>`;
+
+V.home=()=>{
+ const f=fam(S.who); const up=S.booked.filter(a=>a.status!=='Done'&&a.status!=='Cancelled');
+ const next=up[0]; const nd=next?doc(next.doc):null;
+ const due=BILLS.filter(b=>b.status!=='Paid'&&!S.paid[b.id]).reduce((a,b)=>a+b.amt,0);
+ const meds=MEDS[S.who]; const takenN=meds.filter((m,i)=>S.taken[S.who+i]).length;
+ return `<div class="hero" style="padding:18px 20px 22px">
+  <div class="between">${memberSwitch()}<div class="row" style="gap:4px"><button class="ib" data-go="notifs" aria-label="Notifications" style="position:relative">${I('bell')}<span style="position:absolute;top:10px;right:11px;width:9px;height:9px;border-radius:50%;background:#D92D20;border:2px solid #fff"></span></button></div></div>
+  <h1 style="font-size:26px;margin-top:16px"><span class="${S.lang==='ur'?'ur':''}" style="font-weight:600;font-size:${S.lang==='ur'?'22px':'26px'}">${L('hello')},</span><br>${esc(f.short)}${f.id==='me'?'':` <span class="muted" style="font-size:16px;font-weight:600">(${esc(f.rel)})</span>`}</h1>
+  <p class="muted" style="margin-top:4px">${esc(f.cond)}</p>
+ </div>
+ <div class="pad stack g16" style="padding-bottom:24px">
+  ${next?`<button class="card" data-act="openAppt" data-v="${next.id}" style="padding:16px;text-align:left;display:flex;flex-direction:column;gap:12px;background:#0E2233;color:#fff;border:0">
+   <div class="between"><span class="chip" style="background:#17344A;color:#7FE3DA">${next.type==='video'?'Video visit':'Clinic visit'}</span><span style="color:#C3D2DF" class="sm">${next.day}, ${next.date}</span></div>
+   <div class="row"><span class="av" style="background:${nd.bg};color:${nd.fg}">${nd.ini}</span><div style="flex:1"><b style="font-size:16px">${nd.name}</b><div class="sm" style="color:#C3D2DF">${nd.spec} · for ${esc(fam(next.who).short)}</div></div></div>
+   <div class="row" style="gap:16px;color:#C3D2DF" class="sm"><span class="row" style="gap:6px">${I('clock',16)}${next.time}</span><span class="row" style="gap:6px">${I('pin',16)}${next.type==='video'?'Online':nd.area.split(',')[0]}</span></div>
+   <div class="row" style="gap:8px"><span class="btn sm" style="flex:1;background:#17344A;border-color:#17344A;color:#fff">Pre-visit form</span><span class="btn sm" style="flex:1;background:#0B7A75;border-color:#0B7A75;color:#fff">${next.type==='video'?'Join call':'Get directions'}</span></div>
+  </button>`:''}
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+   ${[['doctors','search','#E6F4F3','#0B5F5B','Find doctor'],['records','lab','#EEF0FF','#3E3CB0','Lab results'],['meds','pill','#FEF0C7','#93370D','Medicines'],['bills','money','#FCE7F6','#9E165F','Bills']].map(q=>`<button data-go="${q[0]}" style="border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0"><span class="ico" style="background:${q[2]};color:${q[3]};width:56px;height:56px;border-radius:18px">${I(q[1],24)}</span><span class="sm b">${q[4]}</span></button>`).join('')}
+  </div>
+  ${meds.length?`<div class="card" style="padding:16px">
+   <div class="between"><div><h3 class="sec">Today's medicines</h3><p class="muted sm">${takenN} of ${meds.length} taken</p></div><button class="btn sm" data-go="meds">All</button></div>
+   <div class="list" style="margin-top:6px">${meds.map((m,i)=>`<div class="item"><span class="ico" style="background:var(--teal-50);color:var(--teal);width:38px;height:38px">${I(m.img,18)}</span><div style="flex:1;min-width:0"><b>${m.n}</b><div class="muted sm">${m.t}</div></div><button class="btn sm ${S.taken[S.who+i]?'':'pri'}" data-act="takeMed" data-v="${i}" aria-pressed="${!!S.taken[S.who+i]}">${S.taken[S.who+i]?I('check',16)+'Taken':'Take'}</button></div>`).join('')}</div>
+  </div>`:''}
+  <div class="hscroll">
+   ${due?`<button data-go="bills" class="card" style="flex:none;width:270px;padding:14px;display:flex;gap:12px;align-items:center;text-align:left;background:#FDF2FA;border-color:#FCCEEE"><span class="ico" style="background:#fff;color:#9E165F">${I('money')}</span><div><b style="font-size:18px">${rs(due)}</b><div class="sm muted">Family bills due · 1 overdue</div></div></button>`:''}
+   <button data-act="carebot" class="card" style="flex:none;width:270px;padding:14px;display:flex;gap:12px;align-items:center;text-align:left;background:#F0F9FF;border-color:#B9E6FE"><span class="ico" style="background:#fff;color:var(--blu)">${I('bot')}</span><div><b>Daily check-in</b><div class="sm muted">2 quick questions from CareBot</div></div></button>
+   <button data-go="exercise" class="card" style="flex:none;width:270px;padding:14px;display:flex;gap:12px;align-items:center;text-align:left;background:#F0FAF9;border-color:#A7DCD8"><span class="ico" style="background:#fff;color:var(--teal)">${I('pulse')}</span><div><b>Pregnancy exercises</b><div class="sm muted">3 of 4 done this week</div></div></button>
+  </div>
+  <div class="card" style="padding:16px">
+   <div class="between"><h3 class="sec">Latest vitals</h3><button class="btn sm" data-go="vitals">View</button></div>
+   <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px">
+    ${[['Blood pressure',S.vit.sys+'/'+S.vit.dia,'mmHg','lo'],['Fasting sugar',S.vit.glu,'mg/dL',S.vit.glu>92?'md':'lo'],['Weight',S.vit.wt,'kg','neu']].map(v=>`<div style="background:#F8FAFC;border-radius:14px;padding:10px"><div class="muted sm">${v[0]}</div><b style="font-size:17px">${v[1]}</b> <span class="muted sm">${v[2]}</span><div><span class="chip ${v[3]}" style="padding:0 8px;font-size:11px;margin-top:4px">${v[3]==='md'?'Watch':'Normal'}</span></div></div>`).join('')}
+   </div>
+  </div>
+  <div class="between"><h3 class="sec">Learn</h3><button class="btn sm" data-go="learn">See all</button></div>
+  <div class="hscroll">${ARTICLES.slice(0,3).map(a=>`<button data-go="learn" class="card" style="flex:none;width:220px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px"><span class="ico" style="background:${a.bg};color:${a.fg};width:38px;height:38px">${I(a.ic,18)}</span><b>${a.t}</b><span class="muted sm">${a.m}</span></button>`).join('')}</div>
+  <button class="btn block" data-act="openSheet" data-v="emergency" style="border-color:#FDA29B;color:#B42318">${I('siren',20)}<span class="${S.lang==='ur'?'ur':''}">${L('emergency')}</span> — Rescue 1122</button>
+ </div>`;
+};
+
+function docCard(d){
+ return `<button class="card" data-act="openDoc" data-v="${d.id}" style="padding:14px;display:flex;flex-direction:column;gap:10px;text-align:left;width:100%">
+  <div class="row"><span class="av" style="width:56px;height:56px;font-size:18px;background:${d.bg};color:${d.fg}">${d.ini}</span>
+  <div style="flex:1;min-width:0"><b style="font-size:15px">${d.name}</b><div class="muted sm">${d.spec} · ${d.yrs} yrs</div><div class="row sm" style="gap:10px;margin-top:2px"><span class="row" style="gap:3px;color:#B54708">${I('star',14,'#F79009',1.8,'#F79009')}<b>${d.rating}</b></span><span class="muted">(${d.reviews})</span>${d.km?`<span class="muted row" style="gap:3px">${I('pin',13)}${d.km} km</span>`:'<span class="chip pu" style="padding:0 8px">Online</span>'}</div></div></div>
+  <div class="between sm"><span class="muted">Next: <b style="color:var(--ink)">${d.next}</b></span><span><b>${rs(d.fee)}</b> <span class="muted">· video ${rs(d.vfee)}</span></span></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap">${d.sehat?'<span class="chip tl">Sehat Card</span>':''}<span class="chip neu">${d.sex==='F'?'Female doctor':'Male doctor'}</span><span class="chip neu">${d.langs.split(',')[0]}+</span></div>
+ </button>`;
+}
+function filteredDocs(){
+ const q=S.dq.toLowerCase();
+ let ds=DOCS.filter(d=>(S.cat==='All'||d.cat===S.cat)&&(!q||(d.name+d.spec+d.clinic+d.area+d.about).toLowerCase().includes(q))&&(S.fGender==='Any'||(S.fGender==='Female'?d.sex==='F':d.sex==='M'))&&(!S.fSehat||d.sehat));
+ ds=ds.slice().sort((a,b)=>S.sort==='Nearest'?(a.km||99)-(b.km||99):S.sort==='Fee'?a.fee-b.fee:b.rating-a.rating);
+ return ds;
+}
+V.doctors=()=>{
+ const ds=filteredDocs();
+ const sug=S.dq?DOCS.filter(d=>(d.name+d.spec).toLowerCase().includes(S.dq.toLowerCase())).slice(0,3):[];
+ return `${topBar('Find a doctor',{noBack:true,right:`<button class="ib soft" data-act="toggleMap" aria-label="${S.dview==='list'?'Map view':'List view'}">${I(S.dview==='list'?'pin':'file')}</button>`})}
+ <div class="pad stack g12" style="padding-bottom:24px">
+  <div class="row sm muted" style="gap:6px">${I('pin',16)}Near <b style="color:var(--ink)">G-10, Islamabad</b> <button style="border:0;background:none;color:var(--teal);font-weight:600" data-act="toast" data-v="Location updated from GPS">Change</button></div>
+  <div style="position:relative"><span style="position:absolute;left:14px;top:14px;color:var(--muted)">${I('search',20)}</span><input class="inp" style="padding-left:44px" placeholder="Doctor, specialty or symptom (e.g. fever)" aria-label="Search doctors" value="${esc(S.dq)}" data-in="dq"></div>
+  ${sug.length&&S.dq.length<20?`<div class="card" style="padding:4px 12px">${sug.map(d=>`<button class="item" data-act="openDoc" data-v="${d.id}"><span class="av" style="width:32px;height:32px;font-size:11px;background:${d.bg};color:${d.fg}">${d.ini}</span><span style="flex:1"><b>${d.name}</b> <span class="muted sm">${d.spec}</span></span>${I('chev',16)}</button>`).join('')}</div>`:''}
+  <div class="hscroll">${CATS.map(c=>`<button class="pill ${S.cat===c[0]?'on':''}" data-act="cat" data-v="${c[0]}">${c[1]}</button>`).join('')}</div>
+  <div class="hscroll">
+   <button class="pill" data-act="openSheet" data-v="dfilters">${I('filter',15)}Filters</button>
+   ${['Any','Female','Male'].map(g=>`<button class="pill ${S.fGender===g?'on':''}" data-act="gender" data-v="${g}">${g==='Any'?'Any gender':g+' doctor'}</button>`).join('')}
+   <button class="pill ${S.fSehat?'on':''}" data-act="sehat">Sehat Card</button>
+  </div>
+  ${S.dview==='map'?`<div class="map" role="img" aria-label="Map of nearby doctors">
+    <svg width="100%" height="100%" viewBox="0 0 350 250" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0"><path d="M0 60 L350 90" stroke="#fff" stroke-width="10"/><path d="M0 170 L350 150" stroke="#fff" stroke-width="12"/><path d="M110 0 L130 250" stroke="#fff" stroke-width="9"/><path d="M250 0 L235 250" stroke="#fff" stroke-width="9"/><rect x="150" y="100" width="60" height="38" rx="6" fill="#CFE3D3"/><rect x="20" y="190" width="70" height="45" rx="6" fill="#CFE3D3"/><circle cx="175" cy="125" r="8" fill="#2E90FA" stroke="#fff" stroke-width="3"/></svg>
+    ${ds.filter(d=>d.km).map(d=>`<button class="pin ${S.dSel===d.id?'on':''}" style="left:${d.x}%;top:${d.y}%" data-act="pin" data-v="${d.id}" aria-label="${d.name}"><span>${rs(d.fee)}</span></button>`).join('')}
+   </div>
+   ${S.dSel?docCard(doc(S.dSel)):'<p class="muted sm" style="text-align:center">Tap a pin to see the doctor</p>'}`:''}
+  <div class="between"><span class="muted sm"><b style="color:var(--ink)">${ds.length}</b> doctors</span><label class="sm row" style="gap:6px">Sort <select class="pill" data-in="sort" aria-label="Sort doctors">${['Nearest','Rating','Fee'].map(o=>`<option ${S.sort===o?'selected':''}>${o}</option>`).join('')}</select></label></div>
+  ${S.dview==='list'?ds.map(docCard).join(''):''}
+  ${ds.length?'':'<div class="card" style="padding:24px;text-align:center" class="muted">No doctors match. Try removing a filter.</div>'}
+ </div>`;
+};
+
+V.doctor=()=>{
+ const d=doc(S.doc);
+ return `<div style="background:${d.bg}33;padding-bottom:6px">${topBar('',{right:`<button class="ib soft" data-act="toast" data-v="Doctor saved to favourites" aria-label="Save">${I('heart')}</button><button class="ib soft" data-act="toast" data-v="Profile link copied" aria-label="Share">${I('share')}</button>`}).replace('background:#fff','background:transparent')}
+ <div class="pad stack g10" style="align-items:center;text-align:center">
+  <span class="av" style="width:96px;height:96px;font-size:30px;background:${d.bg};color:${d.fg};border:4px solid #fff">${d.ini}</span>
+  <div><h2 style="font-size:22px">${d.name}</h2><p class="muted">${d.spec} · ${d.quals}</p><p class="muted sm">PMDC ${d.pmdc} · verified</p></div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%">${[[d.rating+' ★','Rating'],[d.yrs+' yrs','Experience'],[d.reviews,'Reviews']].map(x=>`<div class="card" style="padding:10px"><b style="font-size:16px">${x[0]}</b><div class="muted sm">${x[1]}</div></div>`).join('')}</div>
+ </div></div>
+ <div class="pad stack g16" style="padding-top:16px;padding-bottom:110px">
+  <div><h3 class="sec">About</h3><p class="muted" style="margin-top:4px">${d.about}</p></div>
+  <div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+   <div class="row">${I('pin',18)}<div style="flex:1"><b>${d.clinic}</b><div class="muted sm">${d.area}${d.km?' · '+d.km+' km away':''}</div></div></div>
+   <div class="row">${I('globe',18)}<span>${d.langs}</span></div>
+   <div class="row">${I('shield',18)}<span>${d.sehat?'Accepts Sehat Card, State Life, Jubilee':'Self-pay only · JazzCash, Easypaisa, card'}</span></div>
+  </div>
+  <div><h3 class="sec" style="margin-bottom:10px">Choose consultation</h3>
+   <div class="stack g8">${(d.km?[['clinic','In-clinic visit',d.fee,'pin']]:[]).concat([['video','Video consultation',d.vfee,'video'],['audio','Audio call',d.vfee,'phone']]).map(o=>`<button class="card" data-act="bType" data-v="${o[0]}" style="padding:12px 14px;display:flex;gap:12px;align-items:center;text-align:left;border-color:${S.bType===o[0]?'var(--teal)':'var(--line)'};background:${S.bType===o[0]?'#F0FAF9':'#fff'}"><span class="ico" style="background:var(--teal-50);color:var(--teal);width:38px;height:38px">${I(o[3],18)}</span><span style="flex:1"><b>${o[1]}</b><span class="muted sm" style="display:block">${o[0]==='clinic'?'At '+d.clinic:'From home, works on 3G/4G'}</span></span><b>${rs(o[2])}</b></button>`).join('')}</div>
+  </div>
+  <div><div class="between" style="margin-bottom:10px"><h3 class="sec">Pick a date</h3><span class="muted sm">November 2026</span></div>
+   <div class="hscroll">${['Mon 16','Tue 17','Wed 18','Thu 19','Fri 20','Sat 21','Sun 22'].map((x,i)=>`<button class="cal-d ${S.bDay===i?'on':''}" data-act="bDay" data-v="${i}" ${i===6?'disabled':''}><span>${x.split(' ')[0]}</span><b>${x.split(' ')[1]}</b></button>`).join('')}</div>
+  </div>
+  <div><h3 class="sec" style="margin-bottom:10px">Available times</h3>
+   <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${slots().map(s=>`<button class="slot ${S.bSlot===s.t?'on':''}" data-act="bSlot" data-v="${s.t}" ${s.off?'disabled':''}>${s.t}</button>`).join('')}</div>
+  </div>
+  <div class="card" style="padding:14px"><div class="between"><h3 class="sec">Reviews</h3><span class="muted sm">${d.reviews} verified</span></div>
+   ${[['Sadia K.','Very patient and explained everything in Urdu. Wait time was short.',5],['Ahmed R.','Video call was smooth, prescription came on WhatsApp right away.',5],['Noreen B.','Good doctor, clinic was a bit crowded on Saturday.',4]].map(r=>`<div style="padding:10px 0;border-bottom:1px solid #F2F4F7"><div class="between"><b class="sm">${r[0]}</b><span style="color:#F79009">${'★'.repeat(r[2])}</span></div><p class="muted sm">${r[1]}</p></div>`).join('')}
+  </div>
+ </div>
+ <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 22px;background:#fff;border-top:1px solid var(--line);z-index:6">
+  <button class="btn pri block" data-act="book" ${S.bSlot?'':'disabled'}>${S.bSlot?'Book for '+esc(fam(S.who).short)+' · '+S.bSlot:'Select a time'}</button>
+ </div>`;
+};
+function slots(){const base=['9:30 AM','10:00 AM','10:30 AM','11:30 AM','12:00 PM','2:30 PM','3:15 PM','4:30 PM','5:00 PM','6:00 PM','7:30 PM','8:00 PM'];return base.map((t,i)=>({t,off:(i+S.bDay*2)%4===1}))}
+
+V.booked=()=>{
+ const a=S.booked[0]; const d=doc(a.doc);
+ return `<div class="pad stack g16" style="padding-top:40px;padding-bottom:30px;align-items:center;text-align:center">
+  <span class="ico" style="width:84px;height:84px;border-radius:50%;background:var(--grn-50);color:var(--grn)">${I('check',44,'currentColor',2.4)}</span>
+  <h2 style="font-size:22px">Appointment confirmed</h2>
+  <p class="muted">Confirmation sent by SMS and WhatsApp to +92 ${esc(S.phone||'300 1234567')}</p>
+  <div class="card" style="padding:16px;width:100%;text-align:left;display:flex;flex-direction:column;gap:12px">
+   <div class="row"><span class="av" style="background:${d.bg};color:${d.fg}">${d.ini}</span><div><b>${d.name}</b><div class="muted sm">${d.spec}</div></div></div>
+   <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px" class="sm">
+    <div><div class="muted">Patient</div><b>${esc(fam(a.who).name)}</b></div><div><div class="muted">Booking ID</div><b>CC-BK-${7720+S.booked.length}</b></div>
+    <div><div class="muted">Date & time</div><b>${a.day} ${a.date}, ${a.time}</b></div><div><div class="muted">Type</div><b>${a.type==='clinic'?'In-clinic':a.type==='video'?'Video':'Audio call'}</b></div>
+    <div><div class="muted">Location</div><b>${a.type==='clinic'?d.clinic:'In the app'}</b></div><div><div class="muted">Fee</div><b>${rs(a.type==='clinic'?d.fee:d.vfee)}</b> <span class="chip md" style="padding:0 8px">Pay later</span></div>
+   </div>
+  </div>
+  <div class="stack g8" style="width:100%">
+   <button class="btn pri block" data-act="startQ">Fill pre-visit form (2 min)</button>
+   <div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="toast" data-v="Added to your phone calendar">${I('cal',18)}Add to calendar</button><button class="btn" style="flex:1" data-act="toast" data-v="Receipt PDF downloaded">${I('download',18)}Receipt</button></div>
+   <button class="btn block" data-go="home" style="border:0">Back to home</button>
+  </div>
+ </div>`;
+};
+
+V.questionnaire=()=>{
+ const sy=['Fever','Back pain','Headache','Swelling in feet','Nausea','Blurred vision','Reduced baby movements','Bleeding','Burning urination','Cough','Dizziness','Severe abdominal pain'];
+ const q=S.symQ.toLowerCase(); const sug=q?sy.filter(x=>x.toLowerCase().includes(q)&&!S.syms.includes(x)).slice(0,4):[];
+ const pct=S.qStep*33;
+ const head=(t,s)=>`<div style="background:linear-gradient(120deg,#E6F4F3,#fff);padding:18px 20px;display:flex;gap:14px;align-items:center;border-bottom:1px solid var(--line)"><div style="flex:1"><h3 class="sec">${t}</h3><p class="muted sm">${s}</p></div><div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--teal) 0 ${pct}%,#D0D8E2 ${pct}% 100%);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${Math.min(S.qStep,3)} of 3</div></div></div>`;
+ const yn=(k,label)=>`<div><div class="b" style="margin-bottom:8px">${label} <span style="color:var(--red)">*</span></div><div class="row" style="gap:8px">${['Yes','No'].map(o=>`<button class="pill ${S.qAns[k]===o?'on':''}" style="min-width:72px;justify-content:center" data-act="qAns" data-k="${k}" data-v="${o}">${o}</button>`).join('')}</div></div>`;
+ let body='';
+ if(S.qStep===1) body=head('Reason for visit','Helps your doctor prepare')+`<div class="pad stack g20" style="padding-top:18px">
+  <div><label class="lbl" for="sq">What symptoms are you having? <span style="color:var(--red)">*</span></label><div style="position:relative"><span style="position:absolute;left:14px;top:14px;color:var(--muted)">${I('search',20)}</span><input id="sq" class="inp" style="padding-left:44px" placeholder="Search symptoms" value="${esc(S.symQ)}" data-in="symQ"></div>
+  ${sug.length?`<div class="card" style="padding:4px 12px;margin-top:6px">${sug.map(x=>`<button class="item" data-act="addSym" data-v="${x}">${I('plus',16)}${x}</button>`).join('')}</div>`:''}
+  <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:10px">${S.syms.map(x=>`<span class="chip neu" style="padding:6px 10px">${x}<button aria-label="Remove ${x}" data-act="rmSym" data-v="${x}" style="border:0;background:none;padding:0;display:flex">${I('x',14)}</button></span>`).join('')}</div></div>
+  ${yn('seen','Have you seen this doctor before?')}${yn('concern','Anything specific you want to discuss?')}
+  ${S.syms.some(x=>['Bleeding','Reduced baby movements','Severe abdominal pain','Blurred vision'].includes(x))?`<div class="card" style="padding:12px;background:#FEF3F2;border-color:#FECDCA;display:flex;gap:10px"><span style="color:var(--red)">${I('alert',20)}</span><div class="sm"><b>This could need urgent care.</b> Don't wait for the appointment — call your doctor or go to the nearest emergency.</div></div>`:''}
+ </div>`;
+ if(S.qStep===2) body=head('Medical history','Shared only with your doctor')+`<div class="pad stack g20" style="padding-top:18px">
+  ${yn('chronic','Any long-term condition? (diabetes, BP, asthma)')}
+  <div><label class="lbl" for="qm">Medicines you take now</label><textarea id="qm" class="inp" rows="3" placeholder="Type here">Folic acid 5 mg, Ferrous sulfate 200 mg</textarea></div>
+  <div><label class="lbl" for="qa">Allergies to medicines or food</label><textarea id="qa" class="inp" rows="3" placeholder="Type here"></textarea></div>
+  <button class="btn" data-act="toast" data-v="Photo of report attached">${I('camera',18)}Attach a report photo</button>
+ </div>`;
+ if(S.qStep===3) body=`<div style="background:linear-gradient(180deg,#E6F4F3,#fff);padding:40px 20px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px"><span class="ico" style="width:72px;height:72px;border-radius:50%;background:#12B76A;color:#fff">${I('check',38,'#fff',2.6)}</span><h2>Successfully submitted</h2><p class="muted">Your doctor will see this before the visit. A copy was sent to your email.</p><button class="btn sm" data-act="toast" data-v="Showing your answers">View response</button></div>
+  <div class="pad"><div class="card" style="padding:16px"><h3 class="sec" style="margin-bottom:8px">Before your visit</h3>${['Arrive 10 minutes early at the clinic reception','Bring your CNIC and Sehat Card','Bring your previous reports and pregnancy file'].map(x=>`<div class="row" style="padding:8px 0;align-items:flex-start"><span style="color:#12B76A">${I('check',20,'currentColor',2.4)}</span><span>${x}</span></div>`).join('')}</div></div>`;
+ return `${topBar('Pre-visit form')}${body}<div class="pad row" style="gap:10px;justify-content:flex-end;padding-top:20px;padding-bottom:30px">${S.qStep>1&&S.qStep<3?'<button class="btn" data-act="qPrev">Previous</button>':''}<button class="btn ${S.qStep<3?'dark':'pri'}" data-act="qNext">${S.qStep===1?'Next':S.qStep===2?'Submit':'Done'}</button></div>`;
+};
+
+V.appts=()=>{
+ const past=[{id:'p1',doc:'ayesha',who:'khalida',day:'Thu',date:'05 Nov',time:'10:30 AM',type:'clinic',status:'Done',reason:'Diabetes review'},{id:'p2',doc:'saad',who:'zainab',day:'Sun',date:'08 Nov',time:'7:30 PM',type:'video',status:'Done',reason:'High fever, body ache'},{id:'p3',doc:'hina',who:'me',day:'Mon',date:'19 Oct',time:'4:00 PM',type:'clinic',status:'Done',reason:'Antenatal visit — 24 weeks'}];
+ const list=S.apTab==='Upcoming'?S.booked.filter(a=>a.status!=='Cancelled'):past;
+ return `${topBar('Appointments')}<div class="pad stack g12" style="padding-bottom:24px">
+  <div class="tabs">${['Upcoming','Past'].map(t=>`<button class="${S.apTab===t?'on':''}" data-act="apTab" data-v="${t}">${t}</button>`).join('')}</div>
+  ${list.map(a=>{const d=doc(a.doc);const open=S.apSel===a.id;return `<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+   <div class="between sm"><span class="row muted" style="gap:6px">${I('cal',15)}${a.day}, ${a.date} · ${a.time}</span><span class="chip ${a.status==='Done'?'lo':'tl'}">${a.status==='Done'?'Attended':a.status}</span></div>
+   <div class="row"><span class="av" style="background:${d.bg};color:${d.fg}">${d.ini}</span><div style="flex:1"><b>${d.name}</b> <span class="muted sm">${d.spec}</span><div class="sm">${a.reason} · <span class="muted">for ${esc(fam(a.who).short)}</span></div></div><span style="color:var(--teal)">${I(a.type==='clinic'?'pin':a.type==='video'?'video':'phone',18)}</span></div>
+   ${open&&a.status==='Done'?`<div style="background:#F8FAFC;border-radius:12px;padding:12px" class="stack g8"><b>Summary</b><p class="sm muted">${a.who==='zainab'?'Dengue fever suspected. NS1 and CBC ordered with home sampling. Plenty of fluids and ORS; Panadol only for fever. Avoid ibuprofen. Return urgently if bleeding, vomiting or drowsiness.':a.who==='khalida'?'HbA1c 7.9%. Continue Metformin, walk 30 min daily, reduce rice and sweet tea. Repeat HbA1c in 3 months.':'Baby growth normal. BP 116/74. OGTT ordered at 28 weeks. Continue iron and folic acid.'}</p>
+    <b class="sm">Attached documents</b>${['Prescription.pdf','Lab_request.pdf'].map(f=>`<div class="row sm" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px">${I('file',16)}<span style="flex:1">${f}</span><span class="muted">20 KB</span><button class="ib" style="width:32px;height:32px" data-act="toast" data-v="${f} downloaded" aria-label="Download">${I('download',16)}</button></div>`).join('')}</div>`:''}
+   <div class="row" style="gap:8px">${a.status==='Done'?`<button class="btn sm" style="flex:1" data-act="apSel" data-v="${a.id}">${open?'Hide':'View'} summary</button><button class="btn sm pri" style="flex:1" data-act="openDoc" data-v="${a.doc}">Consult again</button>`:`<button class="btn sm" style="flex:1" data-act="openSheet" data-v="resched:${a.id}">Reschedule</button>${a.type==='clinic'?`<button class="btn sm" style="flex:1" data-act="toast" data-v="Opening directions to ${d.clinic}">Directions</button>`:`<button class="btn sm pri" style="flex:1" data-act="joinCall" data-v="${a.doc}">Join call</button>`}`}</div>
+  </div>`}).join('')}
+  ${list.length?'':'<p class="muted" style="text-align:center;padding:30px">No appointments.</p>'}
+ </div>`;
+};
+
+V.call=()=>{
+ const d=doc(S.chatDoc||'hina'); const c=S.call; const mm=String(Math.floor(c.sec/60)).padStart(2,'0'),ss=String(c.sec%60).padStart(2,'0');
+ const lines=[['Doctor','How is your back pain today? Any swelling in your feet?','آج کمر کا درد کیسا ہے؟ پاؤں میں سوجن تو نہیں؟'],['You','The pain is less, but my feet swell by evening.','درد کم ہے، لیکن شام تک پاؤں سوج جاتے ہیں۔'],['Doctor','Raise your feet when resting and check your BP tonight in the app.','آرام کرتے وقت پاؤں اوپر رکھیں اور رات کو ایپ میں بی پی چیک کریں۔']];
+ const cur=lines[Math.floor(c.sec/6)%3];
+ return `<div class="video">
+  <div class="between" style="padding:18px 20px"><div><b>${d.name}</b><div class="sm" style="color:#C3D2DF"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#F04438"></span> ${mm}:${ss} · Encrypted</div></div><span class="chip" style="background:#17344A;color:#7FE3DA">${I('lock',13)}Secure</span></div>
+  <div style="flex:1;position:relative;margin:0 14px;border-radius:24px;background:radial-gradient(circle at 50% 40%,#2B4C64,#10222F);display:flex;align-items:center;justify-content:center;min-height:440px">
+   <div style="text-align:center"><span class="av" style="width:120px;height:120px;font-size:40px;background:${d.bg};color:${d.fg}">${d.ini}</span><p class="sm" style="color:#C3D2DF;margin-top:10px">${d.name} · ${d.clinic}</p></div>
+   <div style="position:absolute;right:12px;top:12px;width:96px;height:130px;border-radius:14px;background:#1F3B52;border:2px solid #36506A;display:flex;align-items:center;justify-content:center;font-size:12px;color:#C3D2DF">${c.cam?'You':'Camera off'}</div>
+   ${c.cc?`<div style="position:absolute;left:12px;right:12px;bottom:12px;background:rgba(0,0,0,.72);border-radius:12px;padding:10px 12px;font-size:14px"><span style="color:#7FE3DA;font-weight:700">${cur[0]}: </span>${c.tr&&S.lang!=='ur'?cur[1]:`<span class="ur" dir="rtl">${cur[2]}</span>`}</div>`:''}
+  </div>
+  <div class="row" style="justify-content:center;gap:12px;padding:18px 10px 8px">
+   <button class="cbtn" style="background:${c.mic?'#36506A':'#D92D20'}" data-act="callT" data-v="mic" aria-label="Microphone" aria-pressed="${c.mic}">${I('mic')}</button>
+   <button class="cbtn" style="background:${c.cam?'#36506A':'#D92D20'}" data-act="callT" data-v="cam" aria-label="Camera" aria-pressed="${c.cam}">${I('video')}</button>
+   <button class="cbtn" style="background:${c.cc?'#0B7A75':'#36506A'}" data-act="callT" data-v="cc" aria-label="Subtitles" aria-pressed="${c.cc}">${I('cc')}</button>
+   <button class="cbtn" style="background:${c.tr?'#0B7A75':'#36506A'}" data-act="callT" data-v="tr" aria-label="Translate to English" aria-pressed="${c.tr}">${I('globe')}</button>
+   <button class="cbtn" style="background:#D92D20;width:66px" data-act="endCall" aria-label="End call">${I('phone')}</button>
+  </div>
+  <p class="sm" style="text-align:center;color:#8FA6BA;padding-bottom:18px">Subtitles ${c.cc?'on':'off'} · ${c.tr?'Urdu → English translation':'Original language'}</p>
+ </div>`;
+};
+
+V.records=()=>{
+ const f=fam(S.who); const labs=LABS[S.who]||[];
+ return `${topBar('Health records',{noBack:true,right:memberSwitch()})}
+ <div class="pad stack g16" style="padding-bottom:24px">
+  <div class="card" style="padding:16px;background:#EEF0FF;border-color:#D9DCFB"><b style="font-size:16px">${esc(f.name)}</b><div class="muted sm">${f.age} y · ${f.sex==='F'?'Female':'Male'} · ${f.mrn} · Blood ${f.blood}</div><div class="sm" style="margin-top:6px">${esc(f.cond)}</div><div class="sm" style="margin-top:2px">Allergies: <b style="color:${f.allergy==='None known'?'var(--ink)':'var(--red)'}">${esc(f.allergy)}</b></div></div>
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+   ${[['labs','lab','Lab results',labs.length+' reports','#EEF0FF','#3E3CB0'],['vitals','heart','Vitals','BP, sugar, weight','#FEE4E2','#B42318'],['meds','pill','Medicines',(MEDS[S.who]||[]).length+' active','#FEF0C7','#93370D'],['vacc','syringe','Vaccinations','Up to date','#DCFAE6','#067647'],['visits','cal','Visits & summaries','Past consults','#E0F2FE','#075985'],['exercise','pulse','Exercises & pain','Track recovery','#E6F4F3','#0B5F5B']].map(x=>`<button class="card" data-act="recGo" data-v="${x[0]}" style="padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px"><span class="ico" style="background:${x[4]};color:${x[5]};width:40px;height:40px">${I(x[1],20)}</span><b>${x[2]}</b><span class="muted sm">${x[3]}</span></button>`).join('')}
+  </div>
+  <div class="card" style="padding:16px"><div class="between"><h3 class="sec">Recent activity</h3></div>
+   <div class="list">${[['lab','Lab report ready','CBC — Chughtai Lab','12 Nov'],['pill','Refill completed','Ferrous sulfate 200 mg','10 Nov'],['users','Family member added','Khalida Begum (mother-in-law)','02 Nov']].map(a=>`<div class="item"><span class="ico" style="background:#F8FAFC;color:var(--muted);width:38px;height:38px">${I(a[0],18)}</span><div style="flex:1"><b>${a[1]}</b><div class="muted sm">${a[2]}</div></div><span class="muted sm">${a[3]}</span></div>`).join('')}</div>
+  </div>
+  <button class="btn block" data-act="openSheet" data-v="share">${I('share',18)}Share records with a doctor</button>
+ </div>`;
+};
+
+V.labs=()=>{
+ const labs=(LABS[S.who]||[]).filter(l=>!S.labQ||l.test.toLowerCase().includes(S.labQ.toLowerCase()));
+ let groups='';
+ if(S.recTab==='date'){const by={};labs.forEach(l=>{(by[l.mon]=by[l.mon]||[]).push(l)});groups=Object.keys(by).map(m=>`<p class="muted b sm" style="margin-top:6px">${m}</p>${by[m].map(labCard).join('')}`).join('');}
+ else{groups=labs.slice().sort((a,b)=>a.test.localeCompare(b.test)).map(labCard).join('');}
+ return `${topBar('Lab results',{right:memberSwitch()})}<div class="pad stack g12" style="padding-bottom:24px">
+  <div class="tabs">${[['date','By date'],['test','By test']].map(t=>`<button class="${S.recTab===t[0]?'on':''}" data-act="recTab" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>
+  <div style="position:relative"><span style="position:absolute;left:14px;top:14px;color:var(--muted)">${I('search',20)}</span><input class="inp" style="padding-left:44px" placeholder="Search test name" aria-label="Search lab reports" value="${esc(S.labQ)}" data-in="labQ"></div>
+  ${groups||'<p class="muted" style="text-align:center;padding:30px">No reports found.</p>'}
+  <button class="btn block" data-act="toast" data-v="Home sampling request sent to Chughtai Lab">${I('lab',18)}Book home sample collection</button>
+ </div>`;
+};
+function labCard(l){return `<button class="card" data-act="openLab" data-v="${l.id}" style="padding:14px;display:flex;gap:12px;align-items:center;text-align:left;width:100%"><span class="ico" style="background:#EEF0FF;color:#3E3CB0;width:42px;height:42px">${I('lab',20)}</span><div style="flex:1;min-width:0"><b>${l.test}</b><div class="muted sm">${l.date}</div><div class="muted sm">${l.lab}</div></div>${l.flag?'<span class="chip hi">Review</span>':'<span class="chip lo">Normal</span>'}</button>`}
+
+V.lab=()=>{
+ const l=Object.values(LABS).flat().find(x=>x.id===S.lab); const f=fam(S.who); const gs=Object.keys(l.groups); const g=S.labGrp&&l.groups[S.labGrp]?S.labGrp:gs[0];
+ return `${topBar('Report',{right:`<button class="ib soft" data-act="toast" data-v="Sent to printer" aria-label="Print">${I('file')}</button><button class="ib soft" data-act="toast" data-v="PDF downloaded" aria-label="Download">${I('download')}</button>`})}
+ <div class="pad stack g12" style="padding-bottom:24px">
+  <div class="card" style="padding:14px;background:#FFF5F4;border-color:#FDE2DF">
+   <div class="row"><span class="av" style="background:${f.bg};color:${f.fg}">${f.ini}</span><div><b>${esc(f.name)}</b><div class="muted sm">${f.age} y · ${f.sex} · ${f.mrn}</div></div></div>
+   <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px" class="sm"><div><span class="muted">Test</span><br><b>${l.test}</b></div><div><span class="muted">Reported</span><br><b>${l.date}</b></div><div style="grid-column:span 2"><span class="muted">Lab</span><br><b>${l.lab}</b></div></div>
+  </div>
+  ${gs.length>1?`<div class="tabs">${gs.map(x=>`<button class="${g===x?'on':''}" data-act="labGrp" data-v="${x}">${x}</button>`).join('')}</div>`:''}
+  <div class="card" style="overflow:hidden">${l.groups[g].map(r=>`<div style="padding:12px 14px;border-bottom:1px solid #F2F4F7;background:${r[3]?'#FEF3F2':'#fff'}"><div class="muted sm">Investigation</div><b>${r[0]}</b><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px"><div><div class="muted sm">Value</div><b style="color:${r[3]?'var(--red)':'var(--ink)'}">${r[1]}</b>${r[3]?' '+I('alert',14,'#B42318'):''}</div><div><div class="muted sm">Reference range</div><b>${r[2]}</b></div></div></div>`).join('')}</div>
+  ${l.flag?`<div class="card" style="padding:14px;display:flex;gap:10px;background:#F0F9FF;border-color:#B9E6FE"><span style="color:var(--blu)">${I('chat',20)}</span><div class="sm"><b>Doctor's note</b><p class="muted">${S.who==='zainab'?'Platelets rising — recovery on track. Repeat in 3 days.':S.who==='khalida'?'Slightly above target. Let\'s review diet at the next visit.':'Mild anaemia and borderline sugar — I\'ve added iron and a diet plan. Discuss today.'} — ${S.who==='zainab'?'Dr. Saad Rehman':S.who==='khalida'?'Dr. Ayesha Malik':'Dr. Hina Shah'}</p></div></div>`:''}
+  <button class="btn pri block" data-act="msgDoc">Ask the doctor about this report</button>
+ </div>`;
+};
+
+V.vitals=()=>{
+ const v=S.vit;
+ const cards=[['heart','Blood pressure',v.sys+'/'+v.dia,'mmHg','Today 8:05 AM','Omron BP (Bluetooth)','lo','Normal'],['drop','Fasting sugar',v.glu,'mg/dL','Today 7:30 AM','Entered manually',v.glu>92?'md':'lo',v.glu>92?'Above pregnancy target':'Normal'],['scale','Weight',v.wt,'kg','Sun 15 Nov','Clinic — Dr. Hina Shah','neu','+1.1 kg / 2 wks'],['pulse','Heart rate','84','bpm','Today 8:05 AM','Google Fit','lo','Normal']];
+ const hist=[[118,76],[116,74],[122,80],[119,77],[121,79],[117,75],[v.sys,v.dia]];
+ const pts=k=>hist.map((h,i)=>`${20+i*50},${150-(h[k]-60)*1.4}`).join(' ');
+ return `${topBar('Vitals',{right:memberSwitch()})}<div class="pad stack g12" style="padding-bottom:24px">
+  ${cards.map(c=>`<div class="card" style="padding:14px;display:flex;gap:12px;align-items:center"><span class="ico" style="background:var(--teal-50);color:var(--teal)">${I(c[0],20)}</span><div style="flex:1;min-width:0"><div class="between"><span class="muted sm b">${c[1]}</span><span class="chip ${c[6]}" style="padding:0 8px;font-size:11px">${c[7]}</span></div><b style="font-size:20px">${c[2]}</b> <span class="muted sm">${c[3]}</span><div class="muted sm">${c[4]} · ${c[5]}</div></div></div>`).join('')}
+  <div class="card" style="padding:14px"><div class="between"><h3 class="sec">BP — last 7 readings</h3><span class="muted sm">Target &lt; 140/90</span></div>
+   <svg viewBox="0 0 340 160" role="img" aria-label="Blood pressure trend" style="width:100%;height:auto;margin-top:8px"><rect x="0" y="${150-(140-60)*1.4}" width="340" height="${(140-90)*1.4}" fill="#DCFAE6" opacity=".6"/><polyline points="${pts(0)}" fill="none" stroke="#B42318" stroke-width="2.5"/><polyline points="${pts(1)}" fill="none" stroke="#0B7A75" stroke-width="2.5"/>${hist.map((h,i)=>`<circle cx="${20+i*50}" cy="${150-(h[0]-60)*1.4}" r="3.5" fill="#B42318"/><circle cx="${20+i*50}" cy="${150-(h[1]-60)*1.4}" r="3.5" fill="#0B7A75"/>`).join('')}</svg>
+   <div class="row sm" style="gap:14px"><span class="row" style="gap:6px"><span class="dot" style="background:#B42318"></span>Systolic</span><span class="row" style="gap:6px"><span class="dot" style="background:#0B7A75"></span>Diastolic</span></div>
+  </div>
+  <button class="btn pri block" data-act="openSheet" data-v="addVital">${I('plus',18)}Add a reading</button>
+  <div class="card" style="padding:14px"><h3 class="sec" style="margin-bottom:6px">Connected devices & apps</h3>
+   ${[['gfit','Google Fit','Steps, heart rate'],['apple','Apple Health','iPhone & Apple Watch'],['omron','Omron BP monitor','Bluetooth'],['mi','Mi Band / smartwatch','Heart rate, sleep']].map(d=>`<div class="item"><span class="ico" style="background:#F8FAFC;color:var(--muted);width:38px;height:38px">${I('watch',18)}</span><div style="flex:1"><b>${d[1]}</b><div class="muted sm">${d[2]}${S.devices[d[0]]?' · synced 8:05 AM':''}</div></div><label class="tog"><input type="checkbox" aria-label="${d[1]}" data-tog="devices.${d[0]}" ${S.devices[d[0]]?'checked':''}><span></span></label></div>`).join('')}
+  </div>
+ </div>`;
+};
+
+V.meds=()=>{
+ const meds=MEDS[S.who]||[];
+ return `${topBar('Medicines',{right:`<button class="ib soft" data-act="openSheet" data-v="addMedMenu" aria-label="Add or refill">${I('plus')}</button>`})}<div class="pad stack g12" style="padding-bottom:24px">
+  <div class="tabs">${[['my','My meds'],['all','Family meds']].map(t=>`<button class="${S.medTab===t[0]?'on':''}" data-act="medTab" data-v="${t[0]}">${t[1]}</button>`).join('')}</div>
+  ${S.medTab==='my'?`<p class="muted b sm">Today · ${esc(fam(S.who).short)}</p>${meds.length?meds.map((m,i)=>medCard(m,S.who,i)).join(''):'<div class="card muted" style="padding:20px;text-align:center">No medicines added.</div>'}`:
+   FAMILY.map(f=>`<p class="muted b sm" style="margin-top:6px">${esc(f.name)} · ${esc(f.rel)}</p>${(MEDS[f.id]||[]).length?(MEDS[f.id]).map((m,i)=>medCard(m,f.id,i)).join(''):'<p class="muted sm">No active medicines</p>'}`).join('')}
+  <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center;background:#FFFCF5;border-color:#FEDF89"><span style="color:#B54708">${I('alert',20)}</span><div class="sm" style="flex:1"><b>Ferrous sulfate running low</b><div class="muted">9 tablets left · about 4 days</div></div><button class="btn sm pri" data-go="pharmacy">Refill</button></div>
+ </div>`;
+};
+function medCard(m,who,i){const k=who+i;return `<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:8px"><div class="row"><span class="ico" style="background:var(--teal-50);color:var(--teal);width:42px;height:42px">${I(m.img,20)}</span><div style="flex:1;min-width:0"><b>${m.n}</b><div class="muted sm">${m.d}</div></div></div><div class="between"><span class="chip neu">${I('clock',13)}${m.t}</span><button class="btn sm ${S.taken[k]?'':'pri'}" data-act="takeMed2" data-v="${k}">${S.taken[k]?I('check',15)+'Taken':'Mark taken'}</button></div></div>`}
+
+V.addMed=()=>`${topBar('Add medication')}<div class="pad stack g16" style="padding-bottom:30px">
+ <div><label class="lbl" for="mn">Medication name <span style="color:var(--red)">*</span></label><input id="mn" class="inp" placeholder="e.g. Augmentin 625 mg"></div>
+ <div><label class="lbl" for="mk">Nickname</label><input id="mk" class="inp" placeholder="e.g. Ammi's sugar tablet"></div>
+ <div><label class="lbl" for="mp">Prescribed by</label><select id="mp" class="inp">${DOCS.map(d=>`<option>${d.name}</option>`).join('')}<option>Other</option></select></div>
+ <div><span class="lbl">How often?</span><div class="row" style="gap:6px;flex-wrap:wrap">${['With intervals','Specific days','As needed'].map(o=>`<button class="pill ${S.medFreq===o?'on':''}" data-act="medFreq" data-v="${o}">${o}</button>`).join('')}</div></div>
+ ${S.medFreq==='Specific days'?`<div><span class="lbl">Choose days</span><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<button class="slot ${S.medDays[d]?'on':''}" style="min-height:44px;font-size:12px" data-act="medDay" data-v="${d}">${d}</button>`).join('')}</div></div>`:S.medFreq==='With intervals'?`<div><label class="lbl" for="mi">Every</label><select id="mi" class="inp"><option>8 hours</option><option>12 hours</option><option>24 hours</option></select></div>`:''}
+ <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div><label class="lbl" for="ms">Start date</label><input id="ms" class="inp" type="date" value="2026-11-16"></div><div><label class="lbl" for="me">End date</label><input id="me" class="inp" type="date" value="2026-11-23"></div></div>
+ <div><label class="lbl" for="mt">Reminder time</label><input id="mt" class="inp" type="time" value="21:00"></div>
+ <div class="row" style="gap:10px"><button class="btn" style="flex:1" data-act="back">Cancel</button><button class="btn pri" style="flex:1" data-act="saveMed">Okay</button></div>
+</div>`;
+
+V.upload=()=>`${topBar('Refill by photo')}<div class="pad stack g16" style="padding-bottom:30px">
+ <h2 style="font-size:22px">${S.photos} photo${S.photos===1?'':'s'} attached</h2>
+ <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">${Array.from({length:S.photos},(_, i)=>`<div style="position:relative;height:170px;border-radius:16px;background:${i%2?'linear-gradient(135deg,#F5C77E,#E89B35)':'repeating-linear-gradient(0deg,#F8FAFC 0 14px,#E3E8EF 14px 15px)'};display:flex;align-items:center;justify-content:center;color:#5B6B7F" class="sm">${i%2?'Medicine box':'Prescription'}<button aria-label="Remove photo" data-act="rmPhoto" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:0;background:#0F1B2D;color:#fff;display:flex;align-items:center;justify-content:center">${I('x',16)}</button></div>`).join('')}</div>
+ <button class="card" data-act="addPhoto" style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:8px;border-style:dashed"><span class="ico" style="width:56px;height:56px;border-radius:50%;background:#FEF0C7;color:#93370D">${I('camera',24)}</span><b style="color:var(--teal)">Take or upload photo</b><span class="muted sm">Prescription, medicine box or strip</span></button>
+ <div><label class="lbl" for="rf">Who is this for?</label><select id="rf" class="inp">${FAMILY.map(f=>`<option ${f.id===S.who?'selected':''}>${f.name}</option>`).join('')}</select></div>
+ <button class="btn pri block" data-act="photoContinue" ${S.photos?'':'disabled'}>Continue to pharmacy</button>
+</div>`;
+
+V.pharmacy=()=>{
+ const ph=[{id:'medcure',n:'MedCure Pharmacy',p:2350,km:1.2,r:4.5,eta:'Today by 6 PM'},{id:'dvago',n:'HealthPlus Pharmacy',p:2490,km:2.2,r:4.2,eta:'Today by 8 PM'},{id:'vitalcure',n:'VitalCure Pharmacy — prescribed',p:2780,km:3.4,r:4.6,eta:'Tomorrow'}];
+ const sel=ph.find(p=>p.id===S.pharm)||ph[2]; const save=2780-sel.p;
+ return `${topBar('Order medicines')}<div class="pad stack g12" style="padding-bottom:110px">
+  <div class="row sm muted" style="gap:6px">${I('pin',16)}Deliver to <b style="color:var(--ink)">House 14, St 22, G-10/2</b></div>
+  <div class="card" style="padding:14px"><h3 class="sec" style="margin-bottom:8px">From your prescription</h3>${[['Ferrous sulfate 200 mg','× 60',820],['Folic acid 5 mg','× 30',260],['Calcium + Vitamin D','× 30',1700]].map(i=>`<div class="between sm" style="padding:6px 0"><span>${i[0]} <span class="muted">${i[1]}</span></span><b>${rs(i[2])}</b></div>`).join('')}</div>
+  <h3 class="sec">Compare pharmacies</h3>
+  ${ph.map(p=>`<button class="card" data-act="pharm" data-v="${p.id}" style="padding:14px;text-align:left;display:flex;flex-direction:column;gap:6px;border-color:${S.pharm===p.id?'var(--teal)':'var(--line)'};background:${S.pharm===p.id?'#F0FAF9':'#fff'}"><div class="between"><b>${p.n}</b><b>${rs(p.p)}</b></div><div class="row sm muted" style="gap:12px"><span class="row" style="gap:4px">${I('pin',13)}${p.km} km</span><span class="row" style="gap:4px;color:#B54708">${I('star',13,'#F79009',1.8,'#F79009')}${p.r}</span><span class="row" style="gap:4px">${I('truck',13)}${p.eta}</span></div>${2780-p.p>0?`<span class="chip lo" style="align-self:flex-start">Save ${rs(2780-p.p)}</span>`:''}</button>`).join('')}
+ </div>
+ <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 22px;background:#fff;border-top:1px solid var(--line);z-index:6"><div class="between sm" style="margin-bottom:8px"><span class="muted">Total incl. Rs 150 delivery${save>0?` · <b style="color:var(--grn)">you save ${rs(save)}</b>`:''}</span><b style="font-size:16px">${rs(sel.p+150)}</b></div><button class="btn pri block" data-act="orderMeds">Place order · cash or JazzCash on delivery</button></div>`;
+};
+
+V.bills=()=>{
+ const list=BILLS.map(b=>Object.assign({},b,{status:S.paid[b.id]?'Paid':b.status}));
+ const due=list.filter(b=>b.status!=='Paid'); const total=due.reduce((a,b)=>a+b.amt,0);
+ const byMember=FAMILY.map(f=>({f,amt:due.filter(b=>b.who===f.id).reduce((a,b)=>a+b.amt,0)}));
+ return `${topBar('Bills & payments')}<div class="pad stack g12" style="padding-bottom:24px">
+  <div class="card" style="padding:16px;background:#0E2233;color:#fff;border:0"><div class="sm" style="color:#C3D2DF">Family total due</div><b style="font-size:30px;font-family:'Plus Jakarta Sans'">${rs(total)}</b>
+   <div class="hscroll" style="margin-top:12px">${byMember.map(m=>`<div style="flex:none;background:#17344A;border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center"><span class="av" style="width:28px;height:28px;font-size:11px;background:${m.f.bg};color:${m.f.fg}">${m.f.ini}</span><span class="sm">${esc(m.f.short)}<br><b>${rs(m.amt)}</b></span></div>`).join('')}</div>
+   ${total?`<button class="btn block" style="margin-top:12px;background:#0B7A75;border-color:#0B7A75;color:#fff" data-act="payAll">Pay all ${rs(total)}</button>`:''}</div>
+  ${list.map(b=>{const f=fam(b.who);return `<button class="card" data-act="openBill" data-v="${b.id}" style="padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px"><div class="between"><b style="flex:1">${b.title}</b><b>${rs(b.amt)}</b></div><div class="between sm"><span style="color:${b.status==='Overdue'?'var(--red)':'var(--muted)'}">${b.status==='Paid'?'Paid':'Due '+b.due}</span><span class="chip ${b.status==='Paid'?'lo':b.status==='Overdue'?'hi':'md'}">${b.status}</span></div><div class="row sm" style="gap:8px"><span class="av" style="width:24px;height:24px;font-size:10px;background:${f.bg};color:${f.fg}">${f.ini}</span>${esc(f.name)} <span class="muted">(${b.type})</span></div></button>`}).join('')}
+ </div>`;
+};
+
+V.bill=()=>{
+ const b=S.bill==='all'?{id:'all',title:'All family bills',amt:BILLS.filter(x=>x.status!=='Paid'&&!S.paid[x.id]).reduce((a,x)=>a+x.amt,0),items:BILLS.filter(x=>x.status!=='Paid'&&!S.paid[x.id]).map(x=>[x.title,1,x.amt]),due:'—',who:'me'}:BILLS.find(x=>x.id===S.bill);
+ const isPaid=S.paid[b.id];
+ const methods=[['jazz','JazzCash','0300 •••• 567','#FEE4E2','#B42318'],['easy','Easypaisa','0345 •••• 112','#DCFAE6','#067647'],['card','Debit card','Meezan Visa •••• 4242','#E0F2FE','#075985'],['sehat','Sehat Card','Eligible for consultations','#EEF0FF','#3E3CB0']];
+ return `${topBar(isPaid?'Payment receipt':'Pay bill')}<div class="pad stack g12" style="padding-bottom:30px">
+  <div class="card" style="overflow:hidden;border-style:dashed"><div class="between" style="padding:14px;background:#F4F3FF"><span class="b">Grand total</span><b style="font-size:24px">${rs(b.amt)}</b></div>
+   <div style="padding:14px;display:flex;justify-content:space-between;gap:10px" class="sm"><div class="stack g8"><span>Invoice date: 12 Nov 2026</span><span>Due date: ${b.due}</span><span>Provider: Shifa Family Clinic</span></div>${isPaid?'<span style="align-self:center;border:3px solid #12B76A;color:#12B76A;border-radius:10px;padding:4px 10px;font-weight:800;transform:rotate(-12deg);font-size:18px">PAID</span>':''}</div></div>
+  ${isPaid?`<div class="card" style="padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px" class="sm"><div><div class="muted sm">Paid by</div><b>${esc(fam('me').name)}</b></div><div><div class="muted sm">Date</div><b>16 Nov 2026</b></div><div><div class="muted sm">Transaction ID</div><b>${isPaid}</b></div><div><div class="muted sm">Method</div><b>${methods.find(m=>m[0]===S.payMethod)[1]}</b></div></div>
+   <div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="toast" data-v="Receipt PDF downloaded">${I('download',18)}Download</button><button class="btn" style="flex:1" data-act="toast" data-v="Receipt shared on WhatsApp">${I('share',18)}Share</button></div>
+   <button class="btn pri block" data-go="bills">Back to bills</button>`:`
+  <div class="card" style="overflow:hidden"><div class="between sm muted b" style="padding:10px 14px;background:#F8FAFC"><span>Description</span><span>Amount</span></div>${b.items.map((it,i)=>`<div class="between" style="padding:10px 14px;border-top:1px solid #F2F4F7"><span class="sm">${i+1}. ${it[0]}</span><b class="sm">${rs(it[2])}</b></div>`).join('')}</div>
+  <h3 class="sec">Pay with</h3>
+  ${methods.map(m=>`<button class="card" data-act="payMethod" data-v="${m[0]}" style="padding:12px 14px;display:flex;gap:12px;align-items:center;text-align:left;border-color:${S.payMethod===m[0]?'var(--teal)':'var(--line)'};background:${S.payMethod===m[0]?'#F0FAF9':'#fff'}"><span class="ico" style="background:${m[3]};color:${m[4]};width:40px;height:40px;font-weight:800;font-size:12px">${m[1].slice(0,2).toUpperCase()}</span><span style="flex:1"><b>${m[1]}</b><span class="muted sm" style="display:block">${m[2]}</span></span><span style="width:22px;height:22px;border-radius:50%;border:2px solid ${S.payMethod===m[0]?'var(--teal)':'#D0D8E2'};display:flex;align-items:center;justify-content:center">${S.payMethod===m[0]?'<span style="width:10px;height:10px;border-radius:50%;background:var(--teal)"></span>':''}</span></button>`).join('')}
+  <div class="slide"><input type="range" min="0" max="100" value="0" aria-label="Slide to pay ${rs(b.amt)}" data-slide="1"><div class="lab">Slide to pay · ${rs(b.amt)}</div></div>
+  <p class="muted sm" style="text-align:center">You'll confirm with your ${S.payMethod==='card'?'bank OTP':S.payMethod==='sehat'?'CNIC on the Sehat portal':'MPIN on your phone'}.</p>`}
+ </div>`;
+};
+
+V.chats=()=>{
+ const th=[['bot','CareBot','Daily check-in · 2 questions','9:00 AM',1,'#E0F2FE','#075985','CB'],['hina','Dr. Hina Shah','We will review your readings at today\'s visit.','9:12 AM',1,'#FEF0C7','#93370D','HS'],['saad','Dr. Saad Rehman','Zainab\'s platelets are recovering well…','Yesterday',0,'#E0F2FE','#075985','SR'],['clinic','Shifa Family Clinic','Your appointment is confirmed for 4:30 PM','Yesterday',0,'#E6F4F3','#0B5F5B','SF']];
+ return `${topBar('Messages',{noBack:true})}<div class="pad stack" style="padding-bottom:24px">
+  <div style="position:relative;margin-bottom:8px"><span style="position:absolute;left:14px;top:14px;color:var(--muted)">${I('search',20)}</span><input class="inp" style="padding-left:44px" placeholder="Search messages" aria-label="Search messages"></div>
+  <div class="list">${th.map(t=>`<button class="item" data-act="${t[0]==='bot'?'carebot':'openChat'}" data-v="${t[0]}"><span class="av" style="width:48px;height:48px;background:${t[5]};color:${t[6]}">${t[0]==='bot'?I('bot',22):t[7]}</span><span style="flex:1;min-width:0"><span class="between"><b>${t[1]}</b><span class="muted sm">${t[3]}</span></span><span class="between"><span class="muted sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t[2]}</span>${t[4]?'<span style="background:var(--teal);color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:0 7px">1</span>':''}</span></span></button>`).join('')}</div>
+  <button class="btn block" style="margin-top:12px" data-go="doctors">${I('plus',18)}New conversation with a doctor</button>
+ </div>`;
+};
+
+V.chat=()=>{
+ const d=doc(S.chatDoc)||doc('hina'); const m=S.msgs[d.id]||[];
+ return `<div style="display:flex;flex-direction:column;min-height:100%">${topBar(d.name,{right:`<button class="ib soft" data-act="toast" data-v="Calling ${d.name}…" aria-label="Audio call">${I('phone',20)}</button><button class="ib soft" data-act="joinCall" data-v="${d.id}" aria-label="Video call">${I('video',20)}</button>`})}
+ <div class="pad stack g10" style="flex:1;padding-top:6px;padding-bottom:14px;background:#F8FAFC">
+  <span class="chip neu" style="align-self:center;margin:8px 0">${I('lock',12)}Messages are end-to-end encrypted</span>
+  ${m.map(x=>`<div style="display:flex;flex-direction:column;align-items:${x.me?'flex-end':'flex-start'}"><div class="bubble" style="background:${x.me?'var(--teal)':'#fff'};color:${x.me?'#fff':'var(--ink)'};border:1px solid ${x.me?'var(--teal)':'var(--line)'};${x.me?'border-bottom-right-radius:6px':'border-bottom-left-radius:6px'}">${esc(x.t)}${x.file?`<div class="row sm" style="margin-top:8px;background:rgba(255,255,255,.15);border-radius:10px;padding:8px">${I('file',16)}${x.file}</div>`:''}</div><span class="muted sm" style="margin-top:2px">${x.time}${x.me?' · Seen':''}</span></div>`).join('')}
+ </div>
+ <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px 16px">
+  <div class="hscroll" style="margin-bottom:8px">${['Share my BP readings','Send lab report','Need a prescription refill','Book follow-up'].map(q=>`<button class="pill" data-act="quick" data-v="${q}">${q}</button>`).join('')}</div>
+  <div class="row" style="gap:8px"><button class="ib soft" data-act="attach" aria-label="Attach">${I('camera',20)}</button><input class="inp" style="height:46px" placeholder="Type a message (Urdu or English)" aria-label="Message" value="${esc(S.draft)}" data-in="draft" data-enter="send"><button class="ib" style="background:var(--teal);color:#fff;border-radius:50%" data-act="send" aria-label="Send">${I('send',20)}</button></div>
+ </div></div>`;
+};
+
+const BOT=[
+ {q:'Assalam-o-Alaikum Fatima! How are you feeling today compared to yesterday?',o:['Better','Same','Worse']},
+ {q:'Have you felt your baby move normally today?',o:['Yes, normal','Less than usual','Not sure']},
+ {q:'Did you take your iron and folic acid tablets?',o:['Yes, both','Only one','Not yet']}
+];
+V.carebot=()=>{
+ const m=S.msgs.bot;
+ const step=S.botStep; const last=m[m.length-1];
+ const worry=m.some(x=>x.me&&/Worse|Less than usual/.test(x.t));
+ return `<div style="display:flex;flex-direction:column;min-height:100%">${topBar('CareBot')}
+ <div class="pad stack g12" style="flex:1;padding-bottom:16px">
+  <div style="text-align:center;padding:6px 0"><span class="ico" style="width:72px;height:72px;border-radius:24px;background:#E0F2FE;color:var(--blu)">${I('bot',36)}</span><p class="muted sm" style="margin-top:6px">Automated check-in from Dr. Hina Shah's care team. Not for emergencies.</p></div>
+  ${m.map(x=>`<div style="display:flex;flex-direction:column;align-items:${x.me?'flex-end':'flex-start'}"><div class="bubble" style="background:${x.me?'#DCFAE6':'#E0F2FE'};${x.me?'border-bottom-right-radius:6px':'border-bottom-left-radius:6px'}">${esc(x.t)}</div><span class="muted sm">${x.time}</span></div>`).join('')}
+  ${step<BOT.length?`<div class="card" style="overflow:hidden;align-self:flex-start;width:86%"><div style="padding:12px 14px;background:#E0F2FE">${BOT[step].q}</div>${BOT[step].o.map(o=>`<button class="item" style="padding:12px 14px;border-top:1px solid var(--line);color:var(--pu);font-weight:600" data-act="botAns" data-v="${o}">${o}</button>`).join('')}</div>`:
+   `<div class="card" style="padding:14px;background:${worry?'#FEF3F2':'#ECFDF3'};border-color:${worry?'#FECDCA':'#ABEFC6'}"><b>${worry?'We\'ve alerted Dr. Hina Shah':'All good — thank you!'}</b><p class="sm muted" style="margin-top:4px">${worry?'Reduced movements or feeling worse should be checked today. Would you like to talk to the doctor now?':'Your answers were added to your record. See you at 4:30 PM today.'}</p>${worry?'<div class="row" style="gap:8px;margin-top:10px"><button class="btn sm pri" style="flex:1" data-act="joinCall" data-v="hina">Video call now</button><button class="btn sm" style="flex:1" data-act="openSheet" data-v="emergency">Emergency</button></div>':''}</div>`}
+ </div>
+ <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 14px 16px" class="row g8"><button class="ib soft" aria-label="Voice message" data-act="toast" data-v="Hold to record a voice note in Urdu">${I('mic',20)}</button><input class="inp" style="height:46px" placeholder="Type here…" aria-label="Message CareBot"><button class="ib" style="background:var(--ink);color:#fff;border-radius:50%" aria-label="Send" data-act="toast" data-v="Please use the options above">${I('send',20)}</button></div></div>`;
+};
+
+V.exercise=()=>{
+ const ex=[['Pelvic tilts','3 sets · 10 reps','Back pain relief'],['Cat-cow stretch','2 sets · 8 reps','Spine mobility'],['Seated side stretch','2 sets · 30 sec','Rib & back'],['Ankle circles','3 sets · 15 reps','Reduces foot swelling']];
+ const days=[14,15,16,17,18,19,20];
+ return `${topBar('Exercises & pain')}<div class="pad stack g12" style="padding-bottom:24px">
+  <p class="muted">Prescribed by Dr. Hina Shah for back pain in pregnancy. Stop and tell your doctor if anything hurts.</p>
+  <div class="row" style="gap:6px">${days.map((d,i)=>`<div class="cal-d ${d===16?'on':''}" style="width:auto;flex:1;height:64px">${i<2||(d===16&&Object.keys(S.exDone).length>=4)?I('check',16,d===16?'#fff':'#12B76A',2.4):'<span style="width:14px;height:14px;border-radius:50%;border:2px dashed #D0D8E2;display:inline-block"></span>'}<b>${d}</b></div>`).join('')}</div>
+  ${ex.map((e,i)=>{const p=S.pain[i];return `<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px;background:#F0FAF9;border-color:#C9ECE8"><div class="row"><span class="ico" style="background:#fff;color:var(--teal);width:46px;height:46px">${I('play',20)}</span><div style="flex:1"><b>${e[0]}</b><div class="muted sm">${e[1]} · ${e[2]}</div></div></div>
+   <div class="row" style="gap:8px"><button class="btn sm ${S.exDone[i]?'':'pri'}" data-act="exDone" data-v="${i}">${S.exDone[i]?I('check',15)+'Done':'Mark done'}</button><button class="btn sm" data-act="painEx" data-v="${i}">${p===undefined?'Log pain':'Pain '+p+'/10'}</button></div></div>`}).join('')}
+ </div>`;
+};
+
+V.family=()=>`${topBar('Family members')}<div class="pad stack g12" style="padding-bottom:24px">
+ <p class="muted">Manage appointments, records, medicines and bills for your family from one account.</p>
+ ${FAMILY.map(f=>`<div class="card" style="padding:14px;display:flex;gap:12px;align-items:center"><span class="av" style="width:52px;height:52px;background:${f.bg};color:${f.fg}">${f.ini}</span><div style="flex:1;min-width:0"><b>${esc(f.name)}</b><div class="muted sm">${esc(f.rel)} · ${f.age} y · ${f.mrn}</div><div class="sm">${esc(f.cond)}</div></div><button class="btn sm" data-act="switchTo" data-v="${f.id}">${S.who===f.id?'Viewing':'Switch'}</button></div>`).join('')}
+ <div class="card" style="padding:14px;background:#F8FAFC"><b>Caregiver access</b><p class="muted sm" style="margin-top:4px">Riaz can see Zainab's and Ammi's records and pay their bills. Your pregnancy records are visible only to you.</p><button class="btn sm" style="margin-top:8px" data-act="toast" data-v="Opening sharing settings">Manage sharing</button></div>
+ <button class="btn pri block" data-act="openSheet" data-v="addFamily">${I('plus',18)}Add family member</button>
+</div>`;
+
+V.notifs=()=>{
+ const t=(k,a,b)=>`<div class="item"><div style="flex:1"><b>${a}</b><div class="muted sm">${b}</div></div><label class="tog"><input type="checkbox" aria-label="${a}" data-tog="notif.${k}" ${S.notif[k]?'checked':''}><span></span></label></div>`;
+ return `${topBar('Notifications')}<div class="pad stack g12" style="padding-bottom:24px">
+  <div class="card" style="padding:4px 14px"><div class="list">
+   ${[['bell','Appointment reminder','Dr. Hina Shah today at 4:30 PM','2h'],['lab','Lab report ready','Zainab — platelet count','Yesterday'],['money','Bill overdue','Dengue follow-up labs · Rs 1,450','Yesterday'],['pill','Refill reminder','Ferrous sulfate — 4 days left','2 days']].map(n=>`<div class="item"><span class="ico" style="background:#F8FAFC;color:var(--muted);width:38px;height:38px">${I(n[0],18)}</span><div style="flex:1"><b>${n[1]}</b><div class="muted sm">${n[2]}</div></div><span class="muted sm">${n[3]}</span></div>`).join('')}
+  </div></div>
+  <h3 class="sec" style="margin-top:8px">Preferences</h3>
+  <div class="card" style="padding:4px 14px"><div class="list">${t('appt','Appointments','Reminders 24 h and 2 h before')}${t('meds','Medicine reminders','At the times you set')}${t('labs','Lab results','When a new report arrives')}${t('bills','Bills & payments','Due dates and receipts')}${t('promo','Health campaigns','Vaccination drives, health tips')}${t('quiet','Quiet hours','No alerts 11 PM – 7 AM (except urgent)')}</div></div>
+  <h3 class="sec" style="margin-top:8px">Channels</h3>
+  <div class="card" style="padding:4px 14px"><div class="list">${t('whatsapp','WhatsApp','Messages in Urdu')}${t('sms','SMS','Works without internet')}</div></div>
+ </div>`;
+};
+
+V.learn=()=>`${topBar('Health library')}<div class="pad stack g12" style="padding-bottom:24px">
+ <div class="hscroll">${['For you','Pregnancy','Diabetes','Child health','Heart','Nutrition'].map((c,i)=>`<button class="pill ${i===0?'on':''}" data-act="toast" data-v="Showing ${c}">${c}</button>`).join('')}</div>
+ ${ARTICLES.map(a=>`<button class="card" data-act="toast" data-v="Opening: ${a.t}" style="padding:14px;display:flex;gap:12px;align-items:center;text-align:left"><span class="ico" style="background:${a.bg};color:${a.fg};width:56px;height:56px">${I(a.ic,24)}</span><div style="flex:1"><span class="chip neu" style="padding:0 8px">${a.c}</span><div class="b" style="margin-top:4px">${a.t}</div><div class="muted sm">${a.m}</div></div></button>`).join('')}
+ <div class="card" style="padding:14px;display:flex;gap:10px;background:#F0F9FF;border-color:#B9E6FE"><span style="color:var(--blu)">${I('globe',20)}</span><div class="sm">Every article is available in <b>Urdu audio</b> for family members who prefer listening.</div></div>
+</div>`;
+
+V.profile=()=>{
+ const f=fam('me');
+ const row=(ic,a,b,act)=>`<button class="item" ${act}><span class="ico" style="background:#F8FAFC;color:var(--muted);width:40px;height:40px">${I(ic,19)}</span><span style="flex:1"><b>${a}</b><span class="muted sm" style="display:block">${b}</span></span>${I('chev',18)}</button>`;
+ return `${topBar('Profile',{noBack:true})}<div class="pad stack g16" style="padding-bottom:24px">
+  <div class="row"><span class="av" style="width:68px;height:68px;font-size:22px;background:${f.bg};color:${f.fg}">${f.ini}</span><div style="flex:1"><h2 style="font-size:20px">${f.name}</h2><div class="muted sm">+92 ${esc(S.phone||'312 9087114')} · ${f.mrn}</div><span class="chip tl" style="margin-top:4px">${I('shield',12)}Sehat Card linked</span></div></div>
+  <div class="card" style="padding:4px 14px"><div class="list">
+   ${row('users','Family members','4 members · switch or add','data-go="family"')}
+   ${row('cal','My appointments','2 upcoming','data-go="appts"')}
+   ${row('money','Bills & payments','JazzCash, Easypaisa, cards','data-go="bills"')}
+   ${row('bag','Medicine orders','Track deliveries','data-go="pharmacy"')}
+   ${row('book','Health library','Articles & videos','data-go="learn"')}
+  </div></div>
+  <div class="card" style="padding:4px 14px"><div class="list">
+   ${row('bell','Notifications','Reminders & channels','data-go="notifs"')}
+   <div class="item"><span class="ico" style="background:#F8FAFC;color:var(--muted);width:40px;height:40px">${I('globe',19)}</span><span style="flex:1"><b>Language</b><span class="muted sm" style="display:block">App text and voice</span></span><div class="tabs" style="width:140px">${['en','ur'].map(l=>`<button class="${S.lang===l?'on':''}" data-act="lang" data-v="${l}">${l==='en'?'English':'<span class="ur" style="font-size:12px">اردو</span>'}</button>`).join('')}</div></div>
+   ${row('lock','Privacy & security','Fingerprint login, who can see my data','data-act="toast" data-v="Biometric login enabled"')}
+   ${row('shield','Insurance','Sehat Card · State Life (Riaz)','data-act="toast" data-v="Insurance cards opened"')}
+  </div></div>
+  <button class="btn block" data-act="logout" style="color:var(--red);border-color:#FDA29B">${I('logout',18)}Log out</button>
+  <p class="muted sm" style="text-align:center">CareConnect v2.0 · Made for Pakistan</p>
+ </div>`;
+};
+
+/* ---------------- sheets ---------------- */
+const SH={};
+SH.members=()=>`<h3 class="sec" style="margin-bottom:10px">Viewing records for</h3>${FAMILY.map(f=>`<button class="item" data-act="switchTo" data-v="${f.id}" style="border-bottom:1px solid #F2F4F7"><span class="av" style="background:${f.bg};color:${f.fg}">${f.ini}</span><span style="flex:1"><b>${esc(f.name)}</b><span class="muted sm" style="display:block">${esc(f.rel)} · ${f.age} y</span></span>${S.who===f.id?`<span style="color:var(--teal)">${I('check',20,'currentColor',2.4)}</span>`:''}</button>`).join('')}<button class="btn block" style="margin-top:12px" data-act="openSheet" data-v="addFamily">${I('plus',18)}Add family member</button>`;
+SH.emergency=()=>`<div class="row" style="gap:10px;margin-bottom:12px"><span class="ico" style="background:var(--red-50);color:var(--red)">${I('siren')}</span><div><h3 class="sec">Emergency help</h3><p class="muted sm">If someone can't breathe, is unconscious or bleeding heavily, call now.</p></div></div>
+ <div class="stack g8"><a class="btn block" style="background:#D92D20;border-color:#D92D20;color:#fff" href="tel:1122">${I('phone',18)}Call Rescue 1122</a><a class="btn block" href="tel:115">${I('phone',18)}Call Edhi Ambulance 115</a><button class="btn block" data-act="toast" data-v="Location shared with Riaz and Ammi by SMS">${I('pin',18)}Share my location with family</button><button class="btn block" data-act="toast" data-v="Nearest emergency: PIMS, G-8 — 3.2 km">${I('pin',18)}Nearest emergency department</button></div>
+ <div class="card" style="padding:12px;margin-top:12px;background:#F8FAFC" class="sm"><b class="sm">Medical ID</b><p class="muted sm">Fatima Zahra · O+ · 28 weeks pregnant · no known allergies · Emergency contact: Riaz Ahmed +92 333 ••••</p></div>`;
+SH.dfilters=()=>`<h3 class="sec" style="margin-bottom:14px">Filters</h3>
+ <div class="stack g16"><div><span class="lbl">Doctor gender</span><div class="row" style="gap:6px">${['Any','Female','Male'].map(g=>`<button class="pill ${S.fGender===g?'on':''}" data-act="gender" data-v="${g}">${g}</button>`).join('')}</div></div>
+ <div><span class="lbl">Language</span><div class="row" style="gap:6px;flex-wrap:wrap">${['Urdu','English','Punjabi','Pashto','Sindhi'].map((g,i)=>`<button class="pill ${i<2?'on':''}" data-act="toast" data-v="Language filter: ${g}">${g}</button>`).join('')}</div></div>
+ <div><span class="lbl">Insurance</span><div class="row" style="gap:6px;flex-wrap:wrap"><button class="pill ${S.fSehat?'on':''}" data-act="sehat">Sehat Card</button><button class="pill">State Life</button><button class="pill">Jubilee</button><button class="pill">EFU</button></div></div>
+ <div><span class="lbl">Consultation type</span><div class="row" style="gap:6px"><button class="pill on">Any</button><button class="pill">Video</button><button class="pill">In-clinic</button><button class="pill">Home visit</button></div></div>
+ <div><label class="lbl" for="fee">Max fee: Rs 4,000</label><input id="fee" type="range" min="500" max="5000" value="4000" style="width:100%;accent-color:#0B7A75"></div>
+ <button class="btn pri block" data-act="closeSheet">Show ${filteredDocs().length} doctors</button></div>`;
+SH.addVital=()=>`<h3 class="sec" style="margin-bottom:14px">Add a reading</h3><div class="stack g12">
+ ${[['sys','Systolic BP','mmHg',2],['dia','Diastolic BP','mmHg',1],['glu','Blood sugar','mg/dL',2],['wt','Weight','kg',.1]].map(x=>`<div class="between"><span class="b">${x[1]} <span class="muted sm">${x[2]}</span></span><div class="row" style="gap:6px;border:1px solid #D0D8E2;border-radius:14px;padding:2px"><button class="ib" aria-label="Decrease ${x[1]}" data-act="vStep" data-k="${x[0]}" data-v="-${x[3]}">−</button><b style="min-width:52px;text-align:center">${x[0]==='wt'?S.vit.wt.toFixed(1):S.vit[x[0]]}</b><button class="ib" aria-label="Increase ${x[1]}" data-act="vStep" data-k="${x[0]}" data-v="${x[3]}">+</button></div></div>`).join('')}
+ <p class="muted sm">Readings above your target are shared with Dr. Hina Shah automatically.</p><button class="btn pri block" data-act="saveVital">Save</button></div>`;
+SH.addMedMenu=()=>`<div class="stack">${[['scan','Refill by scan or photo','Scan your prescription or upload a medicine photo','upload'],['file','Request a new prescription','Ask your doctor directly through the app','rx'],['plus','Add custom medication','Add any medicine and set reminders','addMed']].map(o=>`<button class="item" data-act="medMenu" data-v="${o[3]}" style="border-bottom:1px solid #F2F4F7"><span class="ico" style="background:#FEF7C3;color:#854A0E;width:52px;height:52px;border-radius:50%">${I(o[0],22)}</span><span style="flex:1"><b>${o[1]}</b><span class="muted sm" style="display:block">${o[2]}</span></span></button>`).join('')}</div>`;
+SH.addFamily=()=>`<h3 class="sec" style="margin-bottom:14px">Add family member</h3><div class="stack g12">
+ <div><label class="lbl" for="fn">Full name</label><input id="fn" class="inp" placeholder="e.g. Ali Riaz" value="${esc(S.famNew.name)}" data-in="famNew.name"></div>
+ <div><span class="lbl">Relationship</span><div class="row" style="gap:6px;flex-wrap:wrap">${['Son','Daughter','Spouse','Father','Mother','Other'].map(r=>`<button class="pill ${S.famNew.rel===r?'on':''}" data-act="famRel" data-v="${r}">${r}</button>`).join('')}</div></div>
+ <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><div><label class="lbl" for="fd">Date of birth</label><input id="fd" class="inp" type="date"></div><div><label class="lbl" for="fc">CNIC / B-Form</label><input id="fc" class="inp" placeholder="Optional"></div></div>
+ <p class="muted sm">Adults (18+) get an SMS to approve before you can see their records.</p>
+ <button class="btn pri block" data-act="saveFam">Add member</button></div>`;
+SH.share=()=>`<h3 class="sec" style="margin-bottom:6px">Share records</h3><p class="muted sm" style="margin-bottom:14px">Give a doctor time-limited access. You can revoke anytime.</p><div class="stack g12">
+ <div><span class="lbl">What to share</span>${['Lab results','Prescriptions & medicines','Vitals','Visit summaries'].map((x,i)=>`<label class="item" style="padding:8px 0"><input type="checkbox" ${i<3?'checked':''} style="width:20px;height:20px;accent-color:#0B7A75"><span>${x}</span></label>`).join('')}</div>
+ <div><label class="lbl" for="sd">With</label><select id="sd" class="inp">${DOCS.map(d=>`<option>${d.name}</option>`).join('')}<option>Another doctor (send link)</option></select></div>
+ <div><label class="lbl" for="sx">Access expires</label><select id="sx" class="inp"><option>After 7 days</option><option>After 24 hours</option><option>After the next visit</option></select></div>
+ <button class="btn pri block" data-act="doShare">Share securely</button></div>`;
+SH.pain=()=>{const i=S.painEx;const v=S.pain[i]===undefined?5:S.pain[i];const col=v>=7?'#B42318':v>=4?'#DC6803':'#079455';const lab=v===0?'No pain':v<=3?'Mild':v<=6?'Moderate':'Severe';
+ return `<div style="text-align:center" class="stack g12"><h3 class="sec">Log pain · ${['Pelvic tilts','Cat-cow stretch','Seated side stretch','Ankle circles'][i]}</h3><p class="muted">Did you feel any pain while exercising?</p>
+ <div style="font-size:56px;font-weight:800;color:${col};font-family:'Plus Jakarta Sans'">${v}</div><b style="color:${col}">${lab}</b>
+ <input type="range" min="0" max="10" value="${v}" aria-label="Pain score" data-in="painVal" style="width:100%;accent-color:${col}">
+ <div class="between muted sm"><span>0 · No pain</span><span>10 · Worst</span></div>
+ <div><span class="lbl" style="text-align:left">Difficulty</span><div class="row" style="gap:6px;justify-content:center">${['Easy','OK','Hard'].map((d,j)=>`<button class="pill ${j===1?'on':''}" data-act="toast" data-v="Difficulty: ${d}">${d}</button>`).join('')}</div></div>
+ ${v>=7?'<div class="card" style="padding:12px;background:#FEF3F2;border-color:#FECDCA;text-align:left" class="sm">Severe pain will be flagged to Dr. Hina Shah. Stop this exercise until she reviews it.</div>':''}
+ <button class="btn dark block" data-act="savePain">Save</button></div>`;};
+SH.resched=(id)=>{const a=S.booked.find(x=>x.id===id);const d=doc(a.doc);return `<h3 class="sec">Reschedule with ${d.name}</h3><p class="muted sm" style="margin:4px 0 14px">Current: ${a.day} ${a.date}, ${a.time}</p>
+ <div class="hscroll" style="margin-bottom:12px">${['Tue 17','Wed 18','Thu 19','Fri 20'].map((x,i)=>`<button class="cal-d ${S.bDay===i+1?'on':''}" data-act="bDay" data-v="${i+1}"><span>${x.split(' ')[0]}</span><b>${x.split(' ')[1]}</b></button>`).join('')}</div>
+ <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">${slots().slice(0,9).map(s=>`<button class="slot ${S.bSlot===s.t?'on':''}" data-act="bSlot" data-v="${s.t}" ${s.off?'disabled':''}>${s.t}</button>`).join('')}</div>
+ <div class="row" style="gap:8px;margin-top:16px"><button class="btn" style="flex:1;color:var(--red)" data-act="cancelAppt" data-v="${id}">Cancel visit</button><button class="btn pri" style="flex:1" data-act="doResched" data-v="${id}" ${S.bSlot?'':'disabled'}>Confirm</button></div>`;};
+
+/* ---------------- render ---------------- */
+const scr=document.getElementById('scr'),navW=document.getElementById('navWrap'),ov=document.getElementById('overlay');
+const JUMP=[['login','Login'],['otp','OTP'],['home','Home'],['doctors','Find doctor'],['doctor','Doctor & booking'],['booked','Booked'],['questionnaire','Pre-visit form'],['appts','Appointments'],['call','Video consult'],['records','Records'],['labs','Lab results'],['lab','Lab report'],['vitals','Vitals'],['meds','Medicines'],['addMed','Add medication'],['upload','Rx photo'],['pharmacy','Pharmacy'],['bills','Bills'],['bill','Pay bill'],['chats','Messages'],['chat','Doctor chat'],['carebot','CareBot'],['exercise','Exercises & pain'],['family','Family'],['notifs','Notifications'],['learn','Health library'],['profile','Profile']];
+function render(keepScroll){
+ if(S.screen==='lab'&&!S.lab){S.lab=(LABS[S.who]||LABS.me)[0].id}
+ if(S.screen==='bill'&&!S.bill){S.bill='b2'}
+ if(S.screen==='upload'&&S.photos===0&&!S._up){S.photos=2;S._up=1}
+ const y=scr.scrollTop;
+ scr.innerHTML=(V[S.screen]||V.home)();
+ scr.style.background=S.screen==='call'?'#0B1622':'#fff';
+ navW.innerHTML=navBar();
+ let o='';
+ if(S.sheet){const [k,arg]=S.sheet.split(':');o+=`<div class="sheet-bg" data-act="closeSheet"><div class="sheet" role="dialog" aria-modal="true" data-stop="1"><div class="grab"></div>${SH[k](arg)}</div></div>`}
+ if(S.toast)o+=`<div class="toast" role="status">${I('check',18,'#7FE3DA',2.4)}<span>${esc(S.toast)}</span></div>`;
+ ov.innerHTML=o;
+ scr.scrollTop=keepScroll?y:0;
+ document.getElementById('jump').innerHTML=JUMP.map(j=>`<button class="${S.screen===j[0]?'on':''}" data-jump="${j[0]}">${j[1]}</button>`).join('');
+ document.getElementById('langT').innerHTML=['en','ur'].map(l=>`<button class="${S.lang===l?'on':''}" data-act="lang" data-v="${l}">${l==='en'?'EN':'اردو'}</button>`).join('');
+}
+let toastT;
+function toast(m){S.toast=m;render(true);clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render(true)},2400)}
+function go(s){if(s===S.screen)return;S.stack.push(S.screen);S.screen=s;S.sheet=null;if(s==='call')startCall();else stopCall();render()}
+function back(){S.screen=S.stack.pop()||'home';S.sheet=null;stopCall();render()}
+function tab(s){S.stack=[];S.screen=s;S.sheet=null;stopCall();render()}
+let callT;function startCall(){S.call.sec=0;clearInterval(callT);callT=setInterval(()=>{S.call.sec++;if(S.screen==='call'&&!S.sheet){const y=scr.scrollTop;scr.innerHTML=V.call();scr.scrollTop=y}},1000)}
+function stopCall(){clearInterval(callT)}
+function setPath(path,val){const p=path.split('.');let o=S;for(let i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=val}
+
+const A={
+ back,toast:(v)=>toast(v),
+ sendOtp:()=>go('otp'),
+ autofill:()=>{S.otp=['4','8','2','1','7'];render(true)},
+ verify:()=>{S.stack=[];tab('home');toast('Welcome to CareConnect, Fatima')},
+ google:()=>{S.phone=S.phone||'312 9087114';S.stack=[];tab('home');toast('Signed in with Google')},
+ logout:()=>{S.stack=[];S.otp=['','','','',''];S.screen='login';render()},
+ lang:v=>{S.lang=v;render(true)},
+ openSheet:v=>{S.sheet=v;if(v.startsWith('resched')){S.bSlot=null;S.bDay=1}render(true)},
+ closeSheet:()=>{S.sheet=null;render(true)},
+ switchTo:v=>{S.who=v;S.sheet=null;S.lab=null;S.labGrp=null;render(true);toast('Now viewing '+fam(v).name)},
+ cat:v=>{S.cat=v;render(true)}, gender:v=>{S.fGender=v;render(true)}, sehat:()=>{S.fSehat=!S.fSehat;render(true)},
+ toggleMap:()=>{S.dview=S.dview==='list'?'map':'list';S.dSel=S.dSel||'hina';render(true)}, pin:v=>{S.dSel=v;render(true)},
+ openDoc:v=>{S.doc=v;S.bSlot=null;S.bDay=0;const d=doc(v);S.bType=d.km?'clinic':'video';go('doctor')},
+ bType:v=>{S.bType=v;render(true)}, bDay:v=>{S.bDay=+v;S.bSlot=null;render(true)}, bSlot:v=>{S.bSlot=v;render(true)},
+ book:()=>{const days=['Today','Tue','Wed','Thu','Fri','Sat'],dates=['16 Nov','17 Nov','18 Nov','19 Nov','20 Nov','21 Nov'];S.booked.unshift({id:'n'+Date.now(),doc:S.doc,who:S.who,day:days[S.bDay],date:dates[S.bDay],time:S.bSlot,type:S.bType,status:'Confirmed',reason:'New consultation'});S.stack=[];S.screen='booked';render()},
+ startQ:()=>{S.qStep=1;go('questionnaire')},
+ qAns:(v,el)=>{S.qAns[el.dataset.k]=v;render(true)}, addSym:v=>{S.syms.push(v);S.symQ='';render(true)}, rmSym:v=>{S.syms=S.syms.filter(x=>x!==v);render(true)},
+ qPrev:()=>{S.qStep--;render()}, qNext:()=>{if(S.qStep>=3){tab('home');return}S.qStep++;render()},
+ apTab:v=>{S.apTab=v;render(true)}, apSel:v=>{S.apSel=S.apSel===v?null:v;render(true)},
+ openAppt:v=>{const a=S.booked.find(x=>x.id===v);if(a&&a.type!=='clinic'){S.chatDoc=a.doc;go('call')}else{S.apTab='Upcoming';go('appts')}},
+ joinCall:v=>{S.chatDoc=v;go('call')},
+ callT:v=>{S.call[v]=!S.call[v];scr.innerHTML=V.call()},
+ endCall:()=>{stopCall();S.apTab='Past';S.screen='appts';S.stack=['home'];render();toast('Call ended · summary & prescription saved to Appointments')},
+ doResched:v=>{const days=['Today','Tue','Wed','Thu','Fri'],dates=['16 Nov','17 Nov','18 Nov','19 Nov','20 Nov'];const a=S.booked.find(x=>x.id===v);a.day=days[S.bDay];a.date=dates[S.bDay];a.time=S.bSlot;S.sheet=null;toast('Moved to '+a.day+' '+a.date+', '+a.time)},
+ cancelAppt:v=>{S.booked.find(x=>x.id===v).status='Cancelled';S.sheet=null;toast('Appointment cancelled · fee not charged')},
+ recGo:v=>{if(v==='vacc'){toast('Vaccinations: all up to date (Tdap given 12 Oct)');return}if(v==='visits'){S.apTab='Past';go('appts');return}go(v)},
+ recTab:v=>{S.recTab=v;render(true)}, openLab:v=>{S.lab=v;S.labGrp=null;go('lab')}, labGrp:v=>{S.labGrp=v;render(true)},
+ msgDoc:()=>{S.chatDoc=S.who==='zainab'?'saad':'hina';S.msgs[S.chatDoc].push({me:1,t:'Doctor, can you explain my latest report?',time:'Just now',file:'Lab report.pdf'});go('chat')},
+ vStep:(v,el)=>{const k=el.dataset.k;S.vit[k]=Math.round((S.vit[k]+parseFloat(v))*10)/10;render(true)},
+ saveVital:()=>{S.sheet=null;toast(S.vit.glu>92?'Saved · sugar above target, shared with your doctor':'Reading saved')},
+ medTab:v=>{S.medTab=v;render(true)}, takeMed:v=>{const k=S.who+v;S.taken[k]=!S.taken[k];render(true)}, takeMed2:v=>{S.taken[v]=!S.taken[v];render(true)},
+ medMenu:v=>{S.sheet=null;if(v==='rx'){S.chatDoc='hina';S.msgs.hina.push({me:1,t:'Please send a new prescription for my iron tablets.',time:'Just now'});go('chat');return}if(v==='upload'){S.photos=0;S._up=1}go(v)},
+ medFreq:v=>{S.medFreq=v;render(true)}, medDay:v=>{S.medDays[v]=!S.medDays[v];render(true)},
+ saveMed:()=>{MEDS[S.who].push({n:(document.getElementById('mn').value||'New medicine'),d:S.medFreq,t:'9:00 PM',days:S.medFreq,img:'pill',left:10});back();toast('Medication added · reminders set')},
+ addPhoto:()=>{S.photos++;render(true)}, rmPhoto:()=>{S.photos=Math.max(0,S.photos-1);render(true)}, photoContinue:()=>go('pharmacy'),
+ pharm:v=>{S.pharm=v;render(true)}, orderMeds:()=>{tab('home');toast('Order placed · arriving today by 6 PM')},
+ openBill:v=>{S.bill=v;go('bill')}, payAll:()=>{S.bill='all';go('bill')}, payMethod:v=>{S.payMethod=v;render(true)},
+ openChat:v=>{if(v==='clinic'){toast('Clinic messages are read-only');return}S.chatDoc=v;go('chat')},
+ quick:v=>{S.draft=v;render(true)}, attach:()=>{(S.msgs[S.chatDoc]=S.msgs[S.chatDoc]||[]).push({me:1,t:'Photo attached',time:'Just now',file:'IMG_2041.jpg'});render(true)},
+ send:()=>{if(!S.draft.trim())return;const d=S.chatDoc;S.msgs[d]=S.msgs[d]||[];S.msgs[d].push({me:1,t:S.draft,time:'Just now'});S.draft='';render(true);scr.scrollTop=scr.scrollHeight;setTimeout(()=>{S.msgs[d].push({me:0,t:'Thank you, I\'ve received it. I\'ll reply shortly.',time:'Just now'});if(S.screen==='chat'){render(true);scr.scrollTop=scr.scrollHeight}},1400)},
+ carebot:()=>{if(!S.msgs.bot.length)S.botStep=0;go('carebot')},
+ botAns:v=>{S.msgs.bot.push({me:0,t:BOT[S.botStep].q,time:'9:00 AM'},{me:1,t:v,time:'Just now'});S.botStep++;render(true);scr.scrollTop=scr.scrollHeight},
+ exDone:v=>{S.exDone[v]=!S.exDone[v];render(true)}, painEx:v=>{S.painEx=+v;if(S.pain[v]===undefined)S.pain[v]=3;S.sheet='pain';render(true)},
+ savePain:()=>{S.sheet=null;toast('Pain logged · '+S.pain[S.painEx]+'/10')},
+ famRel:v=>{S.famNew.rel=v;render(true)},
+ saveFam:()=>{const n=S.famNew.name.trim()||'Ali Riaz';FAMILY.push({id:'f'+Date.now(),name:n,short:n.split(' ')[0],rel:S.famNew.rel,age:5,sex:'M',ini:n.split(' ').map(w=>w[0]).slice(0,2).join(''),bg:'#DCFAE6',fg:'#067647',mrn:'CC-'+(10464+FAMILY.length),blood:'—',cond:'New profile',allergy:'None known'});MEDS[FAMILY[FAMILY.length-1].id]=[];S.famNew={name:'',rel:'Son'};S.sheet=null;toast(n+' added to your family')},
+ doShare:()=>{S.sheet=null;toast('Shared for 7 days · you can revoke in Privacy')}
+};
+
+/* events */
+document.addEventListener('click',e=>{
+ const j=e.target.closest('[data-jump]');
+ if(j){const s=j.dataset.jump;S.stack=s==='login'||s==='home'?[]:['home'];S.screen=s;S.sheet=null;if(s==='call')startCall();else stopCall();render();return}
+ const t=e.target.closest('[data-tab]');if(t){tab(t.dataset.tab);return}
+ const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+ const a=e.target.closest('[data-act]');
+ if(a){
+  if(a.dataset.act==='closeSheet'&&e.target.closest('[data-stop]'))return;
+  const f=A[a.dataset.act];if(f){e.preventDefault();f(a.dataset.v,a)}
+ }
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{S.stack=[];S.screen='login';S.sheet=null;stopCall();render()});
+document.addEventListener('input',e=>{
+ const el=e.target;
+ if(el.dataset.in){
+  const k=el.dataset.in;
+  if(k==='painVal'){S.pain[S.painEx]=+el.value;render(true);return}
+  if(k==='sort'){S.sort=el.value;render(true);return}
+  setPath(k,el.value);
+  if(['phone','dq','symQ','labQ'].includes(k)){const pos=el.selectionStart;render(true);const n=document.querySelector(`[data-in="${k}"]`);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}}
+ }
+ if(el.dataset.otp!==undefined){const i=+el.dataset.otp;S.otp[i]=el.value.replace(/\D/g,'').slice(-1);render(true);const n=document.querySelector(`[data-otp="${S.otp[i]?Math.min(i+1,4):i}"]`);if(n)n.focus()}
+ if(el.dataset.slide&&+el.value>=96){const id=S.bill;const tx='17647'+Math.floor(10000+Math.random()*89999);if(id==='all'){BILLS.forEach(b=>{if(b.status!=='Paid')S.paid[b.id]=tx})}S.paid[id]=tx;render();toast('Payment successful')}
+});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.tog){const [o,k]=el.dataset.tog.split('.');S[o][k]=el.checked;toast((el.checked?'Turned on: ':'Turned off: ')+el.getAttribute('aria-label'))}if(el.dataset.slide&&+el.value<96){el.value=0}});
+document.addEventListener('keydown',e=>{const el=e.target;if(e.key==='Enter'&&el.dataset&&el.dataset.enter){A[el.dataset.enter]()}if(e.key==='Escape'&&S.sheet){S.sheet=null;render(true)}});
+render();
+</script>
+</body>
+</html>

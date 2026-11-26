@@ -85,7 +85,7 @@ export default async function AdminPractitionersPage(
                 )}
 
                 <div className="mt-3">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  <span className="text-xs font-semibold text-text-label">
                     {t("documentsLabel")}
                   </span>
                   {(documentsByPractitioner.get(p.id)?.length ?? 0) === 0 ? (
@@ -126,14 +126,14 @@ export default async function AdminPractitionersPage(
                     <form action={reject} className="mt-2 flex flex-wrap items-end gap-2">
                       <input type="hidden" name="practitionerId" value={p.id} />
                       <label className="block">
-                        <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                        <span className="mb-1.5 block text-xs font-semibold text-text-label">
                           {t("rejectReasonLabel")}
                         </span>
                         <input
                           type="text"
                           name="reason"
                           required
-                          className="tap-target rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                          className="tap-target rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
                         />
                       </label>
                       <SubmitButton

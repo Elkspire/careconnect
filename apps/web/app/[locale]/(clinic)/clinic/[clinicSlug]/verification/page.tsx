@@ -93,7 +93,7 @@ export default async function ClinicVerificationPage(
           <FormField label={t("documentTypeLabel")}>
             <select
               name="documentType"
-              className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
             >
               {DOCUMENT_TYPES.map((dt) => (
                 <option key={dt} value={dt}>
