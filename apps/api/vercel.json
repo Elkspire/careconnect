@@ -1,6 +1,7 @@
 {
   "installCommand": "cd ../.. && pnpm install",
   "buildCommand": "cd ../.. && pnpm turbo build --filter=@careconnect/api",
+  "regions": ["syd1"],
   "rewrites": [
     {
       "source": "/(.*)",

@@ -31,15 +31,12 @@ jobs:
     needs: migrate               # only deploys if migrations succeeded
     runs-on: ubuntu-latest
     environment: staging
+    # Staging is Vercel's Production environment: that is where its settings
+    # live, it's public (Preview sits behind Vercel login), and Vercel Cron
+    # only runs on production deployments.
     strategy:
       matrix:
-        include:
-          - app: api
-            project: VERCEL_API_PROJECT_ID
-            alias: careconnect-api-staging.vercel.app
-          - app: web
-            project: VERCEL_WEB_PROJECT_ID
-            alias: careconnect-staging.vercel.app
+        project: [VERCEL_API_PROJECT_ID, VERCEL_WEB_PROJECT_ID]
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets[matrix.project] }}
@@ -47,10 +44,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: npm i -g vercel@latest
-      - name: Pull staging env
-        run: vercel pull --yes --environment=preview --git-branch=staging --token="$VERCEL_TOKEN"
+      - name: Pull production env
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
       - name: Deploy
         run: |
-          url=$(vercel deploy --token="$VERCEL_TOKEN")
-          vercel alias set "$url" ${{ matrix.alias }} --token="$VERCEL_TOKEN"
-          echo "Deployed $url -> https://${{ matrix.alias }}" >> "$GITHUB_STEP_SUMMARY"
+          url=$(vercel deploy --prod --token="$VERCEL_TOKEN")
+          echo "Deployed $url to production" >> "$GITHUB_STEP_SUMMARY"
