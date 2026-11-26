@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareConnect · Platform admin prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0B7A75;--teal-d:#075E5A;--teal-50:#E6F4F3;--navy:#0E2233;--ink:#0F1B2D;--muted:#5B6B7F;--line:#E3E8EF;--bg:#F3F6F9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.45}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;margin:0;letter-spacing:-.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--teal)}
+.ur{font-family:'Noto Nastaliq Urdu',serif;line-height:2}
+.app{min-height:100vh;display:flex;flex-wrap:wrap}
+.sidebar{flex:1 1 236px;max-width:260px;background:var(--navy);color:#fff;padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.content{padding:24px 28px 48px;display:flex;flex-direction:column;gap:20px;max-width:1480px;width:100%}
+@media (max-width:860px){.sidebar{max-width:none}.sidebar nav{flex-direction:row!important;flex-wrap:wrap}.sidebar .branch{display:none}.content{padding:16px}}
+.nav{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#C3D2DF;font-weight:500;min-height:44px;border:0;background:none;width:100%;text-align:left}
+@media (max-width:860px){.nav{width:auto}}
+.nav:hover{background:#17344A;color:#fff}
+.nav.on{background:var(--teal);color:#fff}
+.nav .bdg{margin-left:auto;border-radius:999px;font-size:11px;font-weight:700;padding:1px 8px}
+header.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:18px 28px;background:#fff;border-bottom:1px solid var(--line)}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border-radius:10px;border:1px solid #D0D8E2;background:#fff;font-weight:600;font-size:13px;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--bg)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#fff}.btn.pri:hover{background:var(--teal-d)}
+.btn.dan{border-color:#FDA29B;color:#B42318}.btn.dan:hover{background:#FEF3F2}
+.btn.ghost{border-color:transparent;background:transparent}.btn.ghost:hover{background:#EEF2F6}
+.btn.sm{min-height:32px;padding:0 12px;font-size:12px;border-radius:8px}
+.btn.ico{width:40px;padding:0}.btn.sm.ico{width:32px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.5;border:0}
+.hi{background:#FEE4E2;color:#B42318}.md{background:#FEF0C7;color:#93370D}.lo{background:#DCFAE6;color:#067647}.info{background:#E0F2FE;color:#075985}.neu{background:#EEF2F6;color:#364152}.tl{background:var(--teal-50);color:#0B5F5B}.pu{background:#EEF0FF;color:#3E3CB0}
+.tabbar{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;padding:10px 2px;margin-right:22px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;min-height:44px;white-space:nowrap}
+.tab:hover{color:var(--ink)}.tab.on{color:var(--teal);border-bottom-color:var(--teal)}
+.pill{border:1px solid #D0D8E2;background:#fff;color:#344054;border-radius:999px;padding:0 14px;min-height:34px;font-weight:600;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.pill:hover{border-color:var(--teal)}.pill.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.inp{height:40px;border:1px solid #D0D8E2;border-radius:10px;padding:0 12px;background:#fff;width:100%}
+textarea.inp{height:auto;padding:10px 12px;resize:vertical}
+.inp:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.lbl{font-size:12px;font-weight:600;color:#475467;display:block;margin-bottom:6px}
+.muted{color:var(--muted)}.sm{font-size:12px}.b{font-weight:600}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 14px;background:#F8FAFC;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:12px 14px;border-bottom:1px solid #EEF2F6;vertical-align:middle}
+.tbl tr.row{cursor:pointer}.tbl tr.row:hover td{background:#F5FAFA}.tbl tr.sel td{background:var(--teal-50)}
+.av{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.icob{width:40px;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.sec{font-size:16px;font-weight:700;font-family:'Plus Jakarta Sans'}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.stack{display:flex;flex-direction:column}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+@media (max-width:600px){.g2,.g3{grid-template-columns:1fr}}
+.lnk{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:13px;text-decoration:none}
+.lnk:hover{text-decoration:underline}
+.chk{width:18px;height:18px;accent-color:var(--teal);cursor:pointer;flex:none}
+.bar{background:#EEF2F6;border-radius:999px;height:8px;overflow:hidden}.bar>div{height:100%;border-radius:999px;background:var(--teal)}
+.scroll{overflow-x:auto}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.bg{position:fixed;inset:0;background:rgba(15,27,45,.48);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:580px;max-height:90vh;overflow:auto;padding:24px;box-shadow:0 24px 64px rgba(15,27,45,.25)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-weight:500;z-index:60;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;padding:6px;box-shadow:0 12px 32px rgba(15,27,45,.14)}
+.sug button{display:flex;width:100%;gap:10px;align-items:center;padding:10px;border:0;background:transparent;border-radius:8px;text-align:left;min-height:44px}
+.sug button:hover{background:#F3F6F9}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.vidbtn{width:52px;height:52px;border-radius:50%;border:0;display:inline-flex;align-items:center;justify-content:center;color:#fff}
+</style>
+<style>
+.sidebar{background:#0B1622}
+.nav.on{background:#0B7A75}
+.drawer-bg{position:fixed;inset:0;background:rgba(15,27,45,.45);z-index:40;display:flex;justify-content:flex-end}
+.drawer{background:#fff;width:100%;max-width:640px;height:100%;overflow:auto;padding:24px;box-shadow:-20px 0 50px rgba(15,27,45,.2)}
+.kcol{background:#EEF2F6;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:300px}
+.kcard .btn{flex:none}
+.kcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.docthumb{height:110px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#5B6B7F;border:1px solid var(--line);background:repeating-linear-gradient(0deg,#F8FAFC 0 12px,#EEF2F6 12px 13px)}
+.heat td{padding:8px 6px;text-align:center;font-size:12px;font-weight:600;border:2px solid #fff;border-radius:6px}
+.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover td{background:#F5FAFA}
+.status-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+</style>
+
+<style id="cc-gradient">
+html{min-height:100%;background:radial-gradient(1100px 620px at 100% -8%,rgba(11,122,117,.20),transparent 62%),radial-gradient(900px 640px at -5% 105%,rgba(62,60,176,.13),transparent 60%),linear-gradient(160deg,#E7F5F3 0%,#F2F6F9 46%,#ECEFFB 100%)}
+body{background:transparent!important}
+.main{background:transparent}
+.topbar{background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.card{box-shadow:0 1px 2px rgba(15,27,45,.04),0 8px 24px rgba(15,27,45,.04)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="ov"></div>
+<script>
+const P={
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ video:'<path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+ plan:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+ chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+ mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+ chart:'<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', check:'<path d="M20 6 9 17l-5-5"/>',
+ alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ pulse:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>', file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+ star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2-6.2 3.2L7 14.2 2 9.3l6.9-1z"/>', filter:'<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>',
+ mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/>',
+ screen:'<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+ cc:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10.5a2 2 0 1 0 0 3M17 10.5a2 2 0 1 0 0 3"/>',
+ globe:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
+ spark:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+ pill:'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z"/><path d="m8.5 8.5 7 7"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ chevr:'<path d="m9 18 6-6-6-6"/>', chevl:'<path d="m15 18-6-6 6-6"/>', chevd:'<path d="m6 9 6 6 6-6"/>', chevu:'<path d="m18 15-6-6-6 6"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>', download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+ clip:'<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ trash:'<path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+ edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+ money:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+ layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+ move:'<path d="M9 5h.01M9 12h.01M9 19h.01M15 5h.01M15 12h.01M15 19h.01"/>',
+ bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>'
+};
+const I=(n,s=18,c='currentColor',w=1.8,fill='none')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const LOGO='<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#0B7A75"/><path d="M17 25.5s-8-4.6-8-10.2A4.3 4.3 0 0 1 17 13a4.3 4.3 0 0 1 8 2.3c0 5.6-8 10.2-8 10.2z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M10.5 17h3.5l1.5-2.5 2.2 5 1.5-2.5h4.3" fill="none" stroke="#7FE3DA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+Object.assign(P,{
+ building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+ badge:'<path d="M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/>',
+ card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+ ticket:'<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 17v2M13 11v2"/>',
+ server:'<rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6 7h.01M6 17h.01"/>',
+ flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+ rocket:'<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2z"/>'
+});
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ini=n=>n.replace('Dr. ','').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const rs=n=>n>=1e7?'Rs '+(n/1e7).toFixed(2)+' Cr':n>=1e5?'Rs '+(n/1e5).toFixed(1)+' lakh':'Rs '+Math.round(n).toLocaleString('en-PK');
+const sel=(id,opts,val,attrs='')=>`<select id="${id}" class="inp" ${attrs}>${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+const pills=(act,list,cur)=>list.map(l=>`<button class="pill ${cur===l?'on':''}" data-a="${act}" data-v="${esc(l)}">${esc(l)}</button>`).join('');
+const tabs=(act,list,cur)=>`<div class="tabbar">${list.map(t=>`<button class="tab ${cur===t[0]?'on':''}" data-a="${act}" data-v="${t[0]}">${t[1]}${t[2]?` <span class="chip md" style="margin-left:4px">${t[2]}</span>`:''}</button>`).join('')}</div>`;
+const kpi=(ic,cls,val,lab,sub,subc)=>`<div class="card" style="padding:18px;display:flex;gap:14px;align-items:flex-start"><span class="icob ${cls}">${I(ic,20)}</span><div><div class="muted sm b">${lab}</div><div style="font-size:24px;font-weight:700;font-family:'Plus Jakarta Sans'">${val}</div><div class="sm" style="color:${subc||'var(--muted)'}">${sub}</div></div></div>`;
+
+/* ================= DATA ================= */
+const PLANS={Free:{price:0,docs:1,c:'neu'},Starter:{price:4999,docs:3,c:'info'},Pro:{price:14999,docs:10,c:'tl'},Enterprise:{price:65000,docs:'Unlimited',c:'pu'}};
+const CLINICS=[
+ {id:'c1',name:'Shifa Family Clinic',city:'Islamabad',owner:'Dr. Ayesha Malik',phone:'0300 •••• 221',plan:'Pro',status:'Active',docs:4,staff:7,patients:1248,consults:1342,since:'Mar 2025',branches:2,health:92,pay:'Up to date',last:'Today'},
+ {id:'c2',name:'Al-Noor Medical Centre',city:'Lahore',owner:'Dr. Imtiaz Ahmed',phone:'0321 •••• 554',plan:'Enterprise',status:'Active',docs:22,staff:41,patients:9620,consults:8104,since:'Jan 2025',branches:3,health:88,pay:'Up to date',last:'Today'},
+ {id:'c3',name:'Karachi Kids Clinic',city:'Karachi',owner:'Dr. Saba Hussain',phone:'0333 •••• 780',plan:'Starter',status:'Active',docs:3,staff:5,patients:2104,consults:1890,since:'Jun 2025',branches:1,health:81,pay:'Up to date',last:'Yesterday'},
+ {id:'c4',name:'Peshawar Heart & Diabetes Centre',city:'Peshawar',owner:'Dr. Fazal Rehman',phone:'0345 •••• 101',plan:'Pro',status:'Active',docs:8,staff:12,patients:3410,consults:2766,since:'Aug 2025',branches:1,health:76,pay:'Up to date',last:'Today'},
+ {id:'c5',name:'Multan Mother Care',city:'Multan',owner:'Dr. Nadia Bukhari',phone:'0301 •••• 662',plan:'Starter',status:'Trial',docs:2,staff:3,patients:186,consults:94,since:'Nov 2026',branches:1,health:64,pay:'Trial ends 28 Nov',last:'Today'},
+ {id:'c6',name:'Quetta Family Health',city:'Quetta',owner:'Dr. Abdul Wali',phone:'0312 •••• 330',plan:'Free',status:'Active',docs:1,staff:1,patients:144,consults:310,since:'Sep 2026',branches:1,health:58,pay:'—',last:'3 days ago'},
+ {id:'c7',name:'SkinCare Studio',city:'Islamabad',owner:'Dr. Mehwish Ali',phone:'0336 •••• 909',plan:'Starter',status:'Active',docs:2,staff:3,patients:860,consults:1120,since:'Apr 2026',branches:1,health:84,pay:'Up to date',last:'Today'},
+ {id:'c8',name:'Faisalabad General Clinic',city:'Faisalabad',owner:'Dr. Arshad Javed',phone:'0300 •••• 417',plan:'Pro',status:'Suspended',docs:6,staff:9,patients:2390,consults:0,since:'Feb 2026',branches:1,health:30,pay:'2 invoices overdue',last:'14 days ago'},
+ {id:'c9',name:'Rawalpindi Bone & Joint',city:'Rawalpindi',owner:'Dr. Kashif Mirza',phone:'0322 •••• 245',plan:'Pro',status:'Active',docs:5,staff:8,patients:1730,consults:1402,since:'Jul 2025',branches:1,health:79,pay:'Card expiring',last:'Today'},
+ {id:'c10',name:'Sialkot City Clinic',city:'Sialkot',owner:'Dr. Hira Saleem',phone:'0341 •••• 876',plan:'Starter',status:'Trial',docs:1,staff:2,patients:42,consults:18,since:'Nov 2026',branches:1,health:52,pay:'Trial ends 30 Nov',last:'Yesterday'}
+];
+const S={page:'overview',modal:null,drawer:null,toast:'',
+ cl:{q:'',city:'All cities',plan:'All plans',status:'All',sort:'Patients'},
+ onb:[{id:'o1',name:'Hyderabad Dental Care',city:'Hyderabad',owner:'Dr. Sameer Memon',plan:'Starter',stage:'Applied',docs:'0/4',note:'Signed up via website · 3 dentists'},{id:'o2',name:'Gujranwala Children Hospital OPD',city:'Gujranwala',owner:'Dr. Rubina Aslam',plan:'Enterprise',stage:'Documents',docs:'2/4',note:'Needs Healthcare Commission licence'},{id:'o3',name:'Bahawalpur Eye Clinic',city:'Bahawalpur',owner:'Dr. Usama Qadri',plan:'Pro',stage:'Verification',docs:'4/4',note:'PMDC checks for 3 doctors in progress'},{id:'o4',name:'Abbottabad Women’s Health',city:'Abbottabad',owner:'Dr. Sadia Khan',plan:'Starter',stage:'Verification',docs:'4/4',note:'All documents received'},{id:'o5',name:'Mardan Family Physicians',city:'Mardan',owner:'Dr. Ihsan Ullah',plan:'Free',stage:'Applied',docs:'1/4',note:'Called back — prefers Pashto support'},{id:'o6',name:'Larkana Medical Point',city:'Larkana',owner:'Dr. Zulfiqar Abro',plan:'Starter',stage:'Training',docs:'4/4',note:'Staff training booked Thu 3 PM'}],
+ ver:{sel:'d1',filter:'Pending',lookup:{},checks:{}},
+ docs:[{id:'d1',name:'Dr. Faisal Qadir',spec:'General Physician',clinic:'Shifa Family Clinic',pmdc:'71204-P',cnic:'61101-•••••••-5',sub:'Today 9:12 AM',status:'Pending',exp:'31 Dec 2028',deg:'MBBS — Rawalpindi Medical University (2016)',result:'match'},
+  {id:'d2',name:'Dr. Sameer Memon',spec:'Dentist',clinic:'Hyderabad Dental Care',pmdc:'D-18833',cnic:'41303-•••••••-1',sub:'Today 8:40 AM',status:'Pending',exp:'15 Mar 2027',deg:'BDS — Liaquat University (2014)',result:'match'},
+  {id:'d3',name:'Dr. Usama Qadri',spec:'Ophthalmologist',clinic:'Bahawalpur Eye Clinic',pmdc:'55219-P',cnic:'31202-•••••••-9',sub:'Yesterday',status:'Pending',exp:'02 Feb 2026',deg:'MBBS, FCPS (Eye) — QAMC Bahawalpur',result:'expired'},
+  {id:'d4',name:'Dr. Sana Iqbal',spec:'Psychiatrist',clinic:'Independent (video only)',pmdc:'48870-P',cnic:'35202-•••••••-4',sub:'Yesterday',status:'Pending',exp:'30 Jun 2029',deg:'MBBS, FCPS (Psychiatry) — KEMU',result:'match'},
+  {id:'d5',name:'Dr. Hassan Raza',spec:'General Physician',clinic:'Quetta Family Health',pmdc:'60442-P',cnic:'54400-•••••••-7',sub:'2 days ago',status:'Pending',exp:'10 Oct 2027',deg:'MBBS — Bolan Medical College (2019)',result:'mismatch'},
+  {id:'d6',name:'Dr. Hina Shah',spec:'Gynaecologist',clinic:'Shifa Family Clinic',pmdc:'44120-P',cnic:'61101-•••••••-2',sub:'Mar 2025',status:'Verified',exp:'31 Dec 2027',deg:'MBBS, FCPS (Obs & Gynae)',result:'match'},
+  {id:'d7',name:'Dr. Kashif Mirza',spec:'Orthopaedic Surgeon',clinic:'Rawalpindi Bone & Joint',pmdc:'39914-P',cnic:'37405-•••••••-3',sub:'Jul 2025',status:'Verified',exp:'20 Aug 2028',deg:'MBBS, FCPS (Ortho)',result:'match'},
+  {id:'d8',name:'Mr. Jawad Akram',spec:'“Physician”',clinic:'Faisalabad General Clinic',pmdc:'—',cnic:'33100-•••••••-0',sub:'Oct 2026',status:'Rejected',exp:'—',deg:'No valid degree uploaded',result:'none'}],
+ subTab:'plans',payTab:'Ready',paidB:{},failFix:{},
+ tickets:[
+  {id:'T-4821',from:'Kamran Ali',org:'Shifa Family Clinic',cat:'Payments',pri:'High',status:'Open',sla:18,subj:'JazzCash payment shows paid but invoice still due',ago:'12 min',asg:'Mahnoor',msgs:[[0,'Assalam-o-Alaikum. Patient paid Rs 1,450 by JazzCash (TID 1764790101) but CareConnect still shows the invoice as due. Patient is waiting at the desk.','11:33 AM']]},
+  {id:'T-4820',from:'Fatima Zahra',org:'Patient · Islamabad',cat:'Login / OTP',pri:'Medium',status:'Open',sla:42,subj:'Not receiving OTP on Zong number',ago:'38 min',asg:'Unassigned',msgs:[[0,'I tried 4 times, OTP never comes. My number is on Zong.','11:07 AM']]},
+  {id:'T-4817',from:'Dr. Imtiaz Ahmed',org:'Al-Noor Medical Centre',cat:'Feature request',pri:'Low',status:'Pending',sla:null,subj:'Need Punjabi language for campaign messages',ago:'3 h',asg:'Ali',msgs:[[0,'Many of our patients in Shahdara prefer Punjabi voice notes. Can campaigns support Punjabi?','8:40 AM'],[1,'Thanks Doctor — we’ve shared this with the product team. Urdu voice notes work today; Punjabi is on the roadmap.','9:05 AM']]},
+  {id:'T-4815',from:'Dr. Fazal Rehman',org:'Peshawar Heart & Diabetes',cat:'Sehat Card',pri:'High',status:'Open',sla:-25,subj:'Sehat Card eligibility check timing out',ago:'5 h',asg:'Mahnoor',msgs:[[0,'Since morning every Sehat Card check says “service unavailable”. We have 30 patients waiting.','6:50 AM']]},
+  {id:'T-4811',from:'Waleed Khan',org:'Patient · Lahore',cat:'Bug',pri:'Medium',status:'Resolved',sla:null,subj:'Lab report PDF not opening on Android',ago:'Yesterday',asg:'Ali',msgs:[[0,'Report shows blank page.','Yesterday'],[1,'Fixed in app version 2.0.3 — please update from Play Store.','Yesterday']]}],
+ tkSel:'T-4821',tkF:'Open',tkDraft:'',
+ an:{period:'Last 30 days'},
+ comp:{tab:'requests',reqs:[{id:'R-311',type:'Export my data',who:'Waleed Khan (patient)',when:'Today 10:12 AM',status:'Pending',due:'Due in 6 days'},{id:'R-310',type:'Delete my account',who:'Sara Ahmed (patient)',when:'Yesterday',status:'Pending',due:'Due in 5 days'},{id:'R-306',type:'Correct my record',who:'Bilal Hussain (patient)',when:'12 Nov',status:'Completed',due:'Done'}],
+  access:[{id:'A-88',who:'Mahnoor (Support)',org:'Shifa Family Clinic',why:'Ticket T-4821 — reconcile JazzCash invoice',dur:'30 min',status:'Pending'},{id:'A-87',who:'Ali (Support)',org:'Peshawar Heart & Diabetes',why:'Ticket T-4815 — check Sehat Card settings',dur:'1 hour',status:'Pending'},{id:'A-85',who:'Ali (Support)',org:'Karachi Kids Clinic',why:'Training session',dur:'1 hour',status:'Expired'}]},
+ sys:{flags:{aiNotes:[1,60],translate:[1,100],carebot:[1,100],punjabi:[0,0],newBilling:[1,25],homeSample:[1,40]},minAndroid:'2.0.0',minIos:'2.0.0'},
+ ann:{aud:'All clinics',ch:{App:1,SMS:0,Email:1}}
+};
+let tT;const toast=m=>{S.toast=m;renderOv();clearTimeout(tT);tT=setTimeout(()=>{S.toast='';renderOv()},2600)};
+const V={},A={},M={},D={};
+const AUDIT=[['16 Nov, 11:40 AM','You (Super admin)','Viewed','Payout batch PB-0461'],['16 Nov, 11:02 AM','Mahnoor (Support)','Replied','Ticket T-4821'],['16 Nov, 10:15 AM','Usman (Finance)','Retried payment','Faisalabad General Clinic invoice INV-2209'],['16 Nov, 9:30 AM','Sana (Compliance)','Approved','Doctor verification — Dr. Kashif Mirza renewal'],['15 Nov, 6:12 PM','You (Super admin)','Changed flag','AI notes rollout 40% → 60%'],['15 Nov, 4:45 PM','Ali (Support)','Logged in as clinic','Karachi Kids Clinic (approved, 1 h)']];
+const audit=(who,act,obj)=>AUDIT.unshift(['16 Nov, now',who,act,obj]);
+
+/* ================= SHELL ================= */
+const NAV=[['overview','grid','Overview'],['clinics','building','Clinics'],['onboarding','rocket','Onboarding',()=>S.onb.filter(o=>o.stage!=='Live').length],['verify','badge','Doctor verification',()=>S.docs.filter(d=>d.status==='Pending').length],['billing','card','Plans & billing'],['payouts','money','Payouts'],['support','ticket','Support',()=>S.tickets.filter(t=>t.status==='Open').length],['analytics','chart','Analytics'],['compliance','shield','Compliance'],['system','server','System']];
+const TITLES={overview:['Platform overview','CareConnect across Pakistan · Monday, 16 November 2026'],clinics:['Clinics','All clinics and practices on CareConnect'],onboarding:['Onboarding','New clinics from sign-up to go-live'],verify:['Doctor verification','PMDC registration checks before doctors can see patients'],billing:['Plans & billing','Subscription plans, invoices and failed payments'],payouts:['Payouts','Online consultation fees collected by CareConnect and paid out to clinics'],support:['Support','Tickets from clinics and patients'],analytics:['Analytics','Growth, usage and engagement'],compliance:['Compliance','Data requests, support access approvals and admin audit log'],system:['System','Service health, feature flags and app versions']};
+function shell(){return `<aside class="sidebar"><div class="row" style="padding:4px 8px">${LOGO}<div><div style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px">CareConnect</div><div class="sm" style="color:#7FE3DA">Platform admin</div></div></div>
+ <nav aria-label="Main" class="stack" style="gap:2px">${NAV.map(n=>`<button class="nav ${S.page===n[0]?'on':''}" data-go="${n[0]}">${I(n[1],19)}<span>${n[2]}</span>${n[3]&&n[3]()?`<span class="bdg" style="background:#F79009;color:#0F1B2D">${n[3]()}</span>`:''}</button>`).join('')}</nav>
+ <div class="branch" style="margin-top:auto;background:#132536;border-radius:12px;padding:14px" ><div class="row sm" style="color:#7FE3DA;gap:6px">${I('shield',14)}Admin actions are logged</div><div class="sm" style="color:#8FA6BA;margin-top:6px">Environment: <b style="color:#fff">Production</b></div></div></aside>
+ <main class="main"><header class="topbar"><div style="flex:1 1 260px;min-width:0"><h1 style="font-size:22px">${TITLES[S.page][0]}</h1><div class="muted sm">${TITLES[S.page][1]}</div></div>
+ <div style="flex:0 1 320px;position:relative"><span style="position:absolute;left:12px;top:11px;color:var(--muted)">${I('search')}</span><input id="gs" class="inp" style="padding-left:40px;background:#F8FAFC" placeholder="Search clinic, doctor, ticket, PMDC no." aria-label="Search"></div>
+ <button class="btn" data-a="openModal" data-v="announce">${I('mega',16)}Announcement</button>
+ <div class="row"><span class="av" style="background:#0E2233;color:#7FE3DA">CC</span><div><div class="b sm" style="font-size:13px">Founder</div><div class="muted sm">Super admin</div></div></div></header>
+ <div class="content">${V[S.page]()}</div></main>`}
+function render(){const y=window.scrollY;document.getElementById('app').innerHTML=shell();renderOv();try{window.scrollTo(0,y)}catch(_){}}
+function renderOv(){document.getElementById('ov').innerHTML=(S.drawer?`<div class="drawer-bg" data-a="closeDrawer"><div class="drawer" role="dialog" aria-modal="true" data-stop="1">${D[S.drawer.t](S.drawer.id)}</div></div>`:'')+(S.modal?`<div class="bg" data-a="closeModal"><div class="modal" role="dialog" aria-modal="true" data-stop="1">${M[S.modal]()}</div></div>`:'')+(S.toast?`<div class="toast" role="status">${I('check',18,'#7FE3DA',2.4)}<span>${esc(S.toast)}</span></div>`:'')}
+const mhead=(t,sub,act)=>`<div class="between"><div><h3 class="sec" style="font-size:18px">${t}</h3>${sub?`<div class="muted sm">${sub}</div>`:''}</div><button class="btn ico ghost" aria-label="Close" data-a="${act||'closeModal'}">${I('x')}</button></div>`;
+const go=p=>{S.page=p;S.modal=null;S.drawer=null;render();try{window.scrollTo(0,0)}catch(_){}};
+A.closeModal=()=>{S.modal=null;render()};A.closeDrawer=()=>{S.drawer=null;render()};A.openModal=v=>{S.modal=v;renderOv()};A.toast=v=>toast(v);
+
+/* ================= OVERVIEW ================= */
+V.overview=()=>{const mrr=CLINICS.filter(c=>c.status==='Active').reduce((a,c)=>a+PLANS[c.plan].price,0);
+ const M2=[['Jun',38,11.2],['Jul',46,14.8],['Aug',55,18.1],['Sep',63,22.6],['Oct',74,27.9],['Nov',86,31.4]];
+ const x=i=>40+i*92,yc=v=>190-v*1.7,yk=v=>190-v*5;
+ const actions=[['verify','badge','hi','5 doctors waiting for PMDC verification','Oldest submitted 2 days ago'],['support','ticket','hi','1 ticket past SLA','T-4815 · Sehat Card checks timing out (Peshawar)'],['payouts','money','md','Payout batch PB-0461 ready to approve','8 clinics · Rs 9.1 lakh net · 1 on hold'],['billing','card','md','Faisalabad General Clinic suspended','2 invoices overdue · Rs 29,998'],['system','server','md','Sehat Card API degraded','Error rate 18% since 6:40 AM'],['compliance','shield','info','2 patient data requests pending','Export and delete · legal deadline in 5–6 days']];
+ return `<div class="grid g4">${kpi('building','tl',(CLINICS.filter(c=>c.status!=='Suspended').length+286).toString(),'Active clinics','+12 this month','#067647')}${kpi('badge','pu','1,904','Verified doctors','5 pending verification')}${kpi('users','info','3.14 lakh','Registered patients','+21,400 this month','#067647')}${kpi('video','md','86,210','Consultations (30 days)','38% video · 62% in-clinic')}${kpi('money','lo',rs(mrr*30),'Monthly recurring revenue','+9.4% vs October','#067647')}${kpi('card','neu',rs(4.61e6),'Online fees processed (30 d)','Commission earned Rs 2.3 lakh')}</div>
+ <div class="grid g2"><section class="card stack" style="padding:20px;gap:12px"><div class="between"><h3 class="sec">Growth</h3><span class="muted sm">Last 6 months</span></div>
+ <svg viewBox="0 0 520 220" role="img" aria-label="Growth of clinics and consultations" style="width:100%;height:auto"><line x1="30" y1="190" x2="510" y2="190" stroke="#E3E8EF"/>${M2.map((m,i)=>`<rect x="${x(i)-16}" y="${yk(m[2])}" width="32" height="${190-yk(m[2])}" rx="5" fill="#A7DCD8"/><text x="${x(i)}" y="208" font-size="11" text-anchor="middle" fill="#5B6B7F">${m[0]}</text>`).join('')}<polyline points="${M2.map((m,i)=>x(i)+','+yc(m[1])).join(' ')}" fill="none" stroke="#3E3CB0" stroke-width="2.5"/>${M2.map((m,i)=>`<circle cx="${x(i)}" cy="${yc(m[1])}" r="4" fill="#3E3CB0"/>`).join('')}</svg>
+ <div class="row sm" style="gap:16px"><span class="row" style="gap:6px"><span class="dot" style="background:#3E3CB0"></span>Consultations (thousands)</span><span class="row" style="gap:6px"><span class="dot" style="background:#A7DCD8"></span>New patients (thousands)</span></div></section>
+ <section class="card stack" style="padding:20px;gap:10px"><div class="between"><h3 class="sec">Needs your attention</h3><span class="chip hi">${actions.length}</span></div>${actions.map(a=>`<button class="row" data-go="${a[0]}" style="border:1px solid #EEF2F6;border-radius:12px;padding:10px 12px;background:#fff;text-align:left"><span class="icob ${a[2]}" style="width:36px;height:36px">${I(a[1],17)}</span><span style="flex:1"><b>${a[3]}</b><span class="muted sm" style="display:block">${a[4]}</span></span>${I('chevr',16)}</button>`).join('')}</section></div>
+ <div class="grid g3"><section class="card stack" style="padding:20px;gap:10px"><div class="between"><h3 class="sec">Service health</h3><button class="lnk" data-go="system">Details</button></div>${SERVICES.slice(0,6).map(s=>`<div class="between"><span class="row" style="gap:8px"><span class="status-dot" style="background:${s[2]==='Operational'?'#12B76A':s[2]==='Degraded'?'#F79009':'#D92D20'}"></span>${s[0]}</span><span class="sm muted">${s[2]}</span></div>`).join('')}</section>
+ <section class="card stack" style="padding:20px;gap:10px"><div class="between"><h3 class="sec">Newest clinics</h3><button class="lnk" data-go="clinics">All clinics</button></div>${CLINICS.slice().filter(c=>c.since.includes('2026')).slice(0,4).map(c=>`<button class="row" data-a="openClinic" data-v="${c.id}" style="border:0;background:none;text-align:left;padding:6px 0"><span class="av tl">${ini(c.name)}</span><span style="flex:1"><b>${c.name}</b><span class="muted sm" style="display:block">${c.city} · ${c.plan} · ${c.status}</span></span></button>`).join('')}</section>
+ <section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">Consultations by city</h3>${[['Lahore',24120],['Karachi',21480],['Islamabad / Rawalpindi',17950],['Peshawar',8930],['Faisalabad',5210],['Multan',4180],['Quetta',2140]].map(c=>`<div><div class="between sm"><span>${c[0]}</span><b>${c[1].toLocaleString()}</b></div><div class="bar" style="margin-top:4px"><div style="width:${Math.round(c[1]/24120*100)}%"></div></div></div>`).join('')}</section></div>`;
+};
+
+/* ================= CLINICS ================= */
+const SCLS={Active:'lo',Trial:'info',Suspended:'hi','Pending':'md'};
+V.clinics=()=>{const c=S.cl,ql=c.q.toLowerCase();
+ let rows=CLINICS.filter(x=>(!ql||(x.name+x.owner+x.city).toLowerCase().includes(ql))&&(c.city==='All cities'||x.city===c.city)&&(c.plan==='All plans'||x.plan===c.plan)&&(c.status==='All'||x.status===c.status));
+ rows=rows.sort((a,b)=>c.sort==='Patients'?b.patients-a.patients:c.sort==='Health score'?a.health-b.health:a.name.localeCompare(b.name));
+ const cnt=s=>s==='All'?CLINICS.length:CLINICS.filter(x=>x.status===s).length;
+ return `${tabs('clStatus',['All','Active','Trial','Suspended'].map(s=>[s,s+` <span class="chip neu" style="margin-left:4px">${cnt(s)}</span>`]),c.status)}
+ <div class="card row wrap" style="padding:14px 16px;align-items:flex-end;gap:10px"><div style="flex:2 1 260px"><label class="lbl" for="clq">Search</label><input id="clq" class="inp" placeholder="Clinic, owner or city" value="${esc(c.q)}" data-i="cl.q"></div><div style="flex:1 1 150px"><label class="lbl" for="clc">City</label>${sel('clc',['All cities',...new Set(CLINICS.map(x=>x.city))],c.city,'data-i="cl.city"')}</div><div style="flex:1 1 150px"><label class="lbl" for="clp">Plan</label>${sel('clp',['All plans',...Object.keys(PLANS)],c.plan,'data-i="cl.plan"')}</div><div style="flex:1 1 150px"><label class="lbl" for="cls">Sort by</label>${sel('cls',['Patients','Health score','Name'],c.sort,'data-i="cl.sort"')}</div><button class="btn" data-a="toast" data-v="Clinic list exported as CSV">${I('download',16)}Export</button><button class="btn pri" data-go="onboarding">${I('plus',16)}Add clinic</button></div>
+ <section class="card" style="overflow:hidden"><div class="scroll"><table class="tbl"><thead><tr><th>Clinic</th><th>City</th><th>Plan</th><th>Doctors</th><th>Patients</th><th>Consults (30 d)</th><th>Health</th><th>Billing</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr class="clk" data-a="openClinic" data-v="${x.id}"><td><div class="row"><span class="av tl">${ini(x.name)}</span><div><b>${x.name}</b><div class="muted sm">${x.owner} · since ${x.since}</div></div></div></td><td class="sm">${x.city}</td><td><span class="chip ${PLANS[x.plan].c}">${x.plan}</span></td><td>${x.docs}</td><td>${x.patients.toLocaleString()}</td><td>${x.consults.toLocaleString()}</td><td style="min-width:110px"><div class="sm b" style="color:${x.health>=75?'#067647':x.health>=50?'#B54708':'#B42318'}">${x.health}</div><div class="bar"><div style="width:${x.health}%;background:${x.health>=75?'#12B76A':x.health>=50?'#F79009':'#D92D20'}"></div></div></td><td class="sm" style="color:${/overdue|expiring/.test(x.pay)?'#B42318':'inherit'}">${x.pay}</td><td><span class="chip ${SCLS[x.status]}">${x.status}</span></td></tr>`).join('')}</tbody></table></div>${rows.length?'':'<div class="muted" style="padding:30px;text-align:center">No clinics match.</div>'}</section>
+ <p class="muted sm">Health score combines weekly logins, appointments booked in the app, payment status and support tickets. Below 50 means the clinic may leave.</p>`;
+};
+D.clinic=id=>{const c=CLINICS.find(x=>x.id===id);return mhead(c.name,`${c.city} · owner ${c.owner} · ${c.phone}`,'closeDrawer')+`
+ <div class="row wrap" style="gap:6px;margin:12px 0"><span class="chip ${SCLS[c.status]}">${c.status}</span><span class="chip ${PLANS[c.plan].c}">${c.plan} plan</span><span class="chip neu">${c.branches} branch${c.branches>1?'es':''}</span><span class="chip neu">Customer since ${c.since}</span></div>
+ <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">${[['Doctors',c.docs],['Staff',c.staff],['Patients',c.patients.toLocaleString()],['Consults 30 d',c.consults.toLocaleString()]].map(k=>`<div style="background:#F8FAFC;border-radius:12px;padding:10px"><div class="muted sm">${k[0]}</div><b style="font-size:18px">${k[1]}</b></div>`).join('')}</div>
+ <h4 class="sec" style="margin-top:18px;font-size:14px">Plan</h4><div class="row wrap" style="gap:6px;margin-top:8px">${Object.keys(PLANS).map(p=>`<button class="pill ${c.plan===p?'on':''}" data-a="setPlan" data-v="${c.id}:${p}">${p} · ${p==='Enterprise'?'custom':rs(PLANS[p].price)+'/mo'}</button>`).join('')}</div>
+ <h4 class="sec" style="margin-top:18px;font-size:14px">Usage this month</h4>${[['Doctor seats',c.docs,PLANS[c.plan].docs==='Unlimited'?c.docs*1.5:PLANS[c.plan].docs],['SMS / WhatsApp messages',Math.round(c.patients*2.4),c.plan==='Free'?500:c.plan==='Starter'?3000:c.plan==='Pro'?20000:100000],['Video minutes',Math.round(c.consults*4.1),c.plan==='Free'?300:c.plan==='Starter'?3000:c.plan==='Pro'?15000:80000]].map(u=>{const p=Math.min(100,Math.round(u[1]/u[2]*100));return `<div style="margin-top:8px"><div class="between sm"><span>${u[0]}</span><span class="${p>=90?'b':''}" style="color:${p>=90?'#B42318':'inherit'}">${u[1].toLocaleString()} / ${typeof u[2]==='number'?Math.round(u[2]).toLocaleString():u[2]}</span></div><div class="bar"><div style="width:${p}%;background:${p>=90?'#D92D20':'#0B7A75'}"></div></div></div>`}).join('')}
+ <h4 class="sec" style="margin-top:18px;font-size:14px">Recent invoices</h4><table class="tbl" style="margin-top:6px"><tbody>${['Nov','Oct','Sep'].map((m,i)=>`<tr><td class="sm">INV-${2210-i*31} · ${m} 2026</td><td class="sm b">${rs(PLANS[c.plan].price)}</td><td><span class="chip ${c.status==='Suspended'&&i<2?'hi':'lo'}">${c.status==='Suspended'&&i<2?'Overdue':'Paid'}</span></td></tr>`).join('')}</tbody></table>
+ <h4 class="sec" style="margin-top:18px;font-size:14px">Actions</h4><div class="row wrap" style="gap:8px;margin-top:8px"><button class="btn" data-a="loginAs" data-v="${c.id}">${I('eye',16)}View as clinic (support)</button><button class="btn" data-a="toast" data-v="Message sent to ${esc(c.owner)} by email and SMS">${I('chat',16)}Message owner</button>${c.status==='Trial'?`<button class="btn" data-a="extendTrial" data-v="${c.id}">Extend trial 14 days</button>`:''}${c.status==='Suspended'?`<button class="btn pri" data-a="reactivate" data-v="${c.id}">Reactivate</button>`:`<button class="btn dan" data-a="openSuspend" data-v="${c.id}">Suspend</button>`}</div>
+ <p class="muted sm" style="margin-top:12px">Patients never lose access to their own records, even if a clinic is suspended.</p>`};
+A.clStatus=v=>{S.cl.status=v;render()};
+A.openClinic=v=>{S.drawer={t:'clinic',id:v};renderOv()};
+A.setPlan=v=>{const [id,p]=v.split(':'),c=CLINICS.find(x=>x.id===id);if(c.plan===p)return;const old=c.plan;c.plan=p;audit('You (Super admin)','Changed plan',`${c.name}: ${old} → ${p}`);render();toast(`${c.name} moved to ${p} · prorated invoice created`)};
+A.extendTrial=v=>{const c=CLINICS.find(x=>x.id===v);c.pay='Trial ends 12 Dec';audit('You (Super admin)','Extended trial',c.name);render();toast('Trial extended to 12 Dec')};
+A.reactivate=v=>{const c=CLINICS.find(x=>x.id===v);c.status='Active';c.pay='Payment plan agreed';c.health=55;audit('You (Super admin)','Reactivated',c.name);render();toast(c.name+' reactivated · staff can log in again')};
+A.openSuspend=v=>{S.susp=v;S.modal='suspend';renderOv()};
+M.suspend=()=>{const c=CLINICS.find(x=>x.id===S.susp);return mhead('Suspend '+c.name+'?')+`<p class="muted" style="margin:10px 0 14px">Staff will be logged out and can't use the clinic tools. Patients can still see their records and are told to contact the clinic.</p><label class="lbl" for="sr">Reason (shared with the owner)</label>${sel('sr',['Unpaid invoices','Policy violation','Unverified doctors practising','Requested by owner'])}<label class="lbl" for="sn" style="margin-top:12px">Internal note</label><textarea id="sn" class="inp" rows="3"></textarea><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn dan" data-a="doSuspend">Suspend clinic</button></div>`};
+A.doSuspend=()=>{const c=CLINICS.find(x=>x.id===S.susp);c.status='Suspended';c.health=30;audit('You (Super admin)','Suspended',c.name+' · '+document.getElementById('sr').value);S.modal=null;render();toast(c.name+' suspended · owner notified')};
+A.loginAs=v=>{const c=CLINICS.find(x=>x.id===v);S.comp.access.unshift({id:'A-'+(89+S.comp.access.length),who:'You (Super admin)',org:c.name,why:'Opened from clinic profile',dur:'30 min',status:'Pending'});S.drawer=null;go('compliance');S.comp.tab='access';render();toast('Access request created — needs a second approver (Compliance)')};
+</script>
+<script>
+/* ================= ONBOARDING ================= */
+const STAGES=['Applied','Documents','Verification','Training','Live'];
+V.onboarding=()=>`<div class="between wrap"><p class="muted">Move clinics through onboarding. Drag cards or use the arrow buttons. A clinic can only go live once its doctors are PMDC-verified.</p><button class="btn pri" data-a="openModal" data-v="newClinic">${I('plus',16)}Add clinic manually</button></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px">${STAGES.map(st=>{const it=S.onb.filter(o=>o.stage===st);return `<div class="kcol" data-drop="${st}"><div class="between" style="padding:2px 4px"><b>${st}</b><span class="chip neu" style="background:#fff">${it.length}</span></div>
+ ${it.map(o=>`<div class="kcard" draggable="true" data-drag="${o.id}"><div class="between"><b>${o.name}</b></div><div class="muted sm">${o.city} · ${o.owner}</div><div class="row wrap" style="gap:6px"><span class="chip ${PLANS[o.plan].c}">${o.plan}</span><span class="chip ${o.docs==='4/4'?'lo':'md'}">Docs ${o.docs}</span></div><div class="sm">${o.note}</div>
+ <div class="row wrap" style="gap:6px">${st!=='Applied'?`<button class="btn sm ico" aria-label="Move back" data-a="onbMove" data-v="${o.id}:-1">${I('chevl',15)}</button>`:''}${st==='Documents'?`<button class="btn sm" data-a="onbChase" data-v="${o.id}">Chase docs</button>`:''}${st==='Verification'?`<button class="btn sm" data-go="verify">Check doctors</button>`:''}${st==='Live'?'<span class="chip lo">Live</span>':`<button class="btn sm pri" style="margin-left:auto" data-a="onbMove" data-v="${o.id}:1">${st==='Training'?'Go live':'Next'} ${I('chevr',14)}</button>`}</div></div>`).join('')||'<div class="muted sm" style="text-align:center;padding:20px">Drop here</div>'}</div>`}).join('')}</div>
+ <section class="card stack" style="padding:18px;gap:10px"><h3 class="sec">What each stage checks</h3><div class="grid sm" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">${[['Documents','Owner CNIC, PMDC certificates, provincial Healthcare Commission licence, clinic address proof'],['Verification','Every doctor’s PMDC number checked; clinic location confirmed by call'],['Training','1-hour video session for front desk and doctors, in Urdu or English'],['Live','Clinic appears in patient search; bookings and payments switched on']].map(x=>`<div style="background:#F8FAFC;border-radius:12px;padding:12px"><b>${x[0]}</b><div class="muted">${x[1]}</div></div>`).join('')}</div></section>`;
+A.onbMove=v=>{const [id,d]=v.split(':'),o=S.onb.find(x=>x.id===id),i=STAGES.indexOf(o.stage)+ +d;if(i<0||i>=STAGES.length)return;
+ if(STAGES[i]==='Live'&&o.docs!=='4/4'){toast('Documents incomplete — cannot go live yet');return}
+ if(STAGES[i]==='Training'&&o.name==='Bahawalpur Eye Clinic'&&S.docs.find(x=>x.id==='d3').status!=='Verified'){toast('Dr. Usama Qadri’s PMDC registration is not verified yet');return}
+ o.stage=STAGES[i];if(o.stage==='Live'){CLINICS.push({id:'c'+(CLINICS.length+1),name:o.name,city:o.city,owner:o.owner,phone:'—',plan:o.plan,status:'Trial',docs:2,staff:3,patients:0,consults:0,since:'Nov 2026',branches:1,health:60,pay:'Trial ends 30 Dec',last:'Today'});audit('You (Super admin)','Took live',o.name)}
+ render();toast(o.stage==='Live'?o.name+' is live · welcome SMS sent':'Moved to '+o.stage)};
+A.onbChase=v=>{const o=S.onb.find(x=>x.id===v);toast('Reminder sent to '+o.owner+' with upload link')};
+M.newClinic=()=>mhead('Add clinic','Creates an application in “Applied”')+`<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px"><div style="grid-column:span 2"><label class="lbl" for="ncn">Clinic name</label><input id="ncn" class="inp" placeholder="e.g. Sukkur Family Clinic"></div><div><label class="lbl" for="nco">Owner doctor</label><input id="nco" class="inp" placeholder="Dr. …"></div><div><label class="lbl" for="ncp">Owner mobile</label><input id="ncp" class="inp" placeholder="03XX XXXXXXX"></div><div><label class="lbl" for="ncc">City</label>${sel('ncc',['Sukkur','Islamabad','Lahore','Karachi','Peshawar','Quetta','Multan','Hyderabad','Faisalabad','Other'])}</div><div><label class="lbl" for="ncl">Plan</label>${sel('ncl',Object.keys(PLANS),'Starter')}</div></div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn pri" data-a="saveClinic">Create application</button></div>`;
+A.saveClinic=()=>{const g=id=>document.getElementById(id).value;S.onb.unshift({id:'o'+Date.now(),name:g('ncn')||'New clinic',city:g('ncc'),owner:g('nco')||'—',plan:g('ncl'),stage:'Applied',docs:'0/4',note:'Added manually · upload link sent by SMS'});S.modal=null;render();toast('Application created · upload link sent to owner')};
+
+/* ================= DOCTOR VERIFICATION ================= */
+V.verify=()=>{const v=S.ver;const list=S.docs.filter(d=>d.status===v.filter);const d=S.docs.find(x=>x.id===v.sel)||list[0];if(d)v.sel=d.id;
+ const cnt=s=>S.docs.filter(x=>x.status===s).length;const lk=d&&v.lookup[d.id];const ck=d?(v.checks[d.id]=v.checks[d.id]||{}):{};
+ const CK=['CNIC matches applicant','PMDC certificate is clear and readable','Degree matches specialty','Photo matches CNIC'];
+ return `${tabs('verF',['Pending','Verified','Rejected'].map(s=>[s,s+` <span class="chip ${s==='Pending'?'md':'neu'}" style="margin-left:4px">${cnt(s)}</span>`]),v.filter)}
+ <div class="row wrap" style="gap:20px;align-items:flex-start"><section class="card" style="flex:1 1 320px;overflow:hidden;min-width:0">${list.map(x=>`<button class="row" data-a="verSel" data-v="${x.id}" style="width:100%;padding:14px;border:0;border-bottom:1px solid #F2F4F7;background:${d&&d.id===x.id?'#E6F4F3':'#fff'};text-align:left"><span class="av pu">${ini(x.name)}</span><span style="flex:1;min-width:0"><b>${x.name}</b><span class="muted sm" style="display:block">${x.spec} · ${x.clinic}</span></span><span class="muted sm">${x.sub}</span></button>`).join('')||'<div class="muted" style="padding:30px;text-align:center">Nothing here.</div>'}</section>
+ ${d?`<section class="card stack" style="flex:2 1 520px;padding:20px;gap:16px;min-width:0"><div class="between wrap"><div class="row"><span class="av pu" style="width:52px;height:52px;font-size:17px">${ini(d.name)}</span><div><b style="font-size:18px">${d.name}</b><div class="muted sm">${d.spec} · ${d.clinic} · submitted ${d.sub}</div></div></div><span class="chip ${d.status==='Verified'?'lo':d.status==='Rejected'?'hi':'md'}">${d.status}</span></div>
+ <div class="grid sm" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:12px"><div><div class="muted">PMDC registration</div><b>${d.pmdc}</b></div><div><div class="muted">CNIC</div><b>${d.cnic}</b></div><div><div class="muted">Qualification</div><b>${d.deg}</b></div></div>
+ <div class="grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">${['CNIC front','CNIC back','PMDC certificate','Degree'].map(t=>`<button class="docthumb" data-a="toast" data-v="Opening ${t} (zoomable viewer)">${I('file',16)} ${t}</button>`).join('')}</div>
+ <div class="card stack" style="padding:14px;gap:10px;background:#F8FAFC"><div class="between"><b>PMDC register check</b>${lk?'':`<button class="btn sm pri" data-a="lookup" data-v="${d.id}" ${d.pmdc==='—'?'disabled':''}>${I('refresh',15)}Check PMDC record</button>`}</div>
+ ${lk==='loading'?'<div class="muted sm">Checking the PMDC register…</div>':lk?`<div class="grid sm" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div><span class="muted">Name on register</span><br><b>${d.result==='mismatch'?'Dr. Hassan Raza Khan':d.name}</b></div><div><span class="muted">Status</span><br><b style="color:${d.result==='expired'?'#B42318':'#067647'}">${d.result==='expired'?'Licence expired '+d.exp:'Valid until '+d.exp}</b></div><div><span class="muted">Registration type</span><br><b>${d.spec==='Dentist'?'BDS — Full':'MBBS — Full'}${/FCPS/.test(d.deg)?' + Specialist':''}</b></div><div><span class="muted">Result</span><br>${d.result==='match'?'<span class="chip lo">Match</span>':d.result==='expired'?'<span class="chip hi">Expired</span>':'<span class="chip md">Name differs — check CNIC</span>'}</div></div><div class="muted sm">This is a sample result. In production this would come from PMDC's online register.</div>`:'<div class="muted sm">Not checked yet.</div>'}</div>
+ ${d.status==='Pending'?`<div><div class="lbl">Reviewer checklist</div>${CK.map((c,i)=>`<label class="row" style="padding:6px 0;cursor:pointer"><input type="checkbox" class="chk" ${ck[i]?'checked':''} data-a="ck" data-v="${d.id}:${i}">${c}</label>`).join('')}</div>
+ <div class="row wrap"><button class="btn pri" data-a="verApprove" data-v="${d.id}" ${lk&&lk!=='loading'&&d.result==='match'&&CK.every((c,i)=>ck[i])?'':'disabled'}>${I('check',16)}Approve & verify</button><button class="btn" data-a="verInfo" data-v="${d.id}">Request more info</button><button class="btn dan" data-a="verReject" data-v="${d.id}">Reject</button></div>
+ <p class="muted sm">Approve unlocks once the PMDC record matches and all 4 checks are ticked. Verified doctors get a badge in patient search.</p>`:`<div class="muted sm">${d.status==='Verified'?'Verified. Re-check is scheduled 30 days before the licence expires.':'Rejected — the clinic was told and the doctor cannot see patients.'}</div>`}</section>`:''}</div>`;
+};
+A.verF=v=>{S.ver.filter=v;S.ver.sel=null;render()};A.verSel=v=>{S.ver.sel=v;render()};
+A.lookup=v=>{S.ver.lookup[v]='loading';render();setTimeout(()=>{S.ver.lookup[v]='done';render()},800)};
+A.ck=v=>{const [id,i]=v.split(':');S.ver.checks[id][i]=!S.ver.checks[id][i];render()};
+A.verApprove=v=>{const d=S.docs.find(x=>x.id===v);d.status='Verified';audit('You (Super admin)','Verified doctor',d.name+' · PMDC '+d.pmdc);S.ver.sel=null;render();toast(d.name+' verified · clinic and doctor notified')};
+A.verInfo=v=>{const d=S.docs.find(x=>x.id===v);toast('Asked '+d.name+' to upload a renewed PMDC certificate')};
+A.verReject=v=>{S.rej=v;S.modal='reject';renderOv()};
+M.reject=()=>{const d=S.docs.find(x=>x.id===S.rej);return mhead('Reject '+d.name+'?')+`<label class="lbl" for="rr" style="margin-top:12px">Reason (sent to the clinic)</label>${sel('rr',['PMDC licence expired','Name does not match PMDC register','Documents unclear','Not a registered medical practitioner'],d.result==='expired'?'PMDC licence expired':d.result==='mismatch'?'Name does not match PMDC register':'Documents unclear')}<div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn dan" data-a="doReject">Reject</button></div>`};
+A.doReject=()=>{const d=S.docs.find(x=>x.id===S.rej);d.status='Rejected';audit('You (Super admin)','Rejected doctor',d.name+' · '+document.getElementById('rr').value);S.modal=null;S.ver.sel=null;render();toast(d.name+' rejected · clinic informed')};
+
+/* ================= PLANS & BILLING ================= */
+const FEAT=[['Doctor seats','1','3','10','Unlimited'],['Patients','50','Unlimited','Unlimited','Unlimited'],['Appointments & reminders','✓','✓','✓','✓'],['Patient app & family accounts','✓','✓','✓','✓'],['Video consultations','—','✓','✓','✓'],['Live Urdu ⇄ English translation','—','—','✓','✓'],['AI notes & care-plan suggestions','—','—','✓','✓'],['Campaigns & CareBot','—','—','✓','✓'],['Multiple branches','—','—','2','Unlimited'],['Analytics & finance dashboards','Basic','Basic','Full','Full + API'],['Support','Email','WhatsApp','Priority','Dedicated manager']];
+const INV=[['INV-2241','Al-Noor Medical Centre','Enterprise','Rs 65,000','Paid','Bank transfer'],['INV-2240','Shifa Family Clinic','Pro','Rs 14,999','Paid','Card'],['INV-2239','Peshawar Heart & Diabetes Centre','Pro','Rs 14,999','Paid','JazzCash'],['INV-2238','Rawalpindi Bone & Joint','Pro','Rs 14,999','Failed','Card expired'],['INV-2237','Karachi Kids Clinic','Starter','Rs 4,999','Paid','Easypaisa'],['INV-2209','Faisalabad General Clinic','Pro','Rs 14,999','Failed','Insufficient funds'],['INV-2178','Faisalabad General Clinic','Pro','Rs 14,999','Failed','Insufficient funds']];
+V.billing=()=>{const t=S.subTab;const head=tabs('subTab',[['plans','Plans'],['invoices','Invoices'],['failed','Failed payments','3']],t);
+ if(t==='plans')return head+`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">${Object.keys(PLANS).map(p=>{const n=CLINICS.filter(c=>c.plan===p&&c.status!=='Suspended').length;return `<div class="card stack" style="padding:18px;gap:8px;${p==='Pro'?'border-color:#0B7A75':''}"><div class="between"><span class="chip ${PLANS[p].c}">${p}</span>${p==='Pro'?'<span class="chip tl">Most popular</span>':''}</div><div style="font-size:26px;font-weight:700;font-family:'Plus Jakarta Sans'">${p==='Enterprise'?'Custom':rs(PLANS[p].price)}<span class="muted sm" style="font-weight:500">${p==='Enterprise'?'':' / month'}</span></div><div class="muted sm">${PLANS[p].docs} doctor seat${PLANS[p].docs===1?'':'s'} · ${n} clinics on this plan</div><button class="btn sm" data-a="editPlan" data-v="${p}">Edit price</button></div>`}).join('')}</div>
+ <section class="card" style="overflow:hidden"><div class="between" style="padding:14px 16px"><h3 class="sec">What's included</h3><span class="muted sm">Online consult fees: 5% platform commission on all plans</span></div><div class="scroll"><table class="tbl"><thead><tr><th>Feature</th>${Object.keys(PLANS).map(p=>`<th style="text-align:center">${p}</th>`).join('')}</tr></thead><tbody>${FEAT.map(f=>`<tr><td>${f[0]}</td>${f.slice(1).map(x=>`<td style="text-align:center;color:${x==='—'?'#98A2B3':'inherit'}" class="${x==='✓'?'b':''}">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
+ const rows=t==='failed'?INV.filter(i=>i[4]==='Failed'):INV;
+ return head+`<section class="card" style="overflow:hidden"><div class="scroll"><table class="tbl"><thead><tr><th>Invoice</th><th>Clinic</th><th>Plan</th><th>Amount</th><th>Status</th><th>Method / reason</th><th></th></tr></thead><tbody>${rows.map(i=>{const fixed=S.failFix[i[0]];return `<tr><td class="sm b">${i[0]}</td><td>${i[1]}</td><td><span class="chip ${PLANS[i[2]].c}">${i[2]}</span></td><td class="b">${i[3]}</td><td><span class="chip ${fixed?'lo':i[4]==='Paid'?'lo':'hi'}">${fixed?'Paid (retried)':i[4]}</span></td><td class="sm muted">${fixed?'JazzCash link':i[5]}</td><td style="white-space:nowrap">${i[4]==='Failed'&&!fixed?`<button class="btn sm" data-a="retry" data-v="${i[0]}">Retry</button> <button class="btn sm" data-a="toast" data-v="Payment link sent to ${esc(i[1])} by SMS">Send pay link</button>`:`<button class="btn sm ghost" data-a="toast" data-v="${i[0]} PDF downloaded">${I('download',14)}PDF</button>`}</td></tr>`}).join('')}</tbody></table></div></section>
+ ${t==='failed'?'<p class="muted sm">Clinics get 3 reminders over 10 days. After 14 days unpaid, the clinic is automatically suspended. Patients keep access to their records.</p>':''}`;
+};
+A.subTab=v=>{S.subTab=v;render()};
+A.retry=v=>{S.failFix[v]=1;audit('You (Super admin)','Retried payment',v);render();toast(v+' collected successfully')};
+A.editPlan=v=>{S.editP=v;S.modal='plan';renderOv()};
+M.plan=()=>{const p=S.editP;return mhead('Edit '+p+' price')+`<label class="lbl" for="pp" style="margin-top:14px">Monthly price (Rs)</label><input id="pp" class="inp" inputmode="numeric" value="${PLANS[p].price}"><label class="row sm" style="margin-top:12px"><input type="checkbox" class="chk" checked>Keep current clinics on their old price for 3 months</label><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn pri" data-a="savePlan">Save</button></div>`};
+A.savePlan=()=>{const p=S.editP,v=+document.getElementById('pp').value.replace(/\D/g,'')||PLANS[p].price;audit('You (Super admin)','Changed price',`${p}: ${rs(PLANS[p].price)} → ${rs(v)}`);PLANS[p].price=v;S.modal=null;render();toast(p+' price updated · clinics notified 30 days ahead')};
+
+/* ================= PAYOUTS ================= */
+const BATCH=[['Shifa Family Clinic','PK36 MEZN •••• 4471',184500],['Al-Noor Medical Centre','PK12 HABB •••• 0092',412300],['Karachi Kids Clinic','PK88 UNIL •••• 7710',96400],['Peshawar Heart & Diabetes Centre','PK41 BKIP •••• 3305',138900],['SkinCare Studio','PK90 MEZN •••• 1184',72100],['Rawalpindi Bone & Joint','PK07 ALFH •••• 5532',58800],['Quetta Family Health','PK55 NBPA •••• 2210',8400],['Multan Mother Care','—  (IBAN missing)',4200]];
+V.payouts=()=>{const t=S.payTab;const head=tabs('payTab',[['Ready','Ready to approve'],['History','History']],t);
+ if(t==='History')return head+`<section class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th>Batch</th><th>Week</th><th>Clinics</th><th>Net paid</th><th>Status</th></tr></thead><tbody>${[['PB-0460','2–8 Nov','11','Rs 8.9 lakh','Paid'],['PB-0459','26 Oct–1 Nov','11','Rs 8.2 lakh','Paid'],['PB-0458','19–25 Oct','10','Rs 7.6 lakh','Paid (1 returned)']].map(b=>`<tr><td class="b">${b[0]}</td><td>${b[1]}</td><td>${b[2]}</td><td class="b">${b[3]}</td><td><span class="chip lo">${b[4]}</span></td></tr>`).join('')}</tbody></table></section>`;
+ const rows=BATCH.map(b=>{const fee=Math.round(b[2]*.05),gw=Math.round(b[2]*.015);return {n:b[0],iban:b[1],gross:b[2],fee,gw,net:b[2]-fee-gw,bad:b[1].includes('missing')}});const ok=rows.filter(r=>!r.bad);const tot=ok.reduce((a,r)=>a+r.net,0);const done=S.paidB.PB0461;
+ return head+`<div class="grid g4">${kpi('money','tl',rs(rows.reduce((a,r)=>a+r.gross,0)),'Collected from patients','Week 9–15 Nov · JazzCash, Easypaisa, cards')}${kpi('chart','pu',rs(rows.reduce((a,r)=>a+r.fee,0)),'CareConnect commission (5%)','Platform revenue')}${kpi('card','neu',rs(rows.reduce((a,r)=>a+r.gw,0)),'Gateway fees (1.5%)','Passed through')}${kpi('building','lo',rs(tot),'Net payout','To '+ok.length+' clinics')}</div>
+ <section class="card" style="overflow:hidden"><div class="between wrap" style="padding:14px 16px"><div><h3 class="sec">Batch PB-0461 · 9–15 Nov 2026</h3><div class="muted sm">Needs two approvals: Finance + Super admin</div></div>${done?'<span class="chip lo">Approved · sent to bank (IBFT)</span>':`<button class="btn pri" data-a="openModal" data-v="approvePay">${I('check',16)}Approve batch</button>`}</div>
+ <div class="scroll"><table class="tbl"><thead><tr><th>Clinic</th><th>Bank account (IBAN)</th><th>Gross</th><th>Commission</th><th>Gateway</th><th>Net payout</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r.n}</b></td><td class="sm" style="color:${r.bad?'#B42318':'inherit'}">${r.iban}</td><td>${rs(r.gross)}</td><td class="sm">− ${rs(r.fee)}</td><td class="sm">− ${rs(r.gw)}</td><td class="b">${rs(r.net)}</td><td>${r.bad?`<span class="chip hi">On hold</span> <button class="btn sm" data-a="toast" data-v="Asked ${esc(r.n)} to add their IBAN">Request IBAN</button>`:`<span class="chip ${done?'lo':'info'}">${done?'Sent':'Ready'}</span>`}</td></tr>`).join('')}</tbody></table></div></section>
+ <div class="grid g4"><div class="card row" style="padding:16px"><span class="icob md">${I('clock')}</span><div><b>Finance approved</b><div class="muted sm">Usman (Finance) · today 10:42 AM</div></div></div><div class="card row" style="padding:16px"><span class="icob ${done?'lo':'neu'}">${I('shield')}</span><div><b>${done?'You approved':'Waiting for you'}</b><div class="muted sm">${done?'Just now':'Second approval required'}</div></div></div></div>`;
+};
+A.payTab=v=>{S.payTab=v;render()};
+M.approvePay=()=>mhead('Approve payout batch PB-0461?','Rs 9.1 lakh net to 7 clinics · 1 on hold')+`<p class="muted" style="margin:12px 0">Funds go out by IBFT within 1 working day. Clinics get an SMS and a statement in their Finance dashboard.</p><label class="lbl" for="otp">Enter the 6-digit code sent to your phone (demo: any 6 digits)</label><input id="otp" class="inp" inputmode="numeric" maxlength="6" placeholder="••••••" data-i="otp" style="letter-spacing:.4em;font-size:20px;text-align:center"><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn pri" data-a="doPay" ${(S.otp||'').replace(/\D/g,'').length>=6?'':'disabled'}>Approve & send</button></div>`;
+A.doPay=()=>{S.paidB.PB0461=1;S.otp='';audit('You (Super admin)','Approved payout','PB-0461 · Rs 9.1 lakh');S.modal=null;render();toast('Batch approved · 7 payouts sent to bank')};
+</script>
+<script>
+/* ================= SUPPORT ================= */
+const PRI={High:'hi',Medium:'md',Low:'neu'};
+V.support=()=>{const f=S.tkF;const list=S.tickets.filter(t=>f==='All'||t.status===f);const t=S.tickets.find(x=>x.id===S.tkSel)||list[0];if(t)S.tkSel=t.id;
+ const cnt=s=>s==='All'?S.tickets.length:S.tickets.filter(x=>x.status===s).length;
+ const sla=t=>t.sla==null?'':t.sla<0?`<span class="chip hi">${I('clock',12)}SLA breached ${-t.sla} min</span>`:`<span class="chip ${t.sla<30?'md':'neu'}">${I('clock',12)}${t.sla} min left</span>`;
+ return `<div class="grid g4">${kpi('ticket','md',cnt('Open'),'Open tickets','1 past SLA','#B42318')}${kpi('clock','tl','14 min','Median first reply','Target: 30 min')}${kpi('star','lo','4.6 / 5','Satisfaction (30 d)','312 ratings')}${kpi('chat','info','61%','Answered by help articles','Before reaching a person')}</div>
+ ${tabs('tkF',['Open','Pending','Resolved','All'].map(s=>[s,s+` <span class="chip neu" style="margin-left:4px">${cnt(s)}</span>`]),f)}
+ <div class="row wrap" style="gap:20px;align-items:stretch"><section class="card" style="flex:1 1 320px;overflow:hidden;min-width:0">${list.map(x=>`<button data-a="tkSel" data-v="${x.id}" style="display:block;width:100%;padding:14px;border:0;border-bottom:1px solid #F2F4F7;background:${t&&t.id===x.id?'#E6F4F3':'#fff'};text-align:left"><div class="between"><span class="sm muted">${x.id} · ${x.ago}</span><span class="chip ${PRI[x.pri]}">${x.pri}</span></div><b style="display:block;margin:4px 0">${x.subj}</b><div class="between"><span class="muted sm">${x.from} · ${x.org}</span>${x.status==='Open'?sla(x):''}</div></button>`).join('')||'<div class="muted" style="padding:30px;text-align:center">No tickets.</div>'}</section>
+ ${t?`<section class="card stack" style="flex:2 1 520px;padding:20px;gap:14px;min-width:0"><div class="between wrap"><div><div class="muted sm">${t.id} · ${t.cat}</div><b style="font-size:18px">${t.subj}</b><div class="muted sm">${t.from} · ${t.org}</div></div><div class="row wrap" style="gap:6px"><span class="chip ${PRI[t.pri]}">${t.pri}</span><span class="chip ${t.status==='Resolved'?'lo':t.status==='Pending'?'info':'md'}">${t.status}</span>${t.status==='Open'?sla(t):''}</div></div>
+ <div class="row wrap" style="gap:12px;align-items:flex-end"><div><label class="lbl" for="tka">Assigned to</label>${sel('tka',['Unassigned','Mahnoor','Ali','Usman (Finance)','Engineering on-call'],t.asg,`data-a="tkAssign" data-v="${t.id}"`)}</div><div><label class="lbl" for="tkp">Priority</label>${sel('tkp',['High','Medium','Low'],t.pri,`data-a="tkPri" data-v="${t.id}"`)}</div>${t.cat==='Payments'?`<button class="btn" data-a="tkLookup" data-v="${t.id}">${I('search',15)}Look up JazzCash TID</button>`:''}${t.cat==='Sehat Card'?`<button class="btn" data-go="system">${I('server',15)}See Sehat Card API status</button>`:''}</div>
+ ${t.found?`<div class="card" style="padding:12px;background:#ECFDF3;border-color:#ABEFC6"><b>JazzCash TID 1764790101 found</b><div class="sm">Rs 1,450 received 11:28 AM · webhook was delayed 6 min. <button class="lnk" data-a="tkReconcile" data-v="${t.id}">Mark invoice paid & notify clinic</button></div></div>`:''}
+ <div class="stack" style="gap:10px;background:#F8FAFC;border-radius:12px;padding:14px;max-height:340px;overflow:auto">${t.msgs.map(m=>`<div style="align-self:${m[0]?'flex-end':'flex-start'};max-width:80%;background:${m[0]===2?'#FEF0C7':m[0]?'#0B7A75':'#fff'};color:${m[0]===1?'#fff':'inherit'};border:1px solid ${m[0]?'transparent':'#E3E8EF'};border-radius:14px;padding:10px 12px"><div class="sm" style="opacity:.8;margin-bottom:2px">${m[0]===2?'Internal note':m[0]?'CareConnect support':t.from} · ${m[2]}</div>${esc(m[1])}</div>`).join('')}</div>
+ <div class="row wrap" style="gap:6px">${['Assalam-o-Alaikum, we’re looking into this now.','Please update the app from Play Store / App Store.','We’ve fixed this — please try again.'].map(r=>`<button class="pill" data-a="tkMacro" data-v="${esc(r)}">${esc(r.slice(0,34))}…</button>`).join('')}</div>
+ <textarea id="tkd" class="inp" rows="3" placeholder="Write a reply…" data-i="tkDraft" data-norender="1">${esc(S.tkDraft)}</textarea>
+ <div class="row wrap"><button class="btn pri" data-a="tkReply" data-v="${t.id}">${I('send',16)}Send reply</button><button class="btn" data-a="tkNote" data-v="${t.id}">Add internal note</button>${t.status!=='Resolved'?`<button class="btn" data-a="tkResolve" data-v="${t.id}" style="margin-left:auto">${I('check',16)}Resolve</button>`:`<button class="btn" data-a="tkReopen" data-v="${t.id}" style="margin-left:auto">Reopen</button>`}</div></section>`:''}</div>`;
+};
+const tk=id=>S.tickets.find(x=>x.id===id);
+A.tkF=v=>{S.tkF=v;S.tkSel=null;render()};A.tkSel=v=>{S.tkSel=v;S.tkDraft='';render()};
+A.tkAssign=(v,el)=>{tk(v).asg=el.value;render();toast('Assigned to '+el.value)};
+A.tkPri=(v,el)=>{tk(v).pri=el.value;render()};
+A.tkLookup=v=>{tk(v).found=1;render()};
+A.tkReconcile=v=>{const t=tk(v);t.found=0;t.msgs.push([1,'Payment found and invoice marked paid. Sorry for the delay — the JazzCash confirmation reached us 6 minutes late.','now']);t.status='Resolved';audit('Mahnoor (Support)','Reconciled payment','JazzCash TID 1764790101');render();toast('Invoice marked paid · clinic notified')};
+A.tkMacro=v=>{S.tkDraft=v;render()};
+A.tkReply=v=>{const t=tk(v),txt=(S.tkDraft||'').trim();if(!txt){toast('Write a reply first');return}t.msgs.push([1,txt,'now']);if(t.status==='Open')t.status='Pending';t.sla=null;S.tkDraft='';render();toast('Reply sent by app + WhatsApp')};
+A.tkNote=v=>{const t=tk(v),txt=(S.tkDraft||'').trim();if(!txt){toast('Write the note first');return}t.msgs.push([2,txt,'now']);S.tkDraft='';render();toast('Internal note added (not visible to customer)')};
+A.tkResolve=v=>{const t=tk(v);t.status='Resolved';t.sla=null;render();toast(v+' resolved · satisfaction survey sent')};
+A.tkReopen=v=>{tk(v).status='Open';tk(v).sla=60;render()};
+
+/* ================= ANALYTICS ================= */
+V.analytics=()=>{const fun=[['App downloads',412000],['Registered',314200],['Booked an appointment',168900],['Completed a visit',151300],['Booked again within 90 days',88100]];
+ const coh=[['Jun',100,62,51,46,42,40],['Jul',100,64,53,47,44,null],['Aug',100,66,55,49,null,null],['Sep',100,69,57,null,null,null],['Oct',100,71,null,null,null,null],['Nov',100,null,null,null,null,null]];
+ const hc=v=>v==null?'#fff':`rgba(11,122,117,${(v/100*.9+.08).toFixed(2)})`;
+ const spec=[['General Physician',31],['Paediatrics',17],['Gynaecology',14],['Dermatology',10],['Cardiology',8],['Psychiatry (video)',7],['Dental',6],['Other',7]];
+ return `<div class="row wrap">${pills('anP',['Last 7 days','Last 30 days','Last 90 days','This year'],S.an.period)}<button class="btn" style="margin-left:auto" data-a="toast" data-v="Report exported to Excel">${I('download',16)}Export</button></div>
+ <div class="grid g4">${kpi('users','info','2.1 lakh','Monthly active patients','67% use Urdu interface')}${kpi('video','tl','38%','Visits by video','Up from 29% in June','#067647')}${kpi('clock','md','11 min','Average wait at clinic','Down 4 min since go-live','#067647')}${kpi('alert','hi','7.2%','No-show rate','Reminders cut this from 15%','#067647')}</div>
+ <div class="grid g2"><section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">Patient funnel</h3>${fun.map((f,i)=>`<div><div class="between sm"><span>${f[0]}</span><span><b>${f[1].toLocaleString()}</b> ${i?`<span class="muted">· ${Math.round(f[1]/fun[i-1][1]*100)}% of previous</span>`:''}</span></div><div class="bar" style="height:22px;margin-top:4px;border-radius:6px"><div style="width:${Math.round(f[1]/fun[0][1]*100)}%;border-radius:6px"></div></div></div>`).join('')}<p class="muted sm">Biggest drop: registered → first booking. Most say they "were just checking" — try a free first video consult campaign.</p></section>
+ <section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">Patients still booking, by month joined</h3><div class="scroll"><table class="heat" style="border-collapse:separate;width:100%"><thead><tr><th class="sm muted" style="text-align:left">Joined</th>${['M0','M1','M2','M3','M4','M5'].map(m=>`<th class="sm muted">${m}</th>`).join('')}</tr></thead><tbody>${coh.map(r=>`<tr><td class="sm b" style="text-align:left">${r[0]}</td>${r.slice(1).map(v=>`<td style="background:${hc(v)};color:${v>55?'#fff':'#0F1B2D'}">${v==null?'':v+'%'}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="muted sm">Newer groups are staying longer — the family accounts feature launched in August.</p></section></div>
+ <div class="grid g3"><section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">Visits by specialty</h3>${spec.map(s=>`<div class="between sm"><span>${s[0]}</span><span class="row" style="gap:8px;flex:0 0 55%"><span class="bar" style="flex:1"><span style="display:block;height:100%;width:${s[1]/31*100}%;background:#3E3CB0;border-radius:999px"></span></span><b style="width:32px;text-align:right">${s[1]}%</b></span></div>`).join('')}</section>
+ <section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">How patients pay</h3>${[['JazzCash',34,'#D92D20'],['Cash at clinic',27,'#5B6B7F'],['Easypaisa',18,'#12B76A'],['Debit / credit card',11,'#3E3CB0'],['Sehat Card',7,'#0B7A75'],['Private insurance',3,'#F79009']].map(p=>`<div class="between sm"><span class="row" style="gap:8px"><span class="dot" style="background:${p[2]}"></span>${p[0]}</span><b>${p[1]}%</b></div>`).join('')}</section>
+ <section class="card stack" style="padding:20px;gap:10px"><h3 class="sec">Feature use (active clinics)</h3>${[['Appointments & queue',98],['Patient records',94],['Prescriptions via app',81],['Video consults',62],['Campaigns',37],['AI notes',29],['Care plans',24]].map(p=>`<div><div class="between sm"><span>${p[0]}</span><b>${p[1]}%</b></div><div class="bar" style="margin-top:4px"><div style="width:${p[1]}%"></div></div></div>`).join('')}</section></div>`;
+};
+A.anP=v=>{S.an.period=v;render();toast('Showing '+v.toLowerCase()+' (sample data)')};
+
+/* ================= COMPLIANCE ================= */
+V.compliance=()=>{const c=S.comp;const head=tabs('compTab',[['requests','Patient data requests',c.reqs.filter(r=>r.status==='Pending').length||''],['access','Support access approvals',c.access.filter(r=>r.status==='Pending').length||''],['audit','Admin audit log'],['policy','Policies']],c.tab);
+ if(c.tab==='requests')return head+`<section class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th>Request</th><th>Type</th><th>From</th><th>Received</th><th>Deadline</th><th>Status</th><th></th></tr></thead><tbody>${c.reqs.map(r=>`<tr><td class="b sm">${r.id}</td><td>${r.type}</td><td>${r.who}</td><td class="sm">${r.when}</td><td class="sm">${r.due}</td><td><span class="chip ${r.status==='Pending'?'md':'lo'}">${r.status}</span></td><td style="white-space:nowrap">${r.status==='Pending'?(r.type.startsWith('Delete')?`<button class="btn sm dan" data-a="reqDel" data-v="${r.id}">Review deletion</button>`:`<button class="btn sm pri" data-a="reqDone" data-v="${r.id}">Prepare export</button>`):''}</td></tr>`).join('')}</tbody></table></section><p class="muted sm">Deleting an account removes the patient's app profile. Clinical records the clinics must keep by law stay with the clinic and are marked "patient left CareConnect".</p>`;
+ if(c.tab==='access')return head+`<p class="muted">Support staff can only open a clinic's account after a second person approves. Access ends automatically.</p><section class="card" style="overflow:hidden"><table class="tbl"><thead><tr><th>Who</th><th>Clinic</th><th>Reason</th><th>For</th><th>Status</th><th></th></tr></thead><tbody>${c.access.map(r=>`<tr><td><b>${r.who}</b><div class="muted sm">${r.id}</div></td><td>${r.org}</td><td class="sm">${r.why}</td><td>${r.dur}</td><td><span class="chip ${r.status==='Pending'?'md':r.status==='Approved'?'lo':r.status==='Denied'?'hi':'neu'}">${r.status}</span></td><td style="white-space:nowrap">${r.status==='Pending'?(r.who.startsWith('You')?'<span class="muted sm">Needs another approver</span>':`<button class="btn sm pri" data-a="accOk" data-v="${r.id}">Approve</button> <button class="btn sm" data-a="accNo" data-v="${r.id}">Deny</button>`):r.status==='Approved'?`<button class="btn sm" data-a="accEnd" data-v="${r.id}">End now</button>`:''}</td></tr>`).join('')}</tbody></table></section>`;
+ if(c.tab==='audit')return head+`<section class="card" style="overflow:hidden"><div class="between" style="padding:14px 16px"><span class="muted sm">${AUDIT.length} entries · cannot be edited or deleted</span><button class="btn sm" data-a="toast" data-v="Audit log exported">${I('download',14)}Export</button></div><table class="tbl"><thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Details</th></tr></thead><tbody>${AUDIT.map(a=>`<tr><td class="sm" style="white-space:nowrap">${a[0]}</td><td>${a[1]}</td><td><span class="chip neu">${a[2]}</span></td><td class="sm">${esc(a[3])}</td></tr>`).join('')}</tbody></table></section>`;
+ return head+`<div class="grid g2">${[['Data storage','Patient data is stored in Pakistan region data centres. Backups encrypted, kept 35 days.'],['Admin roles','Super admin, Finance, Support, Compliance, Read-only. Two-person approval for payouts and support access.'],['Sign-in security','All admins use 2-step verification. Sessions end after 30 minutes idle.'],['Clinic agreements','Every clinic accepts the data processing terms at sign-up; renewal yearly.']].map(p=>`<div class="card" style="padding:18px"><b>${p[0]}</b><p class="muted sm" style="margin-top:6px">${p[1]}</p></div>`).join('')}</div><p class="muted sm">Placeholder text — confirm requirements with your legal advisor (e.g. Pakistan's Prevention of Electronic Crimes Act and any personal data protection law in force).</p>`;
+};
+A.compTab=v=>{S.comp.tab=v;render()};
+A.reqDone=v=>{const r=S.comp.reqs.find(x=>x.id===v);r.status='Completed';r.due='Done';audit('Sana (Compliance)','Completed export',r.id+' · '+r.who);render();toast('Export ready · secure download link sent to patient')};
+A.reqDel=v=>{S.delR=v;S.modal='delReq';renderOv()};
+M.delReq=()=>{const r=S.comp.reqs.find(x=>x.id===S.delR);return mhead('Delete account for '+r.who+'?')+`<ul class="muted" style="margin:12px 0 0 18px;line-height:1.8"><li>App profile, family links and saved payment methods: <b>deleted</b></li><li>Messages with clinics: <b>deleted after 30 days</b></li><li>Clinical records held by 2 clinics: <b>kept by the clinics</b> (legal duty)</li></ul><p class="sm" style="margin-top:10px;color:#B42318">This can't be undone after 30 days.</p><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn dan" data-a="doDelReq">Delete account</button></div>`};
+A.doDelReq=()=>{const r=S.comp.reqs.find(x=>x.id===S.delR);r.status='Completed';r.due='Done';audit('You (Super admin)','Deleted account',r.id+' · '+r.who);S.modal=null;render();toast('Account scheduled for deletion · patient emailed')};
+const acc=v=>S.comp.access.find(x=>x.id===v);
+A.accOk=v=>{const r=acc(v);r.status='Approved';audit('You (Super admin)','Approved support access',r.who+' → '+r.org+' ('+r.dur+')');render();toast('Access granted for '+r.dur+' · clinic owner notified')};
+A.accNo=v=>{acc(v).status='Denied';render();toast('Access denied')};
+A.accEnd=v=>{acc(v).status='Expired';render();toast('Access ended')};
+
+/* ================= SYSTEM ================= */
+const SERVICES=[['Patient & clinic apps','API · 99.98% (30 d)','Operational','120 ms'],['SMS (Jazz, Zong, Telenor, Ufone)','OTP delivery 97.1%','Operational','4.2 s'],['WhatsApp Business messages','Reminders, receipts','Operational','1.8 s'],['JazzCash payments','Webhooks','Operational','6 min delay at 11:28'],['Easypaisa payments','Webhooks','Operational','—'],['Card payments','Gateway','Operational','—'],['Sehat Card eligibility','State Life API','Degraded','Error rate 18%'],['Video calls','Peak 1,240 concurrent','Operational','—'],['Chughtai Lab results','Lab integration','Operational','—'],['Urdu ⇄ English translation','Live captions','Operational','—']];
+const FLAGS=[['aiNotes','AI clinical notes','Draft notes from consultation audio for doctors to review'],['translate','Live Urdu ⇄ English captions','In video consultations'],['carebot','CareBot (patient chatbot)','Answers FAQs and books appointments'],['punjabi','Punjabi & Pashto interface','Not ready — translations 70% reviewed'],['newBilling','New billing screen for front desk','Gradual rollout'],['homeSample','Home lab sample collection','Islamabad, Lahore, Karachi only']];
+V.system=()=>{const f=S.sys.flags;return `<div class="grid g4">${kpi('server','lo','99.98%','Uptime (30 days)','Target 99.9%','#067647')}${kpi('alert','md','1','Degraded service','Sehat Card eligibility','#B54708')}${kpi('phone','info','2.0.4','Latest app version','Android & iOS')}${kpi('users','tl','8,412','Users online now','Peak today 11:05 AM')}</div>
+ <section class="card" style="overflow:hidden"><div class="between" style="padding:14px 16px"><h3 class="sec">Services</h3><button class="btn sm" data-a="toast" data-v="Status page updated for clinics">${I('mega',14)}Post status update</button></div><table class="tbl"><tbody>${SERVICES.map(s=>`<tr><td><span class="row" style="gap:10px"><span class="status-dot" style="background:${s[2]==='Operational'?'#12B76A':'#F79009'}"></span><b>${s[0]}</b></span></td><td class="sm muted">${s[1]}</td><td class="sm">${s[3]}</td><td><span class="chip ${s[2]==='Operational'?'lo':'md'}">${s[2]}</span></td></tr>`).join('')}</tbody></table></section>
+ <section class="card" style="overflow:hidden"><div style="padding:14px 16px"><h3 class="sec">Feature flags</h3><div class="muted sm">Turn features on or off and roll out to a share of clinics. Changes are logged.</div></div><table class="tbl"><tbody>${FLAGS.map(x=>{const [on,pct]=f[x[0]];return `<tr><td><b>${x[1]}</b><div class="muted sm">${x[2]}</div></td><td style="width:260px">${on?`<div class="row" style="gap:8px"><input type="range" min="0" max="100" step="5" value="${pct}" aria-label="Rollout for ${x[1]}" data-a="flagPct" data-v="${x[0]}" style="flex:1;accent-color:#0B7A75"><b class="sm" style="width:40px">${pct}%</b></div>`:'<span class="muted sm">Off for everyone</span>'}</td><td style="width:80px"><label class="row" style="gap:6px;cursor:pointer"><input type="checkbox" class="chk" ${on?'checked':''} data-a="flagT" data-v="${x[0]}" aria-label="Toggle ${x[1]}">${on?'On':'Off'}</label></td></tr>`}).join('')}</tbody></table></section>
+ <section class="card stack" style="padding:20px;gap:12px"><h3 class="sec">App versions</h3><div class="row wrap" style="gap:16px;align-items:flex-end"><div><label class="lbl" for="mina">Minimum Android version</label>${sel('mina',['1.9.0','2.0.0','2.0.3','2.0.4'],S.sys.minAndroid,'data-i="sys.minAndroid"')}</div><div><label class="lbl" for="mini">Minimum iOS version</label>${sel('mini',['1.9.0','2.0.0','2.0.3','2.0.4'],S.sys.minIos,'data-i="sys.minIos"')}</div><button class="btn pri" data-a="forceUpd">Save & ask older apps to update</button></div><div class="muted sm">${S.sys.minAndroid==='2.0.4'?'About 18% of Android users are on older versions and will see "Please update" on next open.':'Users below the minimum see "Please update" on next open.'}</div></section>`};
+A.flagT=v=>{const f=S.sys.flags[v];f[0]=f[0]?0:1;if(f[0]&&!f[1])f[1]=10;audit('You (Super admin)','Changed flag',FLAGS.find(x=>x[0]===v)[1]+(f[0]?' → on '+f[1]+'%':' → off'));render();toast(f[0]?'Turned on for '+f[1]+'% of clinics':'Turned off')};
+A.flagPct=(v,el)=>{S.sys.flags[v][1]=+el.value;audit('You (Super admin)','Changed flag',FLAGS.find(x=>x[0]===v)[1]+' rollout → '+el.value+'%');render()};
+A.forceUpd=()=>{audit('You (Super admin)','Set minimum app version','Android '+S.sys.minAndroid+' · iOS '+S.sys.minIos);toast('Minimum versions saved')};
+
+/* ================= ANNOUNCEMENT ================= */
+M.announce=()=>mhead('Send announcement','Shown in the app and sent through the channels you pick')+`<label class="lbl" for="aa" style="margin-top:14px">Audience</label>${sel('aa',['All clinics','Clinics on Pro & Enterprise','Clinics in Peshawar','All doctors','All patients'],S.ann.aud,'data-i="ann.aud"')}<label class="lbl" for="at" style="margin-top:12px">Message</label><textarea id="at" class="inp" rows="4">Sehat Card eligibility checks are slow this morning because of a State Life system issue. Please note card numbers and we will check them automatically once the service is back.</textarea><div class="row" style="gap:14px;margin-top:12px">${['App','SMS','Email'].map(c=>`<label class="row" style="gap:6px"><input type="checkbox" class="chk" data-t="ann.ch.${c}" ${S.ann.ch[c]?'checked':''}>${c}</label>`).join('')}</div><div class="muted sm" style="margin-top:8px">${S.ann.aud.includes('patients')?'≈ 3.1 lakh people':S.ann.aud==='All doctors'?'1,904 doctors':S.ann.aud.includes('Peshawar')?'21 clinics':S.ann.aud.includes('Pro')?'96 clinics':'296 clinics'}${S.ann.ch.SMS?' · SMS cost ≈ Rs '+(S.ann.aud.includes('patients')?'1,24,000':'1,200'):''}</div><div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn" data-a="closeModal">Cancel</button><button class="btn pri" data-a="sendAnn">${I('send',16)}Send</button></div>`;
+A.sendAnn=()=>{audit('You (Super admin)','Sent announcement',S.ann.aud);S.modal=null;render();toast('Announcement sent to '+S.ann.aud.toLowerCase())};
+
+/* ================= EVENTS ================= */
+function setPath(p,v){const k=p.split('.');let o=S;for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=v}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){go(g.dataset.go);return}
+ const a=e.target.closest('[data-a]');if(!a)return;if(a.tagName==='SELECT'||(a.tagName==='INPUT'&&a.type!=='checkbox'))return;
+ if((a.dataset.a==='closeModal'||a.dataset.a==='closeDrawer')&&(a.classList.contains('bg')||a.classList.contains('drawer-bg'))&&e.target.closest('[data-stop]'))return;
+ if(a.tagName==='INPUT')e.preventDefault();
+ const f=A[a.dataset.a];if(f)f(a.dataset.v,a);});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.t){setPath(el.dataset.t,el.checked?1:0);S.modal?renderOv():render();return}
+ if((el.tagName==='SELECT'||el.type==='range')&&el.dataset.a&&A[el.dataset.a]){A[el.dataset.a](el.dataset.v,el);return}
+ if(el.tagName==='SELECT'&&el.dataset.i){setPath(el.dataset.i,el.value);S.modal?renderOv():render()}});
+document.addEventListener('input',e=>{const el=e.target;if(!el.dataset.i||el.tagName==='SELECT')return;setPath(el.dataset.i,el.value);if(el.dataset.norender)return;const id=el.id,pos=el.selectionStart;if(S.modal)renderOv();else render();const n=document.getElementById(id);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(S.modal||S.drawer)){if(S.modal)S.modal=null;else S.drawer=null;render()}});
+let dragId=null;
+document.addEventListener('dragstart',e=>{const d=e.target.closest&&e.target.closest('[data-drag]');if(d){dragId=d.dataset.drag;try{e.dataTransfer.setData('text/plain',dragId)}catch(_){}}});
+document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('[data-drop]'))e.preventDefault()});
+document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('[data-drop]');if(!z||!dragId)return;e.preventDefault();const o=S.onb.find(x=>x.id===dragId);const from=STAGES.indexOf(o.stage),to=STAGES.indexOf(z.dataset.drop);dragId=null;if(to===from)return;
+ if(Math.abs(to-from)>1){toast('Move one stage at a time');return}A.onbMove(o.id+':'+(to-from))});
+render();
+</script>
+</body>
+</html>

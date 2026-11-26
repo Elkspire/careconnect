@@ -101,7 +101,7 @@ export function CornerEditor({
             <polygon
               points={quad.map((p) => `${p.x},${p.y}`).join(" ")}
               fill="none"
-              stroke="#14b8a6"
+              stroke="#7fe3da"
               strokeWidth={handle / 6}
             />
             {quad.map((p, i) => (
@@ -110,7 +110,7 @@ export function CornerEditor({
                 cx={p.x}
                 cy={p.y}
                 r={handle}
-                fill="rgba(20,184,166,0.25)"
+                fill="rgba(127,227,218,0.25)"
                 stroke="#fff"
                 strokeWidth={handle / 6}
                 tabIndex={0}

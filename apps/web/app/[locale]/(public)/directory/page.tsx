@@ -42,7 +42,7 @@ export default async function DirectorySearchPage(
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-8">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <h1 className="flex items-center gap-2 text-xl font-bold text-text md:text-2xl">
+        <h1 className="flex items-center gap-2 text-[22px] font-bold text-text">
           <Search aria-hidden className="size-5 text-primary-600" />
           {t("heading")}
         </h1>
@@ -52,18 +52,18 @@ export default async function DirectorySearchPage(
       <Card padding="lg" className="mb-6">
         <form method="get" className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+            <span className="mb-1.5 block text-xs font-semibold text-text-label">
               {t("cityLabel")}
             </span>
             <input
               type="text"
               name="city"
               defaultValue={city}
-              className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted">
+            <span className="mb-1.5 block text-xs font-semibold text-text-label">
               {t("searchLabel")}
             </span>
             <input
@@ -71,7 +71,7 @@ export default async function DirectorySearchPage(
               name="q"
               defaultValue={q}
               placeholder={t("searchPlaceholder")}
-              className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+              className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
             />
           </label>
           {/* Not a visible field — carries the active specialty chip

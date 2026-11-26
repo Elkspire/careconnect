@@ -33,7 +33,7 @@ import { DocumentScanner } from "@/components/document-scanner";
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const inputClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const secondaryButtonClasses =
   "tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700";
 const primaryButtonClasses =
@@ -52,7 +52,7 @@ function RecordGroup({
 }) {
   return (
     <div className="mt-6">
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-2 text-base font-bold text-text">
         {heading}
       </h2>
       <Card>
@@ -198,7 +198,7 @@ function HistorySection({
 }) {
   return (
     <div className="mt-8">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 text-base font-bold text-text">
         {t("visitHistoryHeading")}
       </h2>
       <Timeline>
@@ -272,7 +272,7 @@ function ShareSection({
 }) {
   return (
     <div className="mt-8">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 text-base font-bold text-text">
         {t("shareHeading")}
       </h2>
 

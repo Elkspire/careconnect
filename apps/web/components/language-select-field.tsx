@@ -30,7 +30,7 @@ export function LanguageSelectField({
     <div>
       <span
         id={labelId}
-        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-muted"
+        className="mb-1.5 block text-xs font-semibold text-text-label"
       >
         {label}
       </span>

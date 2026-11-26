@@ -101,7 +101,7 @@ export default async function AppointmentsPage(
                           type="datetime-local"
                           name="scheduledStart"
                           required
-                          className="tap-target rounded-md border border-border px-2 py-1.5 text-xs text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                          className="tap-target rounded-md border border-border-strong px-2 py-1.5 text-xs text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
                         />
                       </FormField>
                       <SubmitButton
@@ -129,7 +129,7 @@ export default async function AppointmentsPage(
 
       {activeWaitlistEntries.length > 0 && (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 mt-8 text-base font-bold text-text">
             {t("myWaitlistHeading")}
           </h2>
           <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

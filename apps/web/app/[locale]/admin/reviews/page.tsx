@@ -82,7 +82,7 @@ export default async function AdminReviewsPage(
         </ul>
       )}
 
-      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 mt-8 text-base font-bold text-text">
         {t("hiddenReviewsHeading")}
       </h2>
       {hidden.length === 0 ? (

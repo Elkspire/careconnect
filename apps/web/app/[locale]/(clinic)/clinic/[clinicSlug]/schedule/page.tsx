@@ -12,9 +12,9 @@ import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const timeInputClasses =
-  "tap-target w-[7.5rem] rounded-md border border-border px-2 py-1.5 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-[7.5rem] rounded-md border border-border-strong px-2 py-1.5 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const primaryButtonClasses =
   "tap-target self-start rounded-md bg-primary-700 px-5 py-2.5 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 

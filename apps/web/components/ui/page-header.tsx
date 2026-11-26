@@ -23,7 +23,7 @@ export function PageHeader({
             {kicker}
           </p>
         )}
-        <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-text">
+        <h1 className="mt-1 flex items-center gap-2 text-[22px] font-bold text-text">
           {Icon && <Icon aria-hidden className="size-6 text-primary-600" />}
           {title}
         </h1>

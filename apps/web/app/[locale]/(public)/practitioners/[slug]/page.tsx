@@ -46,7 +46,7 @@ export default async function PractitionerProfilePage(
       </Link>
 
       <Card padding="lg" className="mt-4">
-        <h1 className="text-2xl font-bold text-text">{profile.fullName}</h1>
+        <h1 className="text-[22px] font-bold text-text">{profile.fullName}</h1>
         <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-primary-600">
           {profile.practitionerType}
         </p>
@@ -82,7 +82,7 @@ export default async function PractitionerProfilePage(
         </div>
       </Card>
 
-      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 mt-8 text-base font-bold text-text">
         {t("clinicsLabel")}
       </h2>
       <ul className="flex flex-col gap-3">
@@ -107,7 +107,7 @@ export default async function PractitionerProfilePage(
         ))}
       </ul>
 
-      <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+      <h2 className="mb-3 mt-8 text-base font-bold text-text">
         {t("reviewsLabel")}
       </h2>
 
@@ -140,7 +140,7 @@ export default async function PractitionerProfilePage(
                 name="rating"
                 required
                 defaultValue="5"
-                className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
               >
                 <option value="5">★★★★★ (5)</option>
                 <option value="4">★★★★☆ (4)</option>
@@ -153,7 +153,7 @@ export default async function PractitionerProfilePage(
               <textarea
                 name="comment"
                 rows={3}
-                className="w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                className="w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
               />
             </FormField>
             <SubmitButton

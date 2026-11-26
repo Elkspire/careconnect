@@ -14,7 +14,7 @@ import { localizedName } from "@/i18n/routing";
 const GENDERS = ["male", "female", "other"] as const;
 
 const inputClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 
 export default async function PractitionerOnboardingPage(
   props: PageProps<"/[locale]/onboarding/practitioner">,
@@ -109,7 +109,7 @@ export default async function PractitionerOnboardingPage(
             </>
           )}
 
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="text-base font-bold text-text">
             {t("clinicSectionHeading")}
           </h2>
 

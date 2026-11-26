@@ -60,7 +60,7 @@ export default async function PatientDashboardPage(props: PageProps<"/[locale]/p
                 name="fullName"
                 required
                 defaultValue={profile?.fullName}
-                className="tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                className="tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600"
               />
             </FormField>
             <LanguageSelectField

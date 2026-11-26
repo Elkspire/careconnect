@@ -23,9 +23,9 @@ import { AuditNotice } from "@/components/audit-notice";
 import { auditNoticeFrom } from "@/lib/api/audit";
 
 const inputClasses =
-  "tap-target rounded-md border border-border px-2.5 py-1.5 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target rounded-md border border-border-strong px-2.5 py-1.5 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const wideInputClasses =
-  "tap-target w-full rounded-md border border-border px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+  "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const primaryButtonClasses =
   "tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 const secondaryButtonClasses =
@@ -180,7 +180,7 @@ export default async function ClinicTodayPage(
 
       {canAttachRecords && attachableAppointments.length > 0 && (
         <Card padding="lg" className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="text-base font-bold text-text">
             {t("attachRecordHeading")}
           </h2>
           <p className="mt-1 text-sm text-text-muted">{t("attachRecordPrompt")}</p>
@@ -222,7 +222,7 @@ export default async function ClinicTodayPage(
 
       {waitlist.length > 0 && (
         <>
-          <h2 className="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-text-muted">
+          <h2 className="mb-3 mt-8 text-base font-bold text-text">
             {t("waitlistHeading")}
           </h2>
           <Card>

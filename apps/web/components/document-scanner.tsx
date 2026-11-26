@@ -326,7 +326,7 @@ export function DocumentScanner({
   const iconOnly =
     "tap-target flex items-center justify-center rounded-md border border-border bg-surface p-2 text-text-muted transition hover:border-primary-500 hover:text-text disabled:opacity-40";
   const selectInput =
-    "tap-target w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
+    "tap-target w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
   const fileInput = (withCapture: boolean) => (
     <input
       type="file"
@@ -422,8 +422,8 @@ export function DocumentScanner({
                 >
                   <polygon
                     points={liveQuad.map((p) => `${p.x},${p.y}`).join(" ")}
-                    fill="rgba(20,184,166,0.18)"
-                    stroke="#2dd4bf"
+                    fill="rgba(127,227,218,0.18)"
+                    stroke="#7fe3da"
                     strokeWidth={Math.max(videoSize.width, videoSize.height) / 220}
                     strokeLinejoin="round"
                   />
@@ -646,7 +646,7 @@ export function DocumentScanner({
                   </div>
                 </fieldset>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">{t("recordTypeLabel")}</span>
+                  <span className="mb-1 block text-xs font-semibold text-text-label">{t("recordTypeLabel")}</span>
                   <select value={recordType} onChange={(e) => setRecordType(e.target.value)} className={selectInput}>
                     <option value="lab_report">{t("types.lab_report")}</option>
                     <option value="prescription_photo">{t("types.prescription_photo")}</option>
@@ -655,7 +655,7 @@ export function DocumentScanner({
                 </label>
                 {familyMembers.length > 0 ? (
                   <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-text-muted">{t("familyMemberLabel")}</span>
+                    <span className="mb-1 block text-xs font-semibold text-text-label">{t("familyMemberLabel")}</span>
                     <select value={familyMemberId} onChange={(e) => setFamilyMemberId(e.target.value)} className={selectInput}>
                       <option value="">{t("forSelf")}</option>
                       {familyMembers.map((m) => (

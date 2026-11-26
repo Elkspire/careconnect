@@ -1,6 +1,10 @@
 # CareConnect
 
-Doctor appointment booking and medical-records platform for Pakistan. Product context lives in [resources/](resources/) — the v1 product doc and UX journeys this build follows.
+Doctor appointment booking and medical-records platform for Pakistan. Product context lives in [resources/](resources/):
+
+- [SCREENS.md](resources/SCREENS.md) — every screen across the five products, with what each one shows
+- [prototypes/](resources/prototypes/) — clickable HTML prototypes, and the source of the web app's palette, type and global styles (see `packages/config/tailwind-preset.css`)
+- one folder of screen PNGs per product, and [the system architecture diagram](resources/CareConnect-System-architecture.png)
 
 ## Stack
 
@@ -32,4 +36,4 @@ Local dev phone-OTP login: seeded numbers `+923001234567` (doctor), `+9230076543
 
 ## Scope
 
-Building to the v1 scope defined in the product doc: single-city verified directory, in-clinic-only booking, patient accounts with family profiles and record upload, doctor accounts with an owner + receptionist role, WhatsApp/SMS/push notifications, Urdu + English. See the product doc for what's deliberately deferred to v2.
+v1 scope: single-city verified directory, in-clinic-only booking, patient accounts with family profiles and record upload, doctor accounts with an owner + receptionist role, WhatsApp/SMS/push notifications, Urdu + English. The prototypes in `resources/` go further (video consults, the front-desk queue, admin and partner portals) and show where the product is heading.

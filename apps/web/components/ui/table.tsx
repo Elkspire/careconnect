@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /** Replaces .data-table — used sparingly for genuinely columnar desktop data. Wrap in TableScroll for mobile. */
 export function TableScroll({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto rounded-lg border border-border">{children}</div>;
+  return <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">{children}</div>;
 }
 
 export function Table({ children }: { children: ReactNode }) {
@@ -23,7 +23,7 @@ export function Tr({ children }: { children: ReactNode }) {
 
 export function Th({ children }: { children: ReactNode }) {
   return (
-    <th className="px-4 py-3 text-start text-xs font-semibold uppercase tracking-wide text-text-muted">
+    <th className="whitespace-nowrap border-b border-border bg-[#f8fafc] px-3.5 py-2.5 text-start text-xs font-semibold text-text-muted">
       {children}
     </th>
   );
