@@ -69,15 +69,15 @@
   --color-text-faint: #98a2b3;
   --color-text-on-primary: #ffffff;
 
-  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-jakarta), "Plus Jakarta Sans", var(--font-inter), "Inter", sans-serif;
-  /* Urdu pages: Latin text (names, numbers) stays in Inter / Plus Jakarta Sans
-     and Urdu script falls through to Nastaliq. Named directly, not via
-     var(--font-inter): that adds next/font's "Inter Fallback", a system font
-     with no character range that would catch the Urdu letters first.
-     Nastaliq's own Latin letters are serif, so it can't come first. */
-  --font-urdu: "Inter", var(--font-nastaliq), "Noto Nastaliq Urdu", sans-serif;
-  --font-urdu-display: "Plus Jakarta Sans", var(--font-nastaliq), "Noto Nastaliq Urdu", sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), sans-serif;
+  /* Urdu pages: Latin text (names, numbers) stays in Inter / Plus Jakarta Sans,
+     whose files are Latin-only, and Urdu script falls through to Nastaliq.
+     --font-*-only (set in app/[locale]/layout.tsx) leave out next/font's
+     size-adjusted system-font fallback, which covers every script and would
+     catch the Urdu letters first. */
+  --font-urdu: var(--font-inter-only), var(--font-nastaliq), sans-serif;
+  --font-urdu-display: var(--font-jakarta-only), var(--font-nastaliq), sans-serif;
 
   /* Buttons/inputs 10px, cards 14px, modals 16px, pills fully round. */
   --radius-sm: 8px;
