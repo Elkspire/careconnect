@@ -1,78 +1,100 @@
-import { BarChart3, Bell, CalendarDays, Clock, ShieldCheck, Star, UserCog, UserX, Users } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import {
+  BarChart3,
+  Bell,
+  CalendarDays,
+  Clock,
+  MonitorCheck,
+  ShieldCheck,
+  Star,
+  UserCog,
+  UserX,
+  Users,
+} from "lucide-react";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { getMe } from "@/lib/api/me";
 import { Link } from "@/i18n/navigation";
-import { ClinicSwitcher } from "@/components/clinic-switcher";
-import { Sidebar, SidebarNav, SidebarLink, SidebarMain } from "@/components/ui/sidebar";
+import { AppShell } from "@/components/shell/app-shell";
+import { BranchSwitcher } from "@/components/shell/branch-switcher";
+
+const icon = "size-[18px] shrink-0";
 
 export default async function ClinicLayout(
   props: LayoutProps<"/[locale]/clinic/[clinicSlug]">,
 ) {
   const { clinicSlug } = await props.params;
-  const [t, tAccount, me] = await Promise.all([
+  const [t, tAccount, format, me] = await Promise.all([
     getTranslations("clinic"),
     getTranslations("account"),
+    getFormatter(),
     getMe(),
   ]);
   // Same lookup resolveClinicStaffBySlug does, inlined so the one /me call
-  // also feeds the clinic switcher below.
+  // also feeds the branch switcher below.
   const activeClinics = me.clinicStaff.filter((s) => s.status === "active");
   const staffCtx = activeClinics.find((s) => s.clinicSlug === clinicSlug) ?? null;
+  const role = staffCtx?.role;
+  const base = `/clinic/${clinicSlug}`;
 
-  // Staff management is owner-only (per the product doc's role matrix), so
-  // the nav link is hidden for receptionist/junior doctor rather than
-  // linking to a page that just shows "access denied" — the page still
-  // enforces this itself independently, this is purely nav tidiness.
+  // Owner-only pages are left out for other roles rather than linking to an
+  // "access denied" page — each page still enforces this itself.
   const navItems = [
-    { href: `/clinic/${clinicSlug}/today`, label: t("nav.today"), icon: CalendarDays },
-    { href: `/clinic/${clinicSlug}/patients`, label: t("nav.patients"), icon: Users },
-    ...(!staffCtx || staffCtx.role === "owner"
+    { href: `${base}/today`, label: t("nav.today"), icon: <CalendarDays aria-hidden className={icon} /> },
+    { href: `${base}/patients`, label: t("nav.patients"), icon: <Users aria-hidden className={icon} /> },
+    ...(!role || role === "owner"
       ? [
-          { href: `/clinic/${clinicSlug}/schedule`, label: t("nav.schedule"), icon: Clock },
-          { href: `/clinic/${clinicSlug}/staff`, label: t("nav.staff"), icon: UserCog },
-          { href: `/clinic/${clinicSlug}/analytics`, label: t("nav.analytics"), icon: BarChart3 },
-          { href: `/clinic/${clinicSlug}/reviews`, label: t("nav.reviews"), icon: Star },
+          { href: `${base}/schedule`, label: t("nav.schedule"), icon: <Clock aria-hidden className={icon} /> },
+          { href: `${base}/staff`, label: t("nav.staff"), icon: <UserCog aria-hidden className={icon} /> },
+          { href: `${base}/analytics`, label: t("nav.analytics"), icon: <BarChart3 aria-hidden className={icon} /> },
+          { href: `${base}/reviews`, label: t("nav.reviews"), icon: <Star aria-hidden className={icon} /> },
         ]
       : []),
-    // Every owner and junior doctor is a practitioner with their own
-    // verification status — receptionist isn't a practitioner at all, so
-    // the page (and the API underneath it) has nothing to show them.
-    ...(!staffCtx || staffCtx.role === "owner" || staffCtx.role === "junior_doctor"
-      ? [{ href: `/clinic/${clinicSlug}/verification`, label: t("nav.verification"), icon: ShieldCheck }]
+    // Owners and junior doctors are practitioners with their own
+    // verification status; a receptionist isn't.
+    ...(!role || role === "owner" || role === "junior_doctor"
+      ? [{ href: `${base}/verification`, label: t("nav.verification"), icon: <ShieldCheck aria-hidden className={icon} /> }]
       : []),
-    { href: `/clinic/${clinicSlug}/notifications`, label: t("nav.notifications"), icon: Bell },
+    { href: `${base}/notifications`, label: t("nav.notifications"), icon: <Bell aria-hidden className={icon} /> },
+    // The front desk is its own workspace (queue and check-in on a rail).
+    ...(!role || role === "owner" || role === "receptionist"
+      ? [{ href: `/desk/${clinicSlug}`, label: t("nav.frontDesk"), icon: <MonitorCheck aria-hidden className={icon} /> }]
+      : []),
   ];
 
   return (
-    <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-8">
-      <Sidebar>
-        <div className="flex min-w-0 shrink-0 flex-col gap-3 md:w-56">
-          <ClinicSwitcher
-            heading={t("switcherHeading")}
-            clinics={activeClinics.map((s) => ({
+    <AppShell
+      subtitle={t("workspaceLabel")}
+      navLabel={t("workspaceLabel")}
+      nav={navItems}
+      home={`${base}/today`}
+      title={staffCtx?.clinicName ?? ""}
+      description={format.dateTime(new Date(), { dateStyle: "full", timeZone: "Asia/Karachi" })}
+      user={{
+        name: me.practitioner?.fullName ?? me.patient?.fullName ?? me.phone ?? "",
+        role: role ? t(`roles.${role}` as "roles.owner") : "",
+      }}
+      sidebarFooter={
+        <div className="flex flex-col gap-3">
+          <BranchSwitcher
+            heading={t("branchLabel")}
+            note={t("accessLoggedNote")}
+            current={clinicSlug}
+            branches={activeClinics.map((s) => ({
               clinicSlug: s.clinicSlug,
               clinicName: s.clinicName,
               roleLabel: t(`roles.${s.role}` as "roles.owner"),
             }))}
-            currentSlug={clinicSlug}
           />
-          <SidebarNav>
-            {navItems.map((item) => (
-              <SidebarLink
-                key={item.href}
-                href={item.href}
-                icon={<item.icon aria-hidden className="size-4.5 shrink-0" />}
-                label={item.label}
-              />
-            ))}
-          </SidebarNav>
-          <Link href="/account/delete" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition hover:text-danger-fg px-3">
-            <UserX aria-hidden className="size-4" />
+          <Link
+            href="/account/delete"
+            className="inline-flex items-center gap-1.5 px-1 text-xs font-medium text-navy-fg no-underline transition hover:text-white"
+          >
+            <UserX aria-hidden className="size-3.5" />
             {tAccount("link")}
           </Link>
         </div>
-        <SidebarMain>{props.children}</SidebarMain>
-      </Sidebar>
-    </div>
+      }
+    >
+      {props.children}
+    </AppShell>
   );
 }

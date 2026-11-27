@@ -151,7 +151,10 @@
     "cancelConfirmBody": "Clinic ko itlaa di jaye gi aur yeh waqt kisi aur ko de diya jaye ga.",
     "familyMemberAdded": "Ahl-e-khana ka fard shamil kar diya gaya.",
     "tabPast": "Guzishta",
-    "tabUpcoming": "Aane wali"
+    "tabUpcoming": "Aane wali",
+    "workspaceLabel": "Meri sehat",
+    "greeting": "Assalam-o-Alaikum, {name}",
+    "roleLabel": "Mareez"
   },
   "clinic": {
     "todayHeading": "Aaj",
@@ -295,7 +298,8 @@
       "analytics": "Analytics",
       "reviews": "Reviews",
       "verification": "Verification",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "frontDesk": "Front desk"
     },
     "workingHours": {
       "heading": "Kaam ke auqaat",
@@ -352,7 +356,10 @@
       "unverified": "Tasdeeq shuda nahi",
       "pending": "Jaiza jaari hai",
       "verified": "Tasdeeq shuda"
-    }
+    },
+    "workspaceLabel": "Clinic workspace",
+    "branchLabel": "Branch",
+    "accessLoggedNote": "Record tak rasai darj ki jati hai"
   },
   "notifications": {
     "heading": "Notifications",
@@ -495,7 +502,7 @@
     "reject": "Rad karein",
     "rejectReasonLabel": "Wajah",
     "confirmReject": "Rad karna confirm karein",
-    "navPractitioners": "Doctors ki verification",
+    "navPractitioners": "Tasdeeq",
     "navReviews": "Report kiye gaye reviews",
     "reviewsHeading": "Report kiye gaye reviews",
     "reviewsScopeNote": "Doctor apne bare mein kisi review ko report kar sakta hai; chhupane se woh public directory se hat jaata hai, delete nahin hota — yeh moderation ka *tareeqa* hai, is baat ki policy nahin ke kya report ho sakta hai (woh faisla abhi baaqi hai).",
@@ -514,7 +521,10 @@
       "unverified": "Tasdeeq shuda nahi",
       "pending": "Jaiza jaari hai",
       "verified": "Tasdeeq shuda"
-    }
+    },
+    "workspaceLabel": "Platform admin",
+    "workspaceDescription": "Muaalijeen ki tasdeeq aur reviews ki nigrani",
+    "roleLabel": "Platform admin"
   },
   "onboarding": {
     "roleHeading": "Aap CareConnect kaise istemal karna chahenge?",
@@ -601,5 +611,29 @@
     "close": "Band karein",
     "stepDone": "mukammal",
     "stepOf": "Marhala {n} az {total}"
+  },
+  "desk": {
+    "workspaceLabel": "Front desk",
+    "title": "Front desk · {clinic}",
+    "nav": {
+      "queue": "Qataar",
+      "patients": "Mareez",
+      "clinic": "Clinic"
+    }
+  },
+  "partner": {
+    "workspaceLabel": "Partner portal",
+    "previewNote": "Pesh-e-nazara: partner accounts abhi faal nahi",
+    "previewUser": "Pesh-e-nazara",
+    "previewRole": "Lab / pharmacy partner",
+    "nav": {
+      "overview": "Jaiza"
+    },
+    "overviewHeading": "CareConnect par labs aur pharmacies",
+    "overviewBody": "Partners ko clinics se order milenge aur woh nataij aur tarseel ki maloomat mareez ke record mein wapas bhejenge.",
+    "labTitle": "Labs",
+    "labItems": "Test ke naye order · Namoona lena aur us ki surat-e-haal · Nataij mareez ke record mein upload karna",
+    "pharmacyTitle": "Pharmacies",
+    "pharmacyItems": "Naye nuskhe · Mutabadil dawaiyan · Tarseel aur delivery ki surat-e-haal"
   }
 }

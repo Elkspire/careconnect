@@ -151,7 +151,10 @@
     "cancelConfirmBody": "The clinic will be told and the slot offered to someone else.",
     "familyMemberAdded": "Family member added.",
     "tabPast": "Past",
-    "tabUpcoming": "Upcoming"
+    "tabUpcoming": "Upcoming",
+    "workspaceLabel": "My health",
+    "greeting": "Assalam-o-Alaikum, {name}",
+    "roleLabel": "Patient"
   },
   "clinic": {
     "todayHeading": "Today",
@@ -295,7 +298,8 @@
       "analytics": "Analytics",
       "reviews": "Reviews",
       "verification": "Verification",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "frontDesk": "Front desk"
     },
     "workingHours": {
       "heading": "Working hours",
@@ -352,7 +356,10 @@
       "unverified": "Not verified",
       "pending": "Pending review",
       "verified": "Verified"
-    }
+    },
+    "workspaceLabel": "Clinic workspace",
+    "branchLabel": "Branch",
+    "accessLoggedNote": "Record access is logged"
   },
   "notifications": {
     "heading": "Notifications",
@@ -495,7 +502,7 @@
     "reject": "Reject",
     "rejectReasonLabel": "Reason",
     "confirmReject": "Confirm rejection",
-    "navPractitioners": "Practitioner verification",
+    "navPractitioners": "Verification",
     "navReviews": "Reported reviews",
     "reviewsHeading": "Reported reviews",
     "reviewsScopeNote": "A doctor can report a review of themselves; hiding it removes it from the public directory without deleting it — a moderation *mechanism*, not a policy on what's reportable (that's still an open product decision).",
@@ -514,7 +521,10 @@
       "unverified": "Not verified",
       "pending": "Pending review",
       "verified": "Verified"
-    }
+    },
+    "workspaceLabel": "Platform admin",
+    "workspaceDescription": "Verify practitioners and moderate reviews",
+    "roleLabel": "Platform admin"
   },
   "onboarding": {
     "roleHeading": "How would you like to use CareConnect?",
@@ -601,5 +611,29 @@
     "close": "Close",
     "stepDone": "done",
     "stepOf": "Step {n} of {total}"
+  },
+  "desk": {
+    "workspaceLabel": "Front desk",
+    "title": "Front desk · {clinic}",
+    "nav": {
+      "queue": "Queue",
+      "patients": "Patients",
+      "clinic": "Clinic"
+    }
+  },
+  "partner": {
+    "workspaceLabel": "Partner portal",
+    "previewNote": "Preview: partner accounts aren't live yet",
+    "previewUser": "Preview",
+    "previewRole": "Lab / pharmacy partner",
+    "nav": {
+      "overview": "Overview"
+    },
+    "overviewHeading": "Labs and pharmacies on CareConnect",
+    "overviewBody": "Partners will receive orders from clinics and send results and dispatch updates back to the patient's record.",
+    "labTitle": "Labs",
+    "labItems": "Incoming test orders · Sample collection and status · Upload results to the patient's record",
+    "pharmacyTitle": "Pharmacies",
+    "pharmacyItems": "Incoming prescriptions · Stock substitutions · Dispatch and delivery status"
   }
 }

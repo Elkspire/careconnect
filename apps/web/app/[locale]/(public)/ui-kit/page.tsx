@@ -11,7 +11,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { Tabs } from "@/components/ui/tabs";
 
 /**
- * Every shared UI component in one place, with sample data, for checking how
+ * Every shared UI component in one place, in light or dark, with sample data, for checking how
  * they look and behave. Always there under `next dev`; a production build
  * hides it unless the server runs with UI_PREVIEW=1.
  * English sample text only: this is for the team, not patients.
@@ -30,30 +30,47 @@ const PATIENTS = [
   { name: "Bilal Hussain", age: 29, lastVisit: "2026-11-20", status: "completed" },
 ] as const;
 
-export default async function UiPreviewPage(props: PageProps<"/[locale]/ui-preview">) {
+export default async function UiKitPage(props: PageProps<"/[locale]/ui-kit">) {
   if (process.env.NODE_ENV !== "development" && process.env.UI_PREVIEW !== "1") {
     notFound();
   }
-  const tab = (await props.searchParams).tab ?? "all";
+  const query = await props.searchParams;
+  const tab = String(query.tab ?? "all");
+  const theme = query.theme === "dark" ? "dark" : "light";
+  const kitHref = (next: { tab?: string; theme?: string }) => {
+    const params = new URLSearchParams({ tab: next.tab ?? tab, theme: next.theme ?? theme });
+    return `/ui-kit?${params}`;
+  };
   const section = "mt-10 mb-3 text-base font-bold text-text";
 
   return (
+    // data-theme scopes the dark token values to this page (and its modals,
+    // which inherit the variables); the app itself only ships light.
+    <div data-theme={theme} className="flex flex-1 flex-col bg-bg text-text">
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-8">
-      <PageHeader kicker="Design system" title="Components" />
+      <PageHeader kicker="Design system" title="UI kit" />
+      <Tabs
+        label="Theme"
+        active={theme}
+        items={[
+          { key: "light", label: "Light", href: kitHref({ theme: "light" }) },
+          { key: "dark", label: "Dark", href: kitHref({ theme: "dark" }) },
+        ]}
+      />
 
       <h2 className={section}>Tabs with counts</h2>
       <Tabs
         label="Patients"
-        active={String(tab)}
+        active={tab}
         items={[
-          { key: "all", label: "All", count: 248, href: "/ui-preview?tab=all" },
-          { key: "high", label: "High priority", count: 12, href: "/ui-preview?tab=high" },
-          { key: "inactive", label: "Inactive", count: 31, href: "/ui-preview?tab=inactive" },
-          { key: "notes", label: "Notes", href: "/ui-preview?tab=notes" },
+          { key: "all", label: "All", count: 248, href: kitHref({ tab: "all" }) },
+          { key: "high", label: "High priority", count: 12, href: kitHref({ tab: "high" }) },
+          { key: "inactive", label: "Inactive", count: 31, href: kitHref({ tab: "inactive" }) },
+          { key: "notes", label: "Notes", href: kitHref({ tab: "notes" }) },
         ]}
       />
       <p className="text-sm text-text-muted" data-testid="tab-content">
-        Showing: {String(tab)}
+        Showing: {tab}
       </p>
 
       <h2 className={section}>KPI cards</h2>
@@ -173,5 +190,6 @@ export default async function UiPreviewPage(props: PageProps<"/[locale]/ui-previ
         </Drawer>
       </div>
     </main>
+    </div>
   );
 }

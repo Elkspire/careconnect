@@ -58,6 +58,12 @@ async function finish(locale: string, path: string, notice?: AuditNoticeKind): P
   }
 }
 
+/** Today's queue appears in two places: the clinic's Today page and the front desk. */
+function revalidateQueue(locale: string, clinicSlug: string): void {
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  revalidatePath(`/${locale}/desk/${clinicSlug}`);
+}
+
 export async function checkInAction(
   locale: string,
   clinicSlug: string,
@@ -65,7 +71,7 @@ export async function checkInAction(
   formData: FormData,
 ): Promise<void> {
   await checkIn(clinicId, String(formData.get("appointmentId")));
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  revalidateQueue(locale, clinicSlug);
 }
 
 /** Empty string -> field omitted, not sent as 0 — recordVitalsSchema treats each measurement as optional. */
@@ -93,7 +99,7 @@ export async function recordVitalsAction(
     }),
     (await getTranslations("clinic"))("vitalsSaved"),
   );
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  revalidateQueue(locale, clinicSlug);
   return result;
 }
 
@@ -107,7 +113,7 @@ export async function attachRecordAction(
     attachRecord(clinicId, formData),
     (await getTranslations("clinic"))("recordAttached"),
   );
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  revalidateQueue(locale, clinicSlug);
   return result;
 }
 
@@ -409,6 +415,6 @@ export async function saveWorkingHoursAction(
   }
 
   revalidatePath(`/${locale}${schedulePage}`);
-  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  revalidateQueue(locale, clinicSlug);
   redirect(`${schedulePage}?saved=1`);
 }

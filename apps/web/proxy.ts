@@ -14,7 +14,7 @@ const LOCALE_PREFIX = new RegExp(
 );
 
 /** Locale-stripped path prefixes that require a signed-in session. */
-const PROTECTED_PREFIXES = ["/patient", "/clinic", "/post-login", "/onboarding", "/account"];
+const PROTECTED_PREFIXES = ["/patient", "/clinic", "/desk", "/admin", "/post-login", "/onboarding", "/account"];
 
 export async function proxy(request: NextRequest) {
   const response = intlMiddleware(request);

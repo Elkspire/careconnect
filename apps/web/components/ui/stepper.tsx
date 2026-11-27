@@ -72,7 +72,7 @@ export function Stepper({
                 s === "done"
                   ? "bg-success-bg"
                   : s === "current"
-                    ? "bg-primary-600 text-white"
+                    ? "bg-primary-600 text-text-on-primary"
                     : "bg-neutral-bg"
               }`}
             >

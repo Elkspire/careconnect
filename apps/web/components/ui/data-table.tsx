@@ -84,7 +84,7 @@ export function DataTable({
                   key={col.key}
                   scope="col"
                   aria-sort={col.sortable ? (direction ?? "none") : undefined}
-                  className={`whitespace-nowrap border-b border-border bg-[#f8fafc] px-3.5 py-2.5 text-xs font-semibold text-text-muted ${
+                  className={`whitespace-nowrap border-b border-border bg-table-head px-3.5 py-2.5 text-xs font-semibold text-text-muted ${
                     col.align === "end" ? "text-end" : "text-start"
                   }`}
                 >
@@ -116,7 +116,7 @@ export function DataTable({
             </tr>
           ) : (
             sorted.map((row) => (
-              <tr key={row.key} className="border-b border-[#eef2f6] last:border-b-0 hover:bg-[#f5fafa]">
+              <tr key={row.key} className="border-b border-table-line last:border-b-0 hover:bg-table-hover">
                 {columns.map((col) => (
                   <td
                     key={col.key}
