@@ -10,15 +10,15 @@ import {
 } from "../../../actions";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ListRow } from "@/components/ui/list-row";
 import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { PractitionerSetupSteps } from "@/components/practitioner-setup-steps";
 
 const DOCUMENT_TYPES = ["cnic", "degree", "council_registration", "other"] as const;
-const STATUS_TONE = { verified: "green", pending: "orange", unverified: "gray" } as const;
 
 export default async function ClinicVerificationPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/verification">,
@@ -50,6 +50,9 @@ export default async function ClinicVerificationPage(
 
   return (
     <div className="max-w-2xl">
+      {me.practitioner.verificationStatus !== "verified" && staffCtx.role === "owner" && (
+        <PractitionerSetupSteps current={3} />
+      )}
       <PageHeader
         icon={ShieldCheck}
         kicker="CareConnect"
@@ -59,9 +62,11 @@ export default async function ClinicVerificationPage(
 
       <div className="mb-6 flex items-center gap-2">
         <span className="text-sm text-text-muted">{t("verificationStatusLabel")}:</span>
-        <Badge tone={STATUS_TONE[me.practitioner.verificationStatus as keyof typeof STATUS_TONE] ?? "gray"}>
-          {me.practitioner.verificationStatus}
-        </Badge>
+        <StatusBadge
+          kind="verification"
+          status={me.practitioner.verificationStatus}
+          label={t(`verificationStatus.${me.practitioner.verificationStatus}` as "verificationStatus.pending")}
+        />
       </div>
 
       {documents.length === 0 ? (

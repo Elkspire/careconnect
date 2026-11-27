@@ -143,7 +143,15 @@
       "completed": "Mukammal",
       "cancelled": "Cancel",
       "no_show": "Nahin aaye"
-    }
+    },
+    "appointmentCancelled": "Mulaqat mansookh kar di gayi.",
+    "appointmentMoved": "Mulaqat ka waqt badal diya gaya.",
+    "cancelAppointment": "Mulaqat mansookh karein",
+    "cancelConfirmTitle": "Yeh mulaqat mansookh karein?",
+    "cancelConfirmBody": "Clinic ko itlaa di jaye gi aur yeh waqt kisi aur ko de diya jaye ga.",
+    "familyMemberAdded": "Ahl-e-khana ka fard shamil kar diya gaya.",
+    "tabPast": "Guzishta",
+    "tabUpcoming": "Aane wali"
   },
   "clinic": {
     "todayHeading": "Aaj",
@@ -325,6 +333,25 @@
       "errorHalfRange": "{day}: shuru aur khatam dono ka waqt likhein, ya dono khaali karein.",
       "errorNoTimes": "{day} khula chuna gaya hai lekin koi waqt nahin. Waqt shaamil karein ya din se nishaan hata dein.",
       "save": "Kaam ke auqaat save karein"
+    },
+    "dayLabel": "Din",
+    "patientLabel": "Mareez",
+    "practitionerLabel": "Moalij",
+    "recordAttached": "Report mulaqat ke saath laga di gayi.",
+    "reportSent": "Report bhej di gayi. Hamari team is ka jaiza le gi.",
+    "revokeConfirmTitle": "{name} ki rasai khatam karein?",
+    "revokeConfirmBody": "Woh yeh clinic mazeed nahi khol sakenge. Aap unhein baad mein dobara madu kar sakte hain.",
+    "staffRevoked": "Rasai khatam kar di gayi.",
+    "statusLabel": "Haisiyat",
+    "staffStatus": {
+      "invited": "Madu",
+      "active": "Faal",
+      "revoked": "Khatam"
+    },
+    "verificationStatus": {
+      "unverified": "Tasdeeq shuda nahi",
+      "pending": "Jaiza jaari hai",
+      "verified": "Tasdeeq shuda"
     }
   },
   "notifications": {
@@ -426,7 +453,10 @@
     "cornerTopLeft": "Oopar baayan kona",
     "cornerTopRight": "Oopar daayan kona",
     "cornerBottomRight": "Neeche daayan kona",
-    "cornerBottomLeft": "Neeche baayan kona"
+    "cornerBottomLeft": "Neeche baayan kona",
+    "shareCreated": "Share link ban gaya.",
+    "summarySaved": "Tibbi khulasa mehfooz ho gaya.",
+    "uploaded": "Record upload ho gaya."
   },
   "sharedRecord": {
     "heading": "Share kiya gaya medical record",
@@ -474,7 +504,17 @@
     "hide": "Directory se chhupayein",
     "hiddenReviewsHeading": "Chhupaye gaye reviews",
     "noHiddenReviews": "Koi chhupaya gaya review nahin.",
-    "unhide": "Directory mein wapas layein"
+    "unhide": "Directory mein wapas layein",
+    "navLabel": "Admin fehristein",
+    "rejectTitle": "{name} ko mustarad karein?",
+    "rejectBody": "Unhein aap ki wajah dikhai jaye gi aur woh dobara jama karwa sakte hain.",
+    "rejected": "Moalij mustarad kar diya gaya.",
+    "view": "Dekhein",
+    "verificationStatus": {
+      "unverified": "Tasdeeq shuda nahi",
+      "pending": "Jaiza jaari hai",
+      "verified": "Tasdeeq shuda"
+    }
   },
   "onboarding": {
     "roleHeading": "Aap CareConnect kaise istemal karna chahenge?",
@@ -518,7 +558,12 @@
       "lab_diagnostic": "Lab / Diagnostic Center"
     },
     "error": "Kuch ghalat ho gaya. Dobara koshish karein.",
-    "becomeProviderLink": "Is ki jagah healthcare provider ke taur par register karein"
+    "becomeProviderLink": "Is ki jagah healthcare provider ke taur par register karein",
+    "setupStepsLabel": "Aap ki practice ki fehrist saazi",
+    "setupStepRole": "Account ki qisam",
+    "setupStepPractice": "Aap ki practice",
+    "setupStepHours": "Auqaat-e-kaar",
+    "setupStepVerification": "Tasdeeq"
   },
   "account": {
     "heading": "Apna account delete karein",
@@ -550,5 +595,11 @@
       "title": "Mehfooz ho gaya, magar indraj nahi hua",
       "body": "Aap ki tabdeeli mehfooz ho gayi hai, magar hum is ka indraj nahi kar sake. Barah-e-karam isay dobara submit na karein."
     }
+  },
+  "ui": {
+    "cancel": "Mansookh karein",
+    "close": "Band karein",
+    "stepDone": "mukammal",
+    "stepOf": "Marhala {n} az {total}"
   }
 }

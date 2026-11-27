@@ -143,7 +143,15 @@
       "completed": "مکمل",
       "cancelled": "منسوخ شدہ",
       "no_show": "حاضر نہیں ہوا"
-    }
+    },
+    "appointmentCancelled": "ملاقات منسوخ کر دی گئی۔",
+    "appointmentMoved": "ملاقات کا وقت بدل دیا گیا۔",
+    "cancelAppointment": "ملاقات منسوخ کریں",
+    "cancelConfirmTitle": "یہ ملاقات منسوخ کریں؟",
+    "cancelConfirmBody": "کلینک کو اطلاع دی جائے گی اور یہ وقت کسی اور کو دے دیا جائے گا۔",
+    "familyMemberAdded": "اہلِ خانہ کا فرد شامل کر دیا گیا۔",
+    "tabPast": "گزشتہ",
+    "tabUpcoming": "آنے والی"
   },
   "clinic": {
     "todayHeading": "آج",
@@ -325,6 +333,25 @@
       "errorHalfRange": "{day}: آغاز اور اختتام دونوں اوقات درج کریں، یا دونوں خالی کریں۔",
       "errorNoTimes": "{day} کھلا منتخب ہے لیکن کوئی وقت درج نہیں۔ وقت شامل کریں یا دن سے نشان ہٹا دیں۔",
       "save": "اوقاتِ کار محفوظ کریں"
+    },
+    "dayLabel": "دن",
+    "patientLabel": "مریض",
+    "practitionerLabel": "معالج",
+    "recordAttached": "رپورٹ ملاقات کے ساتھ لگا دی گئی۔",
+    "reportSent": "رپورٹ بھیج دی گئی۔ ہماری ٹیم اس کا جائزہ لے گی۔",
+    "revokeConfirmTitle": "{name} کی رسائی ختم کریں؟",
+    "revokeConfirmBody": "وہ یہ کلینک مزید نہیں کھول سکیں گے۔ آپ انہیں بعد میں دوبارہ مدعو کر سکتے ہیں۔",
+    "staffRevoked": "رسائی ختم کر دی گئی۔",
+    "statusLabel": "حیثیت",
+    "staffStatus": {
+      "invited": "مدعو",
+      "active": "فعال",
+      "revoked": "ختم"
+    },
+    "verificationStatus": {
+      "unverified": "تصدیق شدہ نہیں",
+      "pending": "جائزہ جاری ہے",
+      "verified": "تصدیق شدہ"
     }
   },
   "notifications": {
@@ -426,7 +453,10 @@
     "cornerTopLeft": "اوپر بایاں کونا",
     "cornerTopRight": "اوپر دایاں کونا",
     "cornerBottomRight": "نیچے دایاں کونا",
-    "cornerBottomLeft": "نیچے بایاں کونا"
+    "cornerBottomLeft": "نیچے بایاں کونا",
+    "shareCreated": "شیئر لنک بن گیا۔",
+    "summarySaved": "طبی خلاصہ محفوظ ہو گیا۔",
+    "uploaded": "ریکارڈ اپ لوڈ ہو گیا۔"
   },
   "sharedRecord": {
     "heading": "شیئر کردہ طبی ریکارڈ",
@@ -474,7 +504,17 @@
     "hide": "ڈائریکٹری سے چھپائیں",
     "hiddenReviewsHeading": "چھپائے گئے جائزے",
     "noHiddenReviews": "کوئی چھپایا گیا جائزہ نہیں۔",
-    "unhide": "ڈائریکٹری میں بحال کریں"
+    "unhide": "ڈائریکٹری میں بحال کریں",
+    "navLabel": "ایڈمن فہرستیں",
+    "rejectTitle": "{name} کو مسترد کریں؟",
+    "rejectBody": "انہیں آپ کی وجہ دکھائی جائے گی اور وہ دوبارہ جمع کروا سکتے ہیں۔",
+    "rejected": "معالج مسترد کر دیا گیا۔",
+    "view": "دیکھیں",
+    "verificationStatus": {
+      "unverified": "تصدیق شدہ نہیں",
+      "pending": "جائزہ جاری ہے",
+      "verified": "تصدیق شدہ"
+    }
   },
   "onboarding": {
     "roleHeading": "آپ کیئر کنیکٹ کو کس طرح استعمال کرنا چاہیں گے؟",
@@ -518,7 +558,12 @@
       "lab_diagnostic": "لیب / تشخیصی مرکز"
     },
     "error": "کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔",
-    "becomeProviderLink": "بجائے اس کے ہیلتھ کیئر پروائیڈر کے طور پر رجسٹر کریں"
+    "becomeProviderLink": "بجائے اس کے ہیلتھ کیئر پروائیڈر کے طور پر رجسٹر کریں",
+    "setupStepsLabel": "آپ کی پریکٹس کی فہرست سازی",
+    "setupStepRole": "اکاؤنٹ کی قسم",
+    "setupStepPractice": "آپ کی پریکٹس",
+    "setupStepHours": "اوقاتِ کار",
+    "setupStepVerification": "تصدیق"
   },
   "account": {
     "heading": "اپنا اکاؤنٹ حذف کریں",
@@ -550,5 +595,11 @@
       "title": "محفوظ ہو گیا، مگر اندراج نہیں ہوا",
       "body": "آپ کی تبدیلی محفوظ ہو گئی ہے، مگر ہم اس کا اندراج نہیں کر سکے۔ براہِ کرم اسے دوبارہ جمع نہ کریں۔"
     }
+  },
+  "ui": {
+    "cancel": "منسوخ کریں",
+    "close": "بند کریں",
+    "stepDone": "مکمل",
+    "stepOf": "مرحلہ {n} از {total}"
   }
 }

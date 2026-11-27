@@ -2,22 +2,26 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import type { FormResult } from "@/lib/form-result";
 import { deleteMyAccount } from "@/lib/api/account";
 import { createClient } from "@/lib/supabase/server";
 
 /** What the user must type to confirm. Kept in English in every language, like the button it unlocks. */
 const CONFIRM_WORD = "DELETE";
 
-export async function deleteAccountAction(formData: FormData): Promise<void> {
+/** Shown in the confirmation dialog: an error keeps it open; success leaves the site. */
+export async function deleteAccountAction(formData: FormData): Promise<FormResult> {
+  const t = await getTranslations("account");
   if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== CONFIRM_WORD) {
-    redirect("/account/delete?error=confirm");
+    return { status: "error", message: t("confirmMismatch") };
   }
 
   try {
     await deleteMyAccount();
   } catch (err) {
     console.error(err);
-    redirect("/account/delete?error=failed");
+    return { status: "error", message: t("deleteFailed") };
   }
 
   // The login no longer exists, so Supabase may refuse to revoke the

@@ -7,6 +7,8 @@ import { hasLocale } from "next-intl";
 import { LOCALE_COOKIE, routing, type AppLocale } from "@/i18n/routing";
 import { BLOOD_GROUP, type BloodGroup } from "@careconnect/shared-types";
 import { orSavedUnrecorded, unlessRefused } from "@/lib/api/audit";
+import { getTranslations } from "next-intl/server";
+import type { FormResult } from "@/lib/form-result";
 import { addFamilyMember, upsertMyProfile } from "@/lib/api/patients";
 import {
   cancelAppointment,
@@ -90,7 +92,7 @@ export async function saveProfileAction(locale: string, formData: FormData): Pro
   }
 }
 
-export async function addFamilyMemberAction(locale: string, formData: FormData): Promise<void> {
+export async function addFamilyMemberAction(locale: string, formData: FormData): Promise<FormResult> {
   await addFamilyMember({
     fullName: String(formData.get("fullName") ?? ""),
     relationship: formData.get("relationship") as
@@ -102,6 +104,7 @@ export async function addFamilyMemberAction(locale: string, formData: FormData):
       | "father",
   });
   revalidatePath(`/${locale}/patient/family`);
+  return { status: "success", message: (await getTranslations("patient"))("familyMemberAdded") };
 }
 
 export async function createAppointmentAction(
@@ -149,31 +152,35 @@ export async function createAppointmentAction(
 export async function rescheduleAppointmentAction(
   locale: string,
   formData: FormData,
-): Promise<void> {
-  let refusal: string | undefined;
+): Promise<FormResult> {
+  const t = await getTranslations("patient");
   try {
     await rescheduleAppointment({
       appointmentId: String(formData.get("appointmentId")),
       scheduledStart: toClinicIso(String(formData.get("scheduledStart"))),
     });
   } catch (err) {
-    refusal = bookingRefusal(err);
+    return { status: "error", message: t(`bookingError.${bookingRefusal(err)}`) };
   }
   revalidatePath(`/${locale}/patient/appointments`);
-  // Redirects on success too, to clear an earlier attempt's ?error=.
-  redirect(`/patient/appointments${refusal ? `?error=${refusal}` : ""}`);
+  return { status: "success", message: t("appointmentMoved") };
 }
 
-export async function cancelAppointmentAction(locale: string, formData: FormData): Promise<void> {
-  let refusal: string | undefined;
+export async function cancelAppointmentAction(
+  locale: string,
+  formData: FormData,
+): Promise<FormResult> {
+  const t = await getTranslations("patient");
   try {
     await cancelAppointment({ appointmentId: String(formData.get("appointmentId")) });
   } catch (err) {
     // A 409 here is about the appointment (already cancelled, or over), not a time.
-    refusal = bookingRefusal(err) === "window" ? "window" : "changed";
+    const refusal = bookingRefusal(err) === "window" ? "window" : "changed";
+    revalidatePath(`/${locale}/patient/appointments`);
+    return { status: "error", message: t(`bookingError.${refusal}`) };
   }
   revalidatePath(`/${locale}/patient/appointments`);
-  redirect(`/patient/appointments${refusal ? `?error=${refusal}` : ""}`);
+  return { status: "success", message: t("appointmentCancelled") };
 }
 
 export async function joinWaitlistAction(locale: string, formData: FormData): Promise<void> {
@@ -221,10 +228,15 @@ async function uploadRecord(locale: string, formData: FormData): Promise<{ recor
   return { recorded: saved !== null };
 }
 
-export async function uploadVaultRecordAction(locale: string, formData: FormData): Promise<void> {
+export async function uploadVaultRecordAction(
+  locale: string,
+  formData: FormData,
+): Promise<FormResult> {
   const { recorded } = await uploadRecord(locale, formData);
-  // Redirects on success too, to clear an earlier attempt's ?audit=.
-  redirect(`/patient/vault${recorded ? "" : "?audit=saved"}`);
+  if (!recorded) {
+    return { status: "warning", message: (await getTranslations("audit"))("saved.body") };
+  }
+  return { status: "success", message: (await getTranslations("vault"))("uploaded") };
 }
 
 /** For the scanner, which says what happened itself instead of leaving the page. */
@@ -243,7 +255,7 @@ export async function viewVaultRecordAction(_locale: string, formData: FormData)
 export async function upsertMedicalSummaryAction(
   locale: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   const bloodGroupRaw = String(formData.get("bloodGroup") ?? "");
   const bloodGroup = BLOOD_GROUP.includes(bloodGroupRaw as BloodGroup)
     ? (bloodGroupRaw as BloodGroup)
@@ -262,9 +274,10 @@ export async function upsertMedicalSummaryAction(
     await upsertMyMedicalSummary(input);
   }
   revalidatePath(`/${locale}/patient/vault`);
+  return { status: "success", message: (await getTranslations("vault"))("summarySaved") };
 }
 
-export async function createShareAction(locale: string, formData: FormData): Promise<void> {
+export async function createShareAction(locale: string, formData: FormData): Promise<FormResult> {
   const familyMemberId = formData.get("familyMemberId");
   await createShare({
     subjectType: familyMemberId ? "family_member" : "self",
@@ -275,6 +288,7 @@ export async function createShareAction(locale: string, formData: FormData): Pro
     duration: (formData.get("duration") as "24h" | "7d" | "forever") ?? "7d",
   });
   revalidatePath(`/${locale}/patient/vault`);
+  return { status: "success", message: (await getTranslations("vault"))("shareCreated") };
 }
 
 export async function revokeShareAction(locale: string, formData: FormData): Promise<void> {

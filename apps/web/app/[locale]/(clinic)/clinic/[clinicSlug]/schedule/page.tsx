@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PractitionerSetupSteps } from "@/components/practitioner-setup-steps";
 
 const inputClasses =
   "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
@@ -69,6 +70,7 @@ export default async function ClinicSchedulePage(
 
   return (
     <div className="max-w-3xl">
+      {config === null && <PractitionerSetupSteps current={2} />}
       <PageHeader icon={Clock} kicker="CareConnect" title={t("heading")} />
       <p className="-mt-2 mb-5 text-sm text-text-muted">{t("intro")}</p>
 

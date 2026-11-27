@@ -1,4 +1,4 @@
-import { ChevronDown, Clock3, ListChecks, Upload, Users } from "lucide-react";
+import { Clock3, ListChecks, Upload, Users } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
@@ -11,9 +11,10 @@ import { Link } from "@/i18n/navigation";
 import { resolveClinicStaffBySlug } from "@/lib/api/me";
 import { formatClinicDate, formatClinicTime } from "@/lib/format-time";
 import { PageHeader } from "@/components/ui/page-header";
-import { StatGrid, StatTile } from "@/components/ui/stat-tile";
+import { KpiCard, KpiGrid } from "@/components/ui/kpi-card";
+import { Modal } from "@/components/ui/overlay";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { Alert } from "@/components/ui/alert";
@@ -22,12 +23,8 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { AuditNotice } from "@/components/audit-notice";
 import { auditNoticeFrom } from "@/lib/api/audit";
 
-const inputClasses =
-  "tap-target rounded-md border border-border-strong px-2.5 py-1.5 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
 const wideInputClasses =
   "tap-target w-full rounded-md border border-border-strong px-3 py-2 text-sm text-text focus:border-primary-600 focus:outline-2 focus:outline-offset-1 focus:outline-primary-600";
-const primaryButtonClasses =
-  "tap-target flex items-center gap-2 rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 const secondaryButtonClasses =
   "tap-target rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text transition hover:border-primary-500 hover:text-primary-700";
 
@@ -74,7 +71,59 @@ export default async function ClinicTodayPage(
 
   return (
     <div>
-      <PageHeader icon={ListChecks} kicker={staffCtx.clinicName} title={t("todayHeading")} />
+      <PageHeader
+        icon={ListChecks}
+        kicker={staffCtx.clinicName}
+        title={t("todayHeading")}
+        actions={
+          canAttachRecords &&
+          attachableAppointments.length > 0 && (
+            <Modal
+              trigger={
+                <>
+                  <Upload aria-hidden className="size-4" />
+                  {t("attachRecord")}
+                </>
+              }
+              triggerVariant="primary"
+              title={t("attachRecordHeading")}
+              description={t("attachRecordPrompt")}
+              formAction={attachAction}
+              submitLabel={t("attachRecord")}
+            >
+              <div className="flex flex-col gap-4">
+                <FormField label={t("attachRecordPatientLabel")}>
+                  <select name="appointmentId" required className={wideInputClasses}>
+                    {attachableAppointments.map((appt) => (
+                      <option key={appt.appointmentId} value={appt.appointmentId}>
+                        {appt.familyMemberFullName ?? appt.patientFullName} ·{" "}
+                        {formatClinicDate(appt.scheduledStart, locale)}
+                        {appt.familyMemberFullName ? ` (${appt.patientFullName})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+                <FormField label={t("recordTypeLabel")}>
+                  <select name="recordType" className={wideInputClasses}>
+                    <option value="lab_report">{t("types.lab_report")}</option>
+                    <option value="prescription_photo">{t("types.prescription_photo")}</option>
+                    <option value="other_document">{t("types.other_document")}</option>
+                  </select>
+                </FormField>
+                <FormField label={t("fileLabel")}>
+                  <input
+                    type="file"
+                    name="file"
+                    required
+                    accept="application/pdf,image/jpeg,image/png,image/heic"
+                    className="tap-target text-sm"
+                  />
+                </FormField>
+              </div>
+            </Modal>
+          )
+        }
+      />
 
       {notice && <AuditNotice kind={notice} />}
 
@@ -95,11 +144,11 @@ export default async function ClinicTodayPage(
         </div>
       )}
 
-      <StatGrid>
-        <StatTile icon={Clock3} value={appointments.length} label={t("todayHeading")} />
-        <StatTile icon={ListChecks} value={checkedInCount} label={t("checkedIn")} />
-        <StatTile icon={Users} value={waitingCount} label={t("checkIn")} />
-      </StatGrid>
+      <KpiGrid>
+        <KpiCard icon={Clock3} value={appointments.length} label={t("todayHeading")} />
+        <KpiCard icon={ListChecks} tone="blue" value={checkedInCount} label={t("checkedIn")} />
+        <KpiCard icon={Users} tone="amber" value={waitingCount} label={t("notCheckedIn")} />
+      </KpiGrid>
 
       <div className="mt-6">
         {appointments.length === 0 ? (
@@ -121,7 +170,7 @@ export default async function ClinicTodayPage(
                     </small>
                   </div>
                   {appt.status === "checked_in" ? (
-                    <Badge tone="green">{t("checkedIn")}</Badge>
+                    <StatusBadge kind="appointment" status="checked_in" label={t("checkedIn")} />
                   ) : canCheckIn ? (
                     <form action={action}>
                       <input type="hidden" name="appointmentId" value={appt.appointmentId} />
@@ -130,47 +179,44 @@ export default async function ClinicTodayPage(
                       </SubmitButton>
                     </form>
                   ) : (
-                    <Badge tone="gray">{t("notCheckedIn")}</Badge>
+                    <StatusBadge kind="appointment" status="booked" label={t("notCheckedIn")} />
                   )}
                 </div>
                 {appt.status === "checked_in" && canRecordVitals && (
-                  <details className="group ms-9 mt-1.5">
-                    <summary className="tap-target flex w-fit cursor-pointer list-none items-center gap-1 text-xs font-semibold text-primary-700">
-                      {t("recordVitals")}
-                      <ChevronDown aria-hidden className="size-3.5 transition group-open:rotate-180" />
-                    </summary>
-                    <form action={vitalsAction} className="mt-2 flex flex-wrap items-end gap-3">
+                  <div className="ms-9 mt-1.5">
+                    <Modal
+                      trigger={t("recordVitals")}
+                      triggerVariant="link"
+                      title={t("recordVitals")}
+                      description={`${appt.patientFullName} · ${formatClinicTime(appt.scheduledStart, locale)}`}
+                      formAction={vitalsAction}
+                      submitLabel={t("saveVitals")}
+                    >
                       <input type="hidden" name="appointmentId" value={appt.appointmentId} />
-                      <FormField label={t("systolicLabel")}>
-                        <input type="number" name="systolicMmhg" className={`${inputClasses} w-28`} />
-                      </FormField>
-                      <FormField label={t("diastolicLabel")}>
-                        <input type="number" name="diastolicMmhg" className={`${inputClasses} w-28`} />
-                      </FormField>
-                      <FormField label={t("pulseLabel")}>
-                        <input type="number" name="pulseBpm" className={`${inputClasses} w-28`} />
-                      </FormField>
-                      <FormField label={t("weightLabel")}>
-                        <input
-                          type="number"
-                          step="0.1"
-                          name="weightKg"
-                          className={`${inputClasses} w-28`}
-                        />
-                      </FormField>
-                      <FormField label={t("temperatureLabel")}>
-                        <input
-                          type="number"
-                          step="0.1"
-                          name="temperatureF"
-                          className={`${inputClasses} w-28`}
-                        />
-                      </FormField>
-                      <SubmitButton className={primaryButtonClasses}>
-                        {t("saveVitals")}
-                      </SubmitButton>
-                    </form>
-                  </details>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField label={t("systolicLabel")}>
+                          <input type="number" name="systolicMmhg" className={wideInputClasses} />
+                        </FormField>
+                        <FormField label={t("diastolicLabel")}>
+                          <input type="number" name="diastolicMmhg" className={wideInputClasses} />
+                        </FormField>
+                        <FormField label={t("pulseLabel")}>
+                          <input type="number" name="pulseBpm" className={wideInputClasses} />
+                        </FormField>
+                        <FormField label={t("weightLabel")}>
+                          <input type="number" step="0.1" name="weightKg" className={wideInputClasses} />
+                        </FormField>
+                        <FormField label={t("temperatureLabel")}>
+                          <input
+                            type="number"
+                            step="0.1"
+                            name="temperatureF"
+                            className={wideInputClasses}
+                          />
+                        </FormField>
+                      </div>
+                    </Modal>
+                  </div>
                 )}
               </div>
             ))}
@@ -178,47 +224,6 @@ export default async function ClinicTodayPage(
         )}
       </div>
 
-      {canAttachRecords && attachableAppointments.length > 0 && (
-        <Card padding="lg" className="mt-8">
-          <h2 className="text-base font-bold text-text">
-            {t("attachRecordHeading")}
-          </h2>
-          <p className="mt-1 text-sm text-text-muted">{t("attachRecordPrompt")}</p>
-          <form action={attachAction} className="mt-3 flex flex-wrap items-end gap-3">
-            <FormField label={t("attachRecordPatientLabel")}>
-              <select name="appointmentId" required className={wideInputClasses}>
-                {attachableAppointments.map((appt) => (
-                  <option key={appt.appointmentId} value={appt.appointmentId}>
-                    {appt.familyMemberFullName ?? appt.patientFullName} ·{" "}
-                    {formatClinicDate(appt.scheduledStart, locale)}
-                    {appt.familyMemberFullName ? ` (${appt.patientFullName})` : ""}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <FormField label={t("recordTypeLabel")}>
-              <select name="recordType" className={wideInputClasses}>
-                <option value="lab_report">{t("types.lab_report")}</option>
-                <option value="prescription_photo">{t("types.prescription_photo")}</option>
-                <option value="other_document">{t("types.other_document")}</option>
-              </select>
-            </FormField>
-            <FormField label={t("fileLabel")}>
-              <input
-                type="file"
-                name="file"
-                required
-                accept="application/pdf,image/jpeg,image/png,image/heic"
-                className="tap-target text-sm"
-              />
-            </FormField>
-            <SubmitButton className={primaryButtonClasses}>
-              <Upload aria-hidden className="size-4" />
-              {t("attachRecord")}
-            </SubmitButton>
-          </form>
-        </Card>
-      )}
 
       {waitlist.length > 0 && (
         <>
@@ -244,9 +249,11 @@ export default async function ClinicTodayPage(
                     {entry.patientPhone ? ` · ${entry.patientPhone}` : ""}
                   </small>
                 </div>
-                <Badge tone={entry.status === "offered" ? "blue" : "gray"}>
-                  {t(`waitlistStatus.${entry.status}` as "waitlistStatus.waiting")}
-                </Badge>
+                <StatusBadge
+                  kind="waitlist"
+                  status={entry.status}
+                  label={t(`waitlistStatus.${entry.status}` as "waitlistStatus.waiting")}
+                />
               </div>
             ))}
           </Card>

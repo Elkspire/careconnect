@@ -13,7 +13,9 @@ import { StaffPermissionMatrix } from "@/components/staff-permission-matrix";
 import { StaffInviteFields } from "@/components/staff-invite-fields";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
-import { ListRow } from "@/components/ui/list-row";
+import { DataTable } from "@/components/ui/data-table";
+import { Modal } from "@/components/ui/overlay";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { FormField } from "@/components/ui/form-field";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
@@ -26,13 +28,13 @@ const secondaryButtonClasses =
 const primaryButtonClasses =
   "tap-target self-start rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-text-on-primary transition hover:bg-primary-800";
 
+const nameOf = (m: { fullName: string | null; phone: string | null; email: string | null }) =>
+  m.fullName ?? m.phone ?? m.email ?? "";
+
 export default async function ClinicStaffPage(
   props: PageProps<"/[locale]/clinic/[clinicSlug]/staff">,
 ) {
   const { locale, clinicSlug } = await props.params;
-  const sp = await props.searchParams;
-  const inviteError = typeof sp.inviteError === "string" ? sp.inviteError : undefined;
-  const invited = sp.invited === "1";
   const [t, staffCtx] = await Promise.all([
     getTranslations("clinic"),
     resolveClinicStaffBySlug(clinicSlug),
@@ -69,16 +71,61 @@ export default async function ClinicStaffPage(
 
   return (
     <div className="max-w-2xl">
-      <PageHeader icon={UserCog} kicker="CareConnect" title={t("staffHeading")} />
+      <PageHeader
+        icon={UserCog}
+        kicker="CareConnect"
+        title={t("staffHeading")}
+        actions={
+          <Modal
+            trigger={t("invite")}
+            triggerVariant="primary"
+            title={t("invite")}
+            description={t("invitePrompt")}
+            formAction={invite}
+            submitLabel={t("invite")}
+            size="lg"
+          >
+            <div className="flex flex-col gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField label={t("phoneLabel")}>
+                  <input
+                    type="tel"
+                    name="phone"
+                    required
+                    placeholder="0300 1234567"
+                    className={inputClasses}
+                  />
+                </FormField>
+                <FormField label={t("fullNameLabel")}>
+                  <input type="text" name="fullName" required className={inputClasses} />
+                </FormField>
+              </div>
+              <StaffInviteFields />
+            </div>
+          </Modal>
+        }
+      />
 
-      <Card>
-        {staff.map((member) => (
-          <ListRow
-            key={member.id}
-            title={member.fullName ?? member.phone ?? member.email}
-            subtitle={
+      <DataTable
+        caption={t("staffHeading")}
+        initialSort={{ key: "name", direction: "ascending" }}
+        columns={[
+          { key: "name", header: t("fullNameLabel"), sortable: true },
+          { key: "role", header: t("roleLabel"), sortable: true },
+          { key: "status", header: t("statusLabel"), sortable: true },
+          { key: "action", header: "" },
+        ]}
+        rows={staff.map((member) => ({
+          key: member.id,
+          sortValues: {
+            name: nameOf(member),
+            role: t(`roles.${member.role}` as "roles.owner"),
+            status: member.status,
+          },
+          cells: {
+            name: (
               <>
-                {t(`roles.${member.role}` as "roles.owner")} — {member.status}
+                <b className="font-semibold">{nameOf(member)}</b>
                 {member.revokedPermissions.length > 0 && (
                   <span className="mt-0.5 block text-xs text-text-faint">
                     {t("customPermissionsNote", {
@@ -89,56 +136,34 @@ export default async function ClinicStaffPage(
                   </span>
                 )}
               </>
-            }
-            action={
-              member.status === "active" &&
-              member.role !== "owner" && (
-                <form action={revoke}>
-                  <input type="hidden" name="staffId" value={member.id} />
-                  <SubmitButton className={secondaryButtonClasses}>
-                    {t("revoke")}
-                  </SubmitButton>
-                </form>
-              )
-            }
-          />
-        ))}
-      </Card>
+            ),
+            role: t(`roles.${member.role}` as "roles.owner"),
+            status: (
+              <StatusBadge
+                kind="staff"
+                status={member.status}
+                label={t(`staffStatus.${member.status}` as "staffStatus.active")}
+              />
+            ),
+            action: member.status === "active" && member.role !== "owner" && (
+              <Modal
+                trigger={t("revoke")}
+                triggerVariant="danger"
+                title={t("revokeConfirmTitle", { name: nameOf(member) })}
+                description={t("revokeConfirmBody")}
+                formAction={revoke}
+                submitLabel={t("revoke")}
+                submitTone="danger"
+              >
+                <input type="hidden" name="staffId" value={member.id} />
+              </Modal>
+            ),
+          },
+        }))}
+      />
 
       <Card padding="lg" className="mt-6">
         <StaffPermissionMatrix />
-      </Card>
-
-      <Card padding="lg" className="mt-8">
-        <p className="text-sm text-text-muted">{t("invitePrompt")}</p>
-        {invited && (
-          <div className="mt-3">
-            <Alert tone="success" title={t("inviteSuccess")} />
-          </div>
-        )}
-        {inviteError && (
-          <div className="mt-3">
-            <Alert tone="danger" title={inviteError} />
-          </div>
-        )}
-        <form action={invite} className="mt-4 flex flex-wrap items-end gap-3">
-          <FormField label={t("phoneLabel")}>
-            <input
-              type="tel"
-              name="phone"
-              required
-              placeholder="0300 1234567"
-              className={inputClasses}
-            />
-          </FormField>
-          <FormField label={t("fullNameLabel")}>
-            <input type="text" name="fullName" required className={inputClasses} />
-          </FormField>
-          <StaffInviteFields />
-          <SubmitButton className={primaryButtonClasses}>
-            {t("invite")}
-          </SubmitButton>
-        </form>
       </Card>
 
       <Card padding="lg" className="mt-8">
@@ -149,27 +174,34 @@ export default async function ClinicStaffPage(
           {assignments.length === 0 ? (
             <EmptyState icon={UserCog} title={t("noAssignments")} />
           ) : (
-            <div className="rounded-md border border-border">
-              {assignments.map((a) => (
-                <ListRow
-                  key={a.id}
-                  title={a.juniorDoctorFullName}
-                  subtitle={
-                    a.familyMemberFullName
-                      ? `${a.familyMemberFullName} (${t("familyMemberOfLabel", { name: a.patientFullName })})`
-                      : a.patientFullName
-                  }
-                  action={
-                    <form action={unassign}>
-                      <input type="hidden" name="assignmentId" value={a.id} />
-                      <SubmitButton className={secondaryButtonClasses}>
-                        {t("unassign")}
-                      </SubmitButton>
-                    </form>
-                  }
-                />
-              ))}
-            </div>
+            <DataTable
+              caption={t("assignmentsHeading")}
+              initialSort={{ key: "doctor", direction: "ascending" }}
+              columns={[
+                { key: "doctor", header: t("assignJuniorDoctorLabel"), sortable: true },
+                { key: "patient", header: t("assignPatientLabel"), sortable: true },
+                { key: "action", header: "" },
+              ]}
+              rows={assignments.map((a) => {
+                const patient = a.familyMemberFullName
+                  ? `${a.familyMemberFullName} (${t("familyMemberOfLabel", { name: a.patientFullName })})`
+                  : a.patientFullName;
+                return {
+                  key: a.id,
+                  sortValues: { doctor: a.juniorDoctorFullName, patient },
+                  cells: {
+                    doctor: a.juniorDoctorFullName,
+                    patient,
+                    action: (
+                      <form action={unassign}>
+                        <input type="hidden" name="assignmentId" value={a.id} />
+                        <SubmitButton className={secondaryButtonClasses}>{t("unassign")}</SubmitButton>
+                      </form>
+                    ),
+                  },
+                };
+              })}
+            />
           )}
         </div>
 

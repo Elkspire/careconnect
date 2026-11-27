@@ -1,4 +1,6 @@
 import type { AuditFailure } from "@careconnect/shared-types";
+import { getTranslations } from "next-intl/server";
+import type { FormResult } from "@/lib/form-result";
 import { ApiError } from "./authedFetch";
 
 /**
@@ -46,6 +48,19 @@ export async function savedEitherWay<T>(
     }
     throw err;
   }
+}
+
+/**
+ * For a modal form's action: makes the change and reports it as `success`,
+ * or, if it was saved but couldn't be recorded in the audit log, as a
+ * warning saying so (the dialog closes either way: the change is saved).
+ */
+export async function changeResult(change: Promise<object>, success: string): Promise<FormResult> {
+  if (await orSavedUnrecorded(change)) {
+    return { status: "success", message: success };
+  }
+  const t = await getTranslations("audit");
+  return { status: "warning", message: t("saved.body") };
 }
 
 /** Passed back to the page as ?audit=, for AuditNotice. */

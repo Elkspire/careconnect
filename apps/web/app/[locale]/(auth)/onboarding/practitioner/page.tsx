@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { FormField } from "@/components/ui/form-field";
 import { registerPractitionerAction } from "../actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PractitionerSetupSteps } from "@/components/practitioner-setup-steps";
 import { localizedName } from "@/i18n/routing";
 
 const GENDERS = ["male", "female", "other"] as const;
@@ -37,6 +38,7 @@ export default async function PractitionerOnboardingPage(
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-10">
       <Card padding="lg">
+        <PractitionerSetupSteps current={1} />
         <PageHeader icon={Stethoscope} title={t("practitionerHeading")} />
 
         <form action={action} className="flex flex-col gap-4">

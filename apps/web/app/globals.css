@@ -111,3 +111,19 @@
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }
   to { opacity: 1; transform: none; }
 }
+
+/* Modal (components/ui/overlay.tsx): a quick fade and lift into place. */
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Drawer: slides in from the inline end, so from the left in Urdu. */
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: none; }
+}
+@keyframes drawer-in-rtl {
+  from { transform: translateX(-100%); }
+  to { transform: none; }
+}

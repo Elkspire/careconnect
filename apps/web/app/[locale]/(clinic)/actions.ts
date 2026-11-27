@@ -12,7 +12,8 @@ import {
   type BloodGroup,
   type StaffPermissionKey,
 } from "@careconnect/shared-types";
-import { type AuditNoticeKind, orSavedUnrecorded, unlessRefused } from "@/lib/api/audit";
+import { type AuditNoticeKind, changeResult, orSavedUnrecorded, unlessRefused } from "@/lib/api/audit";
+import type { FormResult } from "@/lib/form-result";
 import {
   assignPatient,
   attachRecord,
@@ -80,9 +81,9 @@ export async function recordVitalsAction(
   clinicSlug: string,
   clinicId: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   const appointmentId = String(formData.get("appointmentId"));
-  const saved = await orSavedUnrecorded(
+  const result = await changeResult(
     recordVitals(clinicId, appointmentId, {
       systolicMmhg: optionalNumber(formData.get("systolicMmhg")),
       diastolicMmhg: optionalNumber(formData.get("diastolicMmhg")),
@@ -90,8 +91,10 @@ export async function recordVitalsAction(
       weightKg: optionalNumber(formData.get("weightKg")),
       temperatureF: optionalNumber(formData.get("temperatureF")),
     }),
+    (await getTranslations("clinic"))("vitalsSaved"),
   );
-  await finish(locale, `/clinic/${clinicSlug}/today`, saved ? undefined : "saved");
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  return result;
 }
 
 export async function attachRecordAction(
@@ -99,9 +102,13 @@ export async function attachRecordAction(
   clinicSlug: string,
   clinicId: string,
   formData: FormData,
-): Promise<void> {
-  const saved = await orSavedUnrecorded(attachRecord(clinicId, formData));
-  await finish(locale, `/clinic/${clinicSlug}/today`, saved ? undefined : "saved");
+): Promise<FormResult> {
+  const result = await changeResult(
+    attachRecord(clinicId, formData),
+    (await getTranslations("clinic"))("recordAttached"),
+  );
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/today`);
+  return result;
 }
 
 export async function reportReviewAction(
@@ -109,11 +116,12 @@ export async function reportReviewAction(
   clinicSlug: string,
   practitionerId: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   await reportReview(practitionerId, String(formData.get("reviewId")), {
     reason: String(formData.get("reason") ?? ""),
   });
   revalidatePath(`/${locale}/clinic/${clinicSlug}/reviews`);
+  return { status: "success", message: (await getTranslations("clinic"))("reportSent") };
 }
 
 export async function inviteStaffAction(
@@ -121,13 +129,12 @@ export async function inviteStaffAction(
   clinicSlug: string,
   clinicId: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   const roleRaw = formData.get("role");
   const role: AssignableStaffRole = roleRaw === "junior_doctor" ? roleRaw : "receptionist";
   // Same normalization the login page applies, so "0300 1234567" here
   // finds the account created by logging in as +923001234567.
   const phone = normalizePhone(String(formData.get("phone") ?? ""));
-  const staffPage = `/clinic/${clinicSlug}/staff`;
 
   try {
     await inviteStaff(clinicId, {
@@ -143,19 +150,13 @@ export async function inviteStaffAction(
   } catch (err) {
     // inviteStaff throws a plain Error whose message embeds the API's raw
     // JSON body (see parseJsonOrThrow) — e.g. "Invite staff failed: 404
-    // {"message":"No CareConnect account found...",...}". Left uncaught,
-    // this crashed the whole page with a generic error screen instead of
-    // showing the invitee-facing reason (wrong phone/email, not signed up
-    // yet, no practitioner profile for a junior doctor) next to the form.
-    redirect(`${staffPage}?inviteError=${encodeURIComponent(extractApiErrorMessage(err))}`);
+    // {"message":"No CareConnect account found...",...}". Shown in the
+    // invite dialog, which stays open: the invitee-facing reason (wrong
+    // phone, no practitioner profile for a junior doctor) next to the form.
+    return { status: "error", message: extractApiErrorMessage(err) };
   }
-  // A plain revalidatePath (no redirect) left a successful invite re-render
-  // at whatever URL the form was submitted from — if that still carried an
-  // ?inviteError= from a prior failed attempt, the error alert kept showing
-  // even though this submission succeeded. Redirecting to a clean "?invited"
-  // URL both clears that stale error and shows an explicit success alert.
-  revalidatePath(`/${locale}${staffPage}`);
-  redirect(`${staffPage}?invited=1`);
+  revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+  return { status: "success", message: (await getTranslations("clinic"))("inviteSuccess") };
 }
 
 function extractApiErrorMessage(err: unknown): string {
@@ -200,9 +201,10 @@ export async function revokeStaffAction(
   clinicSlug: string,
   clinicId: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   await revokeStaff(clinicId, String(formData.get("staffId")));
   revalidatePath(`/${locale}/clinic/${clinicSlug}/staff`);
+  return { status: "success", message: (await getTranslations("clinic"))("staffRevoked") };
 }
 
 export async function assignPatientAction(
@@ -257,7 +259,7 @@ export async function upsertClinicMedicalSummaryAction(
   clinicId: string,
   patientId: string,
   formData: FormData,
-): Promise<void> {
+): Promise<FormResult> {
   const bloodGroupRaw = String(formData.get("bloodGroup") ?? "");
   const bloodGroup = BLOOD_GROUP.includes(bloodGroupRaw as BloodGroup)
     ? (bloodGroupRaw as BloodGroup)
@@ -270,16 +272,14 @@ export async function upsertClinicMedicalSummaryAction(
   };
 
   const familyMemberId = String(formData.get("familyMemberId") ?? "") || undefined;
-  const saved = await orSavedUnrecorded(
+  const result = await changeResult(
     familyMemberId
       ? upsertFamilyMemberMedicalSummary(clinicId, patientId, familyMemberId, input)
       : upsertPatientMedicalSummary(clinicId, patientId, input),
+    (await getTranslations("vault"))("summarySaved"),
   );
-  await finish(
-    locale,
-    patientPath(clinicSlug, patientId, familyMemberId),
-    saved ? undefined : "saved",
-  );
+  revalidatePath(`/${locale}${patientPath(clinicSlug, patientId, familyMemberId)}`);
+  return result;
 }
 
 export async function saveClinicalNoteAction(

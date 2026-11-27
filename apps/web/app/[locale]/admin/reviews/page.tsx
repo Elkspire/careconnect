@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { listHiddenReviews, listReportedReviews } from "@/lib/api/admin";
 import { StarRating } from "@/components/star-rating";
 import { formatClinicDate } from "@/lib/format-time";
@@ -10,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { AdminTabs } from "@/components/admin-tabs";
 
 export default async function AdminReviewsPage(
   props: PageProps<"/[locale]/admin/reviews">,
@@ -34,17 +34,7 @@ export default async function AdminReviewsPage(
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <nav className="mb-4 flex gap-2">
-        <Link
-          href="/admin/practitioners"
-          className="rounded-md px-3 py-1.5 text-sm font-medium text-text-muted transition hover:bg-surface-muted hover:text-text"
-        >
-          {t("navPractitioners")}
-        </Link>
-        <span className="rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white">
-          {t("navReviews")}
-        </span>
-      </nav>
+      <AdminTabs active="reviews" />
       <PageHeader
         icon={Star}
         kicker="CareConnect"
