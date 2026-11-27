@@ -5,7 +5,6 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import localFont from "next/font/local";
 import { routing, type AppLocale } from "@/i18n/routing";
-import { SiteHeader } from "@/components/site-header";
 import { ToastProvider } from "@/components/toast-provider";
 import { NavigationProgress } from "@/components/navigation-progress";
 import "../globals.css";
@@ -75,7 +74,6 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
       <body className="flex min-h-screen flex-col">
         <NextIntlClientProvider>
           <NavigationProgress />
-          <SiteHeader />
           {props.children}
           <ToastProvider />
         </NextIntlClientProvider>

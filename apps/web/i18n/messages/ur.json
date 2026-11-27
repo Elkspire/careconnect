@@ -151,7 +151,10 @@
     "cancelConfirmBody": "کلینک کو اطلاع دی جائے گی اور یہ وقت کسی اور کو دے دیا جائے گا۔",
     "familyMemberAdded": "اہلِ خانہ کا فرد شامل کر دیا گیا۔",
     "tabPast": "گزشتہ",
-    "tabUpcoming": "آنے والی"
+    "tabUpcoming": "آنے والی",
+    "workspaceLabel": "میری صحت",
+    "greeting": "السلام علیکم، {name}",
+    "roleLabel": "مریض"
   },
   "clinic": {
     "todayHeading": "آج",
@@ -295,7 +298,8 @@
       "analytics": "تجزیات",
       "reviews": "جائزے",
       "verification": "تصدیق",
-      "notifications": "اطلاعات"
+      "notifications": "اطلاعات",
+      "frontDesk": "فرنٹ ڈیسک"
     },
     "workingHours": {
       "heading": "اوقاتِ کار",
@@ -352,7 +356,10 @@
       "unverified": "تصدیق شدہ نہیں",
       "pending": "جائزہ جاری ہے",
       "verified": "تصدیق شدہ"
-    }
+    },
+    "workspaceLabel": "کلینک ورک اسپیس",
+    "branchLabel": "برانچ",
+    "accessLoggedNote": "ریکارڈ تک رسائی درج کی جاتی ہے"
   },
   "notifications": {
     "heading": "اطلاعات",
@@ -495,7 +502,7 @@
     "reject": "مسترد کریں",
     "rejectReasonLabel": "وجہ",
     "confirmReject": "مسترد کرنے کی تصدیق کریں",
-    "navPractitioners": "معالج کی تصدیق",
+    "navPractitioners": "تصدیق",
     "navReviews": "رپورٹ شدہ جائزے",
     "reviewsHeading": "رپورٹ شدہ جائزے",
     "reviewsScopeNote": "ایک ڈاکٹر اپنے بارے میں کسی جائزے کی اطلاع دے سکتا ہے؛ اسے چھپانا اسے حذف کیے بغیر پبلک ڈائریکٹری سے ہٹا دیتا ہے — یہ ایک نظم و ضبط کا *طریقہ کار* ہے، یہ پالیسی نہیں کہ کیا قابلِ اطلاع ہے (وہ اب بھی ایک کھلا کاروباری فیصلہ ہے)۔",
@@ -514,7 +521,10 @@
       "unverified": "تصدیق شدہ نہیں",
       "pending": "جائزہ جاری ہے",
       "verified": "تصدیق شدہ"
-    }
+    },
+    "workspaceLabel": "پلیٹ فارم ایڈمن",
+    "workspaceDescription": "معالجین کی تصدیق اور ریویوز کی نگرانی",
+    "roleLabel": "پلیٹ فارم ایڈمن"
   },
   "onboarding": {
     "roleHeading": "آپ کیئر کنیکٹ کو کس طرح استعمال کرنا چاہیں گے؟",
@@ -601,5 +611,29 @@
     "close": "بند کریں",
     "stepDone": "مکمل",
     "stepOf": "مرحلہ {n} از {total}"
+  },
+  "desk": {
+    "workspaceLabel": "فرنٹ ڈیسک",
+    "title": "فرنٹ ڈیسک · {clinic}",
+    "nav": {
+      "queue": "قطار",
+      "patients": "مریض",
+      "clinic": "کلینک"
+    }
+  },
+  "partner": {
+    "workspaceLabel": "پارٹنر پورٹل",
+    "previewNote": "پیش نظارہ: پارٹنر اکاؤنٹس ابھی فعال نہیں",
+    "previewUser": "پیش نظارہ",
+    "previewRole": "لیب / فارمیسی پارٹنر",
+    "nav": {
+      "overview": "جائزہ"
+    },
+    "overviewHeading": "کیئر کنیکٹ پر لیبز اور فارمیسیاں",
+    "overviewBody": "پارٹنرز کو کلینکس سے آرڈر ملیں گے اور وہ نتائج اور ترسیل کی معلومات مریض کے ریکارڈ میں واپس بھیجیں گے۔",
+    "labTitle": "لیبز",
+    "labItems": "ٹیسٹ کے نئے آرڈر · نمونہ لینا اور اس کی صورتحال · نتائج مریض کے ریکارڈ میں اپ لوڈ کرنا",
+    "pharmacyTitle": "فارمیسیاں",
+    "pharmacyItems": "نئے نسخے · متبادل دوائیں · ترسیل اور ڈیلیوری کی صورتحال"
   }
 }

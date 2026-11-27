@@ -12,7 +12,6 @@ import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Drawer, Modal } from "@/components/ui/overlay";
 import { FormField } from "@/components/ui/form-field";
-import { AdminTabs } from "@/components/admin-tabs";
 import { ListRow } from "@/components/ui/list-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
@@ -45,8 +44,7 @@ export default async function AdminPractitionersPage(
   );
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <AdminTabs active="practitioners" />
+    <div className="max-w-3xl">
       <PageHeader
         icon={ShieldCheck}
         kicker="CareConnect"
@@ -148,6 +146,6 @@ export default async function AdminPractitionersPage(
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

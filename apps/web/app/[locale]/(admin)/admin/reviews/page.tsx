@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert } from "@/components/ui/alert";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { AdminTabs } from "@/components/admin-tabs";
 
 export default async function AdminReviewsPage(
   props: PageProps<"/[locale]/admin/reviews">,
@@ -33,8 +32,7 @@ export default async function AdminReviewsPage(
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-      <AdminTabs active="reviews" />
+    <div className="max-w-3xl">
       <PageHeader
         icon={Star}
         kicker="CareConnect"
@@ -100,6 +98,6 @@ export default async function AdminReviewsPage(
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

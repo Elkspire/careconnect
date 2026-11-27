@@ -52,7 +52,7 @@ const TRIGGER = {
 } as const;
 const SUBMIT = {
   primary: `${BUTTON} bg-primary-700 text-text-on-primary hover:bg-primary-800`,
-  danger: `${BUTTON} bg-danger-fg text-white hover:opacity-90`,
+  danger: `${BUTTON} bg-danger-fg text-surface hover:opacity-90`,
 } as const;
 const NOTICE = {
   success: { className: "text-success-fg", icon: CheckCircle2 },

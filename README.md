@@ -27,6 +27,8 @@ pnpm db:gen-types       # regenerate packages/shared-types/src/database.types.ts
 pnpm dev                # runs apps/web and apps/api in watch mode
 ```
 
+To test by hand against a local database with demo accounts and today's queue, run `pnpm dev:local` instead; see [docs/local-testing.md](docs/local-testing.md).
+
 Local dev phone-OTP login: seeded numbers `+923001234567` (doctor), `+923007654321` (patient), `+923009876543` (receptionist) all accept OTP `123456` (see `supabase/config.toml`'s `[auth.sms.test_otp]`) — no real SMS provider needed locally.
 
 ## Scripts (from repo root, via Turborepo)

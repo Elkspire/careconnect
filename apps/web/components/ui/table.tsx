@@ -23,7 +23,7 @@ export function Tr({ children }: { children: ReactNode }) {
 
 export function Th({ children }: { children: ReactNode }) {
   return (
-    <th className="whitespace-nowrap border-b border-border bg-[#f8fafc] px-3.5 py-2.5 text-start text-xs font-semibold text-text-muted">
+    <th className="whitespace-nowrap border-b border-border bg-table-head px-3.5 py-2.5 text-start text-xs font-semibold text-text-muted">
       {children}
     </th>
   );
